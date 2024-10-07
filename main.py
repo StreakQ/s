@@ -13,7 +13,7 @@ from work_GUI import get_selected_cell, input_cod_grnti,add_delimiters_in_cod_gr
 Form, Window = uic.loadUiType('main_form.ui')
 db_name = 'databases//database.db'
 
-
+#
 prepare_tables()
 
 
