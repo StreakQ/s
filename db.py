@@ -2,6 +2,7 @@ import os
 import sqlite3
 import csv
 from PyQt6.QtSql import *
+from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 
 db_name = 'databases//database.db'
 
@@ -208,6 +209,7 @@ def make_correct_cod_grnti():
             cod = cod[:8] + ';' + cod[9:]
         elif 8 <= len(cod) < 17:
             cod = cod[:8] + ';'
+
         c.execute('''UPDATE Tp_nir
                      SET "Коды_ГРНТИ" = ?
                       WHERE "Коды_ГРНТИ" = ?''',(cod, row[0]))
@@ -258,35 +260,42 @@ def connect_db(db_name):
         return False
     return db
 
-
 def get_column_values_from_table(column_name):
-    '''Получение значений выбранного столбца для отображения в выподающем меню GUI'''
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute(f'''SELECT {column_name}
-                FROM Tp_nir INNER JOIN VUZ ON  VUZ."Код" = Tp_nir."Код"
-                    ''')
-    column = c.fetchall()
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+        query = f"SELECT {column_name} FROM Tp_nir INNER JOIN VUZ ON VUZ.Код = Tp_nir.Код"
+        c.execute(query)
+        column = c.fetchall()
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
     return column
 
 def get_column_name_with_linked_value(value):
     '''Получение имени столбца выбранного значения из GUI'''
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute(f'''PRAGMA table_info(Tp_nir)''')
-    rows1 = c.fetchall()
-    c.execute(f'''PRAGMA table_info(VUZ)''')
-    rows2 = c.fetchall()
-    rows = rows1 + rows2
-    for row in rows:
-        c.execute(f'''SELECT {row[1]}
-                            FROM FROM Tp_fv
-                                INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"  
-                                WHERE {row[1]} = ?''', (value,))
-        if c.fetchone():
-            return row[1]
+    try:
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+        c.execute("PRAGMA table_info(Tp_nir)")
+        rows1 = c.fetchall()
+        c.execute("PRAGMA table_info(VUZ)")
+        rows2 = c.fetchall()
+        rows = rows1 + rows2
+        for row in rows:
+            query = "SELECT ? FROM Tp_nir INNER JOIN VUZ ON VUZ.Код = Tp_nir.Код WHERE ? = ?"
+            c.execute(query, (row[1], row[1], value))
+            if c.fetchone():
+                return row[1]
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
     return None
 
 def hard_filter(selected_value):
@@ -336,6 +345,48 @@ def hard_filter(selected_value):
     # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
     conn.commit()
     conn.close()
+
+def delete_string_in_table(table):
+    '''Удаление всей строки таблицы'''
+    selected_values = table.selectedItems()
+    if not selected_values:
+        return
+
+    row = table.row(selected_values[0])
+    prompt = QMessageBox.critical(None,"Удаление строки",f"Вы уверены, что желаете удалить строку: {selected_values[0]}")
+    if prompt == QMessageBox.Yes:
+        table.removeRow(row)
+        return True
+    else:
+        return False
+
+
+def change_string_in_table(table):
+    '''Изменение строки таблицы'''
+    selected_values = table.selectedItems()
+    if not selected_values:
+        return
+
+    # Get the row index of the selected items
+    row = selected_values[0].row()
+
+    # Create a list to store the values to be displayed in the popup menu
+    popup_menu_values = [item.text() for item in selected_values]
+
+    # Display the popup menu with the updated values
+    # (assuming you have a function to display the popup menu)
+    display_popup_menu(popup_menu_values)
+
+    # Update the table with the new values
+    for col, item in enumerate(selected_values):
+        table.setItem(row, col, QTableWidgetItem(item.text()))
+
+def display_popup_menu(lst):
+    '''отображение строки в возникающем меню для возможности изменения строки'''
+    for item in lst:
+        #установка в ячейку каждого меню соответствующего значения
+        pass
+
 
 def prepare_tables():
     create_database()
