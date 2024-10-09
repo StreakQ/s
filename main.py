@@ -1,19 +1,78 @@
 import os
 import sqlite3
 import csv
-
+import re
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QAbstractItemView
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QAbstractItemView,
+                             QTableWidget,QInputDialog, QTableWidgetItem, QMenu, QMessageBox)
+
 from PyQt6.QtSql import *
 from PyQt6 import QtWidgets, QtCore, uic
 from db import prepare_tables, connect_db
-from work_GUI import get_selected_cell, input_cod_grnti,add_delimiters_in_cod_grnti, filter_by_cod_grnti
+
 
 
 Form, Window = uic.loadUiType('main_form.ui')
 db_name = 'databases//database.db'
 
-#
+
+def input_cod_grnti(table):
+    current_item = table.currentItem()
+    menu = QMenu()
+    clear_action = menu.addAction("Очистить ячейку")
+    add_new_code_action = menu.addAction("Добавить новый код ГРНТИ")
+    action = menu.exec(table.mapToGlobal(table.visualItemRect(current_item).center()))
+
+    if action == clear_action:
+        table.setItem(current_item.row(), current_item.column(), QTableWidgetItem(""))
+    elif action == add_new_code_action:
+        while True:
+            cod, ok = QInputDialog.getText(None, "Введите значение", 'Введите весь код ГРНТИ из шести цифр '
+                                                                     'без разделителей и пробелов')
+            if not ok or cod is None or cod.isalpha():
+                show_error_message("Неправильное значение. Пожалуйста, введите численные значения.")
+                continue
+            if len(cod) != 6:
+                show_error_message("Неправильное значение. Пожалуйста, введите шесть цифр без разделителей и пробелов.")
+                continue
+            cod = add_delimiters_to_grnti_code(cod)
+            result = str(current_item.text()) + str(cod)
+            table.setItem(current_item.row(), current_item.column(), QTableWidgetItem(result.strip()))
+            break
+
+def add_delimiters_to_grnti_code(string):
+    return "{}.{}.{}".format(string[:2], string[2:4], string[4:])
+
+def show_error_message(message):
+    msg_box = QMessageBox()
+    msg_box.setText(message)
+    msg_box.exec()
+
+def filter_by_cod_grnti():
+    try:
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+
+        while True:
+            str_cod, ok = QInputDialog.getText(None, "Введите значение", 'Введите весь код ГРНТИ или его часть без разделителей и пробелов')
+            if not ok or str_cod is None or str_cod.isalpha():
+                QMessageBox.warning(None, "Ошибка", "Неправильное значение. Пожалуйста, введите численные значения.")
+                return
+            else:
+                break
+
+        str_cod = add_delimiters_to_grnti_code(str_cod)
+        model = QSqlQueryModel()
+        query = "SELECT * FROM Tp_nir WHERE `Коды_ГРНТИ` LIKE '%" + str_cod + "%'"
+        model.setQuery(query)
+        form.tableView.setModel(model)
+        form.tableView.show()
+    except sqlite3.Error as e:
+        QMessageBox.critical(None, "Ошибка", "Ошибка при фильтрации: {}".format(e))
+    finally:
+        if conn:
+            conn.close()
+
 prepare_tables()
 
 
@@ -80,7 +139,7 @@ def close_add_widget():
     form.add_widget.setVisible(False)
 
 def add_widget_refresh():
-    while (1):
+    while True:
         if (form.add_tableChoice_comboBox.currentIndex() ==1):
             form.VUZ_add_widget.setVisible(True)
             form.Tp_nir_add_widget.setVisible(False)

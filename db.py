@@ -2,6 +2,7 @@ import os
 import sqlite3
 import csv
 from PyQt6.QtSql import *
+from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 
 db_name = 'databases//database.db'
 
@@ -194,70 +195,6 @@ def import_table_tp_fv_from_csv():
     conn.commit()
     conn.close()
 
-def display_tp_nir():
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute('''SELECT 
-    "Код", 
-    "Номер",
-    "Сокращенное_имя",
-    "Руководитель",
-    "Коды_ГРНТИ",
-    "Характер",
-    "НИР"
-     FROM Tp_nir 
-    ''')
-    rows = c.fetchall()
-    headers = [description[0] for description in c.description]
-    print(tabulate(rows, headers, tablefmt='fancy_grid'))
-
-def display_vuz():
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute('''SELECT 
-        "Код", 
-        "Наименование" , 
-        "Полное_имя", 
-        "Сокращенное_имя",
-        "Регион",
-        "Город",
-        "Статус",
-        "Код_области",
-        "Область",
-        "Тип_уч.заведения",
-        "Проф"
-        FROM VUZ 
-       ''')
-    rows = c.fetchall()
-    headers = [description[0] for description in c.description]
-    print(tabulate(rows, headers, tablefmt='fancy_grid'))
-
-def display_grntirub():
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute('''SELECT 
-       "Код_рубрики", 
-       "Рубрика"
-        FROM grntirub 
-       ''')
-    rows = c.fetchall()
-    headers = [description[0] for description in c.description]
-    print(tabulate(rows, headers, tablefmt='fancy_grid'))
-
-def display_tp_fv():
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute('''SELECT 
-       "Код", 
-       "Сокращенное_имя", 
-       "Плановое_финансирование",
-       "Фактическое_финансирование", 
-       "Количество_НИР" 
-       FROM Tp_fv 
-       ''')
-    rows = c.fetchall()
-    headers = [description[0] for description in c.description]
-    print(tabulate(rows, headers, tablefmt='fancy_grid'))
 
 def make_correct_cod_grnti():
     conn = sqlite3.connect(db_name)
@@ -272,6 +209,7 @@ def make_correct_cod_grnti():
             cod = cod[:8] + ';' + cod[9:]
         elif 8 <= len(cod) < 17:
             cod = cod[:8] + ';'
+
         c.execute('''UPDATE Tp_nir
                      SET "Коды_ГРНТИ" = ?
                       WHERE "Коды_ГРНТИ" = ?''',(cod, row[0]))
@@ -322,10 +260,135 @@ def connect_db(db_name):
         return False
     return db
 
+def get_column_values_from_table(column_name):
+    try:
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+        query = f"SELECT {column_name} FROM Tp_nir INNER JOIN VUZ ON VUZ.Код = Tp_nir.Код"
+        c.execute(query)
+        column = c.fetchall()
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+    return column
+
+def get_column_name_with_linked_value(value):
+    '''Получение имени столбца выбранного значения из GUI'''
+    try:
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+        c.execute("PRAGMA table_info(Tp_nir)")
+        rows1 = c.fetchall()
+        c.execute("PRAGMA table_info(VUZ)")
+        rows2 = c.fetchall()
+        rows = rows1 + rows2
+        for row in rows:
+            query = "SELECT ? FROM Tp_nir INNER JOIN VUZ ON VUZ.Код = Tp_nir.Код WHERE ? = ?"
+            c.execute(query, (row[1], row[1], value))
+            if c.fetchone():
+                return row[1]
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+    return None
+
+def hard_filter(selected_value):
+    '''Фильтрация по области, оркругу, городу, вузу'''
+    #selected_value - это значение, выбранное из выпадающего  меню в GUI и переданное в функцию
+    # получение из GUI selected_value
+
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    column_name = get_column_name_with_linked_value(selected_value)
+    c.execute(f'''CREATE VIEW table_1 AS
+                        SELECT * 
+                        FROM Tp_fv
+                        INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код" 
+                        WHERE {column_name} = ?''', selected_value)
+    rows = c.fetchall()
+
+    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
+    # получение нового selected_value и  column_name из GUI
+    column_name = get_column_name_with_linked_value(selected_value)
+    c.execute(f'''CREATE VIEW table_2 AS
+                            SELECT * 
+                            FROM table_1
+                            INNER JOIN VUZ ON VUZ."Код" = table_1."Код" 
+                            WHERE {column_name} = ?''', selected_value)
+    rows = c.fetchall()
+
+    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
+    # получение нового selected_value и  column_name из GUI
+    column_name = get_column_name_with_linked_value(selected_value)
+    c.execute(f'''CREATE VIEW table_3 AS
+                               SELECT * 
+                               FROM table_2
+                               INNER JOIN VUZ ON VUZ."Код" = table_2."Код" 
+                               WHERE {column_name} = ?''', selected_value)
+    rows = c.fetchall()
+
+    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
+    # получение нового selected_value и  column_name из GUI
+    column_name = get_column_name_with_linked_value(selected_value)
+    c.execute(f'''
+                               SELECT * 
+                               FROM table_3
+                               INNER JOIN VUZ ON VUZ."Код" = table_3."Код" 
+                               WHERE {column_name} = ?''', selected_value)
+    rows = c.fetchall()
+    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
+    conn.commit()
+    conn.close()
+
+def delete_string_in_table(table):
+    '''Удаление всей строки таблицы'''
+    selected_values = table.selectedItems()
+    if not selected_values:
+        return
+
+    row = table.row(selected_values[0])
+    prompt = QMessageBox.critical(None,"Удаление строки",f"Вы уверены, что желаете удалить строку: {selected_values[0]}")
+    if prompt == QMessageBox.Yes:
+        table.removeRow(row)
+        return True
+    else:
+        return False
+
+
+def change_string_in_table(table):
+    '''Изменение строки таблицы'''
+    selected_values = table.selectedItems()
+    if not selected_values:
+        return
+
+    # Get the row index of the selected items
+    row = selected_values[0].row()
+
+    # Create a list to store the values to be displayed in the popup menu
+    popup_menu_values = [item.text() for item in selected_values]
+
+    # Display the popup menu with the updated values
+    # (assuming you have a function to display the popup menu)
+    display_popup_menu(popup_menu_values)
+
+    # Update the table with the new values
+    for col, item in enumerate(selected_values):
+        table.setItem(row, col, QTableWidgetItem(item.text()))
+
+def display_popup_menu(lst):
+    '''отображение строки в возникающем меню для возможности изменения строки'''
+    for item in lst:
+        #установка в ячейку каждого меню соответствующего значения
+        pass
 
 
 def prepare_tables():
-
     create_database()
 
     create_table_tp_nir()
@@ -341,4 +404,8 @@ def prepare_tables():
     make_correct_cod_grnti()
     input_short_name_from_vuz()
     fill_tp_fv()
+
+
+
+
 
