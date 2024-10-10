@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, QL
 
 from PyQt6.QtSql import *
 from PyQt6 import QtWidgets, QtCore, uic
-from db import prepare_tables, connect_db
+from db import *
 
 
 
@@ -73,15 +73,23 @@ def filter_by_cod_grnti():
         if conn:
             conn.close()
 
-prepare_tables()
-
+name_list=column()
+code_list=codes()
+#prepare_tables()
+#[str(i) + ' ' + var for var, i in zip(name_list, range(1,100))]
 
 app = QApplication([])
 window = Window()
 form = Form()
 form.setupUi(window)
 
-
+def connect_db(db_name_name):
+    db_name = QSqlDatabase.addDatabase('QSQLITE')
+    db_name.setDatabaseName(db_name_name)
+    if not db_name.open():
+        print('не удалось подключиться к базе')
+        return False
+    return db_name
 
 if not connect_db(db_name):
     sys.exit(-1)
@@ -108,76 +116,90 @@ form.tableView.setSortingEnabled(True)
 form.tableView.horizontalHeader().setStretchLastSection(True)
 form.tableView.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 #form.widget.
-form.add_widget.setVisible(False)
-form.VUZ_add_widget.setVisible(False)
-form.Tp_nir_add_widget.setVisible(False)
-form.grntirub_add_widget.setVisible(False)
-form.Tp_fv_add_widget.setVisible(False)
-form.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+form.Tp_nir_redact_widget.setVisible(False)
 
+form.add_confirm_widget.setVisible(False)
+form.redact_confirm_widget.setVisible(False)
+form.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+form.stackedWidget.setCurrentWidget(form.page)
 
 def table_show_VUZ():
     form.tableView.setModel(VUZ)
-    table_model='VUZ'
+    form.Tp_nir_redact_widget.setVisible(False)
 
 def table_show_Tp_nir():
     form.tableView.setModel(Tp_nir)
-    table_model = 'Tp_nir'
+    form.Tp_nir_redact_widget.setVisible(True)
 
 def table_show_grntirub():
     form.tableView.setModel(grntirub)
-    table_model = 'grntirub'
+    form.Tp_nir_redact_widget.setVisible(False)
 
 def table_show_Tp_fv():
     form.tableView.setModel(Tp_fv)
-    table_model = 'Tp_fv'
+    form.Tp_nir_redact_widget.setVisible(False)
 
-def add_widget_switch():
-    form.add_widget.setVisible(not form.add_widget.isVisible())
+def selectRows():
+    form.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+
+def selectColums():
+    form.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectColumns)
+
+def selectItems():
+    form.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
+
+def add_widget():
+    form.stackedWidget.setCurrentWidget(form.page_add_widget)
+
+def redact_widget():
+    form.stackedWidget.setCurrentWidget(form.page_redact_widget)
 
 def close_add_widget():
-    form.add_widget.setVisible(False)
+    form.stackedWidget.setCurrentWidget(form.page)
 
-def add_widget_refresh():
-    while True:
-        if (form.add_tableChoice_comboBox.currentIndex() ==1):
-            form.VUZ_add_widget.setVisible(True)
-            form.Tp_nir_add_widget.setVisible(False)
-            form.grntirub_add_widget.setVisible(False)
-            form.Tp_fv_add_widget.setVisible(False)
-        if (form.add_tableChoice_comboBox.currentIndex() ==2):
-            form.VUZ_add_widget.setVisible(False)
-            form.Tp_nir_add_widget.setVisible(True)
-            form.grntirub_add_widget.setVisible(False)
-            form.Tp_fv_add_widget.setVisible(False)
-        if (form.add_tableChoice_comboBox.currentIndex() ==3):
-            form.VUZ_add_widget.setVisible(False)
-            form.Tp_nir_add_widget.setVisible(False)
-            form.grntirub_add_widget.setVisible(True)
-            form.Tp_fv_add_widget.setVisible(False)
-        if (form.add_tableChoice_comboBox.currentIndex() ==4):
-            form.VUZ_add_widget.setVisible(False)
-            form.Tp_nir_add_widget.setVisible(False)
-            form.grntirub_add_widget.setVisible(False)
-            form.Tp_fv_add_widget.setVisible(True)
-        break
+def close_redact_widget():
+    form.stackedWidget.setCurrentWidget(form.page)
+
+def save_add_widget():
+    form.add_confirm_widget.setVisible(True)
+
+def save_redact_widget():
+    form.redact_confirm_widget.setVisible(True)
+
+def close_add_confirm():
+    form.add_confirm_widget.setVisible(False)
+    form.stackedWidget.setCurrentWidget(form.page)
+
+def close_redact_confirm():
+    form.redact_confirm_widget.setVisible(False)
+    form.stackedWidget.setCurrentWidget(form.page)
+
+
 
 form.action_show_VUZ.triggered.connect(table_show_VUZ)
 form.action_show_Tp_nir.triggered.connect(table_show_Tp_nir)
 form.action_show_grntirub.triggered.connect(table_show_grntirub)
 form.action_show_Tp_fv.triggered.connect(table_show_Tp_fv)
-form.action_add.triggered.connect(add_widget_switch)
-form.add_widget_close_pushButton1.clicked.connect(close_add_widget)
-form.add_widget_close_pushButton2.clicked.connect(close_add_widget)
-form.add_widget_close_pushButton3.clicked.connect(close_add_widget)
-form.add_widget_close_pushButton4.clicked.connect(close_add_widget)
-form.Tp_nir_add_grntiNature_comboBox.addItems(["-Выберите характер НИР-", "П", "Р", "Ф"])
-form.add_tableChoice_comboBox.addItems(["-Выберите таблицу-","VUZ","Tp_nir","grntirub","Tp_fv"])
-form.VUZ_add_VUZtype_comboBox.addItems(["-Выберите тип учебного заведения-"," ","ФУ","ПСР","НИУ"])
-form.VUZ_add_profile_comboBox.addItems(["-Выберите профиль ВУЗа-"," ","МП","КЛ","ИТ","ГП"])
-form.add_widget_reload_pushButton.clicked.connect(add_widget_refresh)
+form.Tp_nir_add_grntiNature_comboBox.addItems(["П", "Р", "Ф"])
+form.Select_rows_action.triggered.connect(selectRows)
+form.Select_columns_action.triggered.connect(selectColums)
+form.Select_items_action.triggered.connect(selectItems)
+form.add_widget_open_pushButton.clicked.connect(add_widget)
+form.redact_widget_open_pushButton.clicked.connect(redact_widget)
+form.add_widget_close_pushButton.clicked.connect(close_add_widget)
+form.redact_widget_close_pushButton.clicked.connect(close_redact_widget)
+form.Tp_nir_add_widget_saveButton.clicked.connect(save_add_widget)
+form.redact_widget_saveButton.clicked.connect(save_redact_widget)
+form.close_add_confirm_pushButton.clicked.connect(close_add_confirm)
+form.close_redact_confirm_pushButton.clicked.connect(close_redact_confirm)
+form.Tp_nir_add_VUZcode_name_comboBox.addItems([str(i) + ' ' + var for var, i in zip(name_list, code_list)] )
 
 
+#form.action_.triggered.connect()
+#form.action_.triggered.connect()
+#form.action_.triggered.connect()
+#form.action_.triggered.connect()
+#form.action_.triggered.connect()
 
 
 window.show()
