@@ -30,7 +30,7 @@
      <string notr="true">background-color: rgb(240, 240, 240);</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView">
@@ -174,7 +174,7 @@
         <string>Отменить</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_12">
+      <widget class="QLabel" name="cod">
        <property name="geometry">
         <rect>
          <x>1140</x>
@@ -187,7 +187,7 @@
         <string>Код ВУЗа/название ВУЗа</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_13">
+      <widget class="QLabel" name="num_nir">
        <property name="geometry">
         <rect>
          <x>1140</x>
@@ -200,7 +200,7 @@
         <string>Номер НИР</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_14">
+      <widget class="QLabel" name="character">
        <property name="geometry">
         <rect>
          <x>1140</x>
@@ -213,7 +213,7 @@
         <string>Характер НИР</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_16">
+      <widget class="QLabel" name="prepod_name">
        <property name="geometry">
         <rect>
          <x>1140</x>
@@ -226,7 +226,7 @@
         <string>Руководитель НИР</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_17">
+      <widget class="QLabel" name="grnti_cod">
        <property name="geometry">
         <rect>
          <x>1140</x>
@@ -239,7 +239,7 @@
         <string>Коды ГРНТИ</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_18">
+      <widget class="QLabel" name="name_nir">
        <property name="geometry">
         <rect>
          <x>1140</x>
@@ -252,7 +252,7 @@
         <string>Название НИР</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_19">
+      <widget class="QLabel" name="prepod_job">
        <property name="geometry">
         <rect>
          <x>1140</x>
@@ -265,7 +265,7 @@
         <string>Должность руководителя НИР</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_20">
+      <widget class="QLabel" name="plan_fin">
        <property name="geometry">
         <rect>
          <x>1140</x>
@@ -287,7 +287,7 @@
          <height>221</height>
         </rect>
        </property>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="save_add_confrm_pushButton">
         <property name="geometry">
          <rect>
           <x>40</x>
@@ -709,7 +709,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="widget_del_pushButton">
          <property name="sizeIncrement">
           <size>
            <width>0</width>
@@ -725,7 +725,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_4">
+        <widget class="QPushButton" name="widget_filter_grnti_cod_pushButton">
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -735,12 +735,12 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_5">
+        <widget class="QPushButton" name="widget_hard_filter_pushButton">
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="text">
-          <string>СЛОЖНЫЕ ФИЛЬТРЫ</string>
+          <string>СЛОЖНЫЙ ФИЛЬТР</string>
          </property>
         </widget>
        </item>
@@ -757,7 +757,7 @@
      <x>0</x>
      <y>0</y>
      <width>1402</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_1">

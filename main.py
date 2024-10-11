@@ -41,7 +41,12 @@ def input_cod_grnti(table):
             break
 
 def add_delimiters_to_grnti_code(string):
-    return "{}.{}.{}".format(string[:2], string[2:4], string[4:])
+    if len(string) == 2:
+        return "{}.".format(string)
+    elif len(string) == 4:
+        return "{}.{}".format(string[:2], string[2:])
+    else:
+        return "{}.{}.{}".format(string[:2], string[2:4], string[4:])
 
 def show_error_message(message):
     msg_box = QMessageBox()
@@ -50,32 +55,30 @@ def show_error_message(message):
 
 def filter_by_cod_grnti():
     try:
-        conn = sqlite3.connect(db_name)
-        c = conn.cursor()
-
         while True:
-            str_cod, ok = QInputDialog.getText(None, "Введите значение", 'Введите весь код ГРНТИ или его часть без разделителей и пробелов')
-            if not ok or str_cod is None or str_cod.isalpha():
+            str_cod, ok = QInputDialog.getText(None, "Введите значение",
+                                               'Введите весь код ГРНТИ или его часть без разделителей и пробелов')
+            if not ok:
+                return
+            if str_cod is None or str_cod.isalpha():
                 QMessageBox.warning(None, "Ошибка", "Неправильное значение. Пожалуйста, введите численные значения.")
                 return
             else:
                 break
-
+        str_cod = str_cod.strip()
         str_cod = add_delimiters_to_grnti_code(str_cod)
-        model = QSqlQueryModel()
-        query = "SELECT * FROM Tp_nir WHERE `Коды_ГРНТИ` LIKE '%" + str_cod + "%'"
-        model.setQuery(query)
-        form.tableView.setModel(model)
+        query = f' "Коды_ГРНТИ" LIKE "{str_cod}%" OR "Коды_ГРНТИ" LIKE ";{str_cod}%" '
+        Tp_nir.setFilter(query)
+        Tp_nir.select()
+        form.tableView.setModel(Tp_nir)
+        form.tableView.reset()
         form.tableView.show()
-    except sqlite3.Error as e:
+    except Exception as e:
         QMessageBox.critical(None, "Ошибка", "Ошибка при фильтрации: {}".format(e))
-    finally:
-        if conn:
-            conn.close()
 
 name_list=column()
 code_list=codes()
-#prepare_tables()
+prepare_tables()
 #[str(i) + ' ' + var for var, i in zip(name_list, range(1,100))]
 
 app = QApplication([])
@@ -194,6 +197,11 @@ form.close_add_confirm_pushButton.clicked.connect(close_add_confirm)
 form.close_redact_confirm_pushButton.clicked.connect(close_redact_confirm)
 form.Tp_nir_add_VUZcode_name_comboBox.addItems([str(i) + ' ' + var for var, i in zip(name_list, code_list)] )
 
+
+
+#form.widget_del_pushButton.clicked.connect(delete_row)
+form.widget_filter_grnti_cod_pushButton.clicked.connect(filter_by_cod_grnti)
+form.widget_hard_filter_pushButton.clicked.connect(hard_filter)
 
 #form.action_.triggered.connect()
 #form.action_.triggered.connect()

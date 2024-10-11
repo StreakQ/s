@@ -21,11 +21,6 @@ def connect_db(db_name_name):
         return False
     return db_name
 
-# if not connect_db(db_name):
-#     sys.exit(-1)
-# else:
-#     print('Connection OK')
-
 
 def create_table_tp_nir():
     conn = sqlite3.connect(db_name)
@@ -299,50 +294,24 @@ def get_column_name_with_linked_value(value):
     return None
 
 def hard_filter(selected_value):
-    '''Фильтрация по области, оркругу, городу, вузу'''
-    #selected_value - это значение, выбранное из выпадающего  меню в GUI и переданное в функцию
-    # получение из GUI selected_value
-
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
-    column_name = get_column_name_with_linked_value(selected_value)
-    c.execute(f'''CREATE VIEW table_1 AS
-                        SELECT * 
-                        FROM Tp_fv
-                        INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код" 
-                        WHERE {column_name} = ?''', selected_value)
-    rows = c.fetchall()
 
-    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
-    # получение нового selected_value и  column_name из GUI
     column_name = get_column_name_with_linked_value(selected_value)
-    c.execute(f'''CREATE VIEW table_2 AS
-                            SELECT * 
-                            FROM table_1
-                            INNER JOIN VUZ ON VUZ."Код" = table_1."Код" 
-                            WHERE {column_name} = ?''', selected_value)
-    rows = c.fetchall()
 
-    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
-    # получение нового selected_value и  column_name из GUI
-    column_name = get_column_name_with_linked_value(selected_value)
-    c.execute(f'''CREATE VIEW table_3 AS
-                               SELECT * 
-                               FROM table_2
-                               INNER JOIN VUZ ON VUZ."Код" = table_2."Код" 
-                               WHERE {column_name} = ?''', selected_value)
-    rows = c.fetchall()
+    query = '''
+        SELECT *
+        FROM Tp_fv
+        INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
+        WHERE {} = ?
+    '''.format(column_name)
 
-    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
-    # получение нового selected_value и  column_name из GUI
-    column_name = get_column_name_with_linked_value(selected_value)
-    c.execute(f'''
-                               SELECT * 
-                               FROM table_3
-                               INNER JOIN VUZ ON VUZ."Код" = table_3."Код" 
-                               WHERE {column_name} = ?''', selected_value)
-    rows = c.fetchall()
-    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
+    c.execute(query, (selected_value,))
+
+    model = QSqlQueryModel()
+    model.setQuery(c)
+    tableView.setModel(model)
+
     conn.commit()
     conn.close()
 
@@ -361,31 +330,22 @@ def delete_string_in_table(table):
         return False
 
 
-def change_string_in_table(table):
-    '''Изменение строки таблицы'''
-    selected_values = table.selectedItems()
-    if not selected_values:
-        return
-
-    # Get the row index of the selected items
-    row = selected_values[0].row()
-
-    # Create a list to store the values to be displayed in the popup menu
-    popup_menu_values = [item.text() for item in selected_values]
-
-    # Display the popup menu with the updated values
-    # (assuming you have a function to display the popup menu)
-    display_popup_menu(popup_menu_values)
-
-    # Update the table with the new values
-    for col, item in enumerate(selected_values):
-        table.setItem(row, col, QTableWidgetItem(item.text()))
-
-def display_popup_menu(lst):
-    '''отображение строки в возникающем меню для возможности изменения строки'''
-    for item in lst:
-        #установка в ячейку каждого меню соответствующего значения
-        pass
+# def change_string_in_table(table):
+#     '''Изменение строки таблицы'''
+#     selected_values = table.selectedItems()
+#     if not selected_values:
+#         return
+#     row = selected_values[0].row()
+#     popup_menu_values = [item.text() for item in selected_values]
+#     display_popup_menu(popup_menu_values)
+#     for col, item in enumerate(selected_values):
+#         table.setItem(row, col, QTableWidgetItem(item.text()))
+#
+# def display_popup_menu(lst):
+#     '''отображение строки в возникающем меню для возможности изменения строки'''
+#     for item in lst:
+#         #установка в ячейку каждого меню соответствующего значения
+#         pass
 
 
 def prepare_tables():
