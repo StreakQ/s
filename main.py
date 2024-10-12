@@ -4,7 +4,8 @@ import csv
 import re
 import sys
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QAbstractItemView,
-                             QTableWidget, QInputDialog, QTableWidgetItem, QTextEdit, QMenu, QComboBox, QMessageBox)
+                             QTableWidget, QInputDialog, QTableWidgetItem, QTextEdit, QMenu, QComboBox,
+                             QMessageBox)
 from PyQt6.QtCore import Qt
 from PyQt6.QtSql import *
 from PyQt6 import QtWidgets, QtCore, uic
@@ -207,12 +208,68 @@ def close_redact_confirm():
 Tp_nir_redact_VUZcode_textEdit = QTextEdit()
 Tp_nir_redact_VUZshortName_textEdit = QTextEdit()
 Tp_nir_add_grntiNature_comboBox_2 = QComboBox()
+Tp_nir_add_grntiNature_comboBox_2.addItem("П - Природное")
+Tp_nir_add_grntiNature_comboBox_2.setItemData(0, "П")
+Tp_nir_add_grntiNature_comboBox_2.addItem("Р - Развивающее")
+Tp_nir_add_grntiNature_comboBox_2.setItemData(1, "Р")
+Tp_nir_add_grntiNature_comboBox_2.addItem("Ф - Фундаментальное")
+Tp_nir_add_grntiNature_comboBox_2.setItemData(2, "Ф")
 Tp_nir_add_grntiCode_textEdit_2 = QTextEdit()
 Tp_nir_add_grntiName_textEdit_2 = QTextEdit()
 Tp_nir_add_grntiHead_textEdit_2 = QTextEdit()
 Tp_nir_add_grntiHeadPost_textEdit_2 = QTextEdit()
 Tp_nir_add_plannedFinancing_textEdit_2 = QTextEdit()
 Tp_nir_add_grntiHead = QTextEdit()
+
+
+def save_data():
+    # Получаем данные из текстовых полей
+    grnti_code = form.Tp_nir_add_grntiCode_textEdit.toPlainText()
+    grnti_head_post = form.Tp_nir_add_grntiHeadPost_textEdit.toPlainText()
+    grnti_number = form.Tp_nir_add_grntiNumber_textEdit.toPlainText()
+    vuz_code = form.Tp_nir_add_VUZcode_name_comboBox.currentText()
+    planned_financing = form.Tp_nir_add_plannedFinancing_textEdit.toPlainText()
+    grnti_head = form.Tp_nir_add_grntiHead_textEdit.toPlainText()
+    grnti_name = form.Tp_nir_add_grntiName_textEdit.toPlainText()
+    grnti_nature = form.Tp_nir_add_grntiNature_comboBox.currentText()
+
+    # Проверка на пустые поля
+    if not all([grnti_code, grnti_head_post, grnti_number, vuz_code, planned_financing, grnti_head, grnti_name,
+                grnti_nature]):
+        show_error_message("Пожалуйста, заполните все поля.")
+        return
+
+    # Здесь можно добавить код для сохранения данных в базу данных
+    try:
+        query = QSqlQuery()
+        query.prepare(
+            "INSERT INTO Tp_nir (Коды_ГРНТИ, Заголовок, Номер, Код_ВУЗ, Плановое_финансирование, Заголовок_ГРНТИ, "
+            "Имя_ГРНТИ, Природа_ГРНТИ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+        query.addBindValue(grnti_code)
+        query.addBindValue(grnti_head_post)
+        query.addBindValue(grnti_number)
+        query.addBindValue(vuz_code)
+        query.addBindValue(planned_financing)
+        query.addBindValue(grnti_head)
+        query.addBindValue(grnti_name)
+        query.addBindValue(grnti_nature)
+
+        if not query.exec():
+            raise Exception("Ошибка выполнения запроса: {}".format(query.lastError().text()))
+
+        # Обновляем таблицу в GUI
+        Tp_nir.select()
+        form.tableView.setModel(Tp_nir)
+        form.tableView.reset()
+        form.tableView.show()
+
+        # Скрываем окно подтверждения
+        form.add_confirm_widget.setVisible(False)
+        form.stackedWidget.setCurrentWidget(form.page)
+
+        QMessageBox.information(None, "Успех", "Данные успешно сохранены.")
+    except Exception as e:
+        show_error_message(f"Ошибка при сохранении данных: {e}")
 
 def edit_row(tableView, edit_button, Tp_nir_redact_VUZcode_textEdit, Tp_nir_redact_VUZshortName_textEdit,
              Tp_nir_add_grntiNumber_textEdit_2, Tp_nir_add_grntiNature_comboBox_2,
@@ -280,28 +337,23 @@ def fill_edit_menu(data, Tp_nir_redact_VUZcode_textEdit, Tp_nir_redact_VUZshortN
                    Tp_nir_add_grntiHeadPost_textEdit_2, Tp_nir_add_plannedFinancing_textEdit_2):
     # Fill the edit menu with the data
     Tp_nir_redact_VUZcode_textEdit.setText(str(data[0]))
-    Tp_nir_redact_VUZshortName_textEdit.setText(str(data[1]))
-    Tp_nir_add_grntiNumber_textEdit_2.setText(str(data[2]))
-    Tp_nir_add_grntiNature_comboBox_2.setCurrentText(str(data[3]))
+    Tp_nir_redact_VUZshortName_textEdit.setText(str(data[3]))
+    Tp_nir_add_grntiNumber_textEdit_2.setText(str(data[1]))
+    Tp_nir_add_grntiNature_comboBox_2.setCurrentText(str(data[2]))
     Tp_nir_add_grntiHead_textEdit_2.setText(str(data[4]))
     Tp_nir_add_grntiCode_textEdit_2.setText(str(data[5]))
     Tp_nir_add_grntiName_textEdit_2.setText(str(data[6]))
-    Tp_nir_add_grntiHead_textEdit.setText(str(data[7]))
-    Tp_nir_add_grntiHeadPost_textEdit_2.setText(str(data[8]))
-
-    # Check if data has at least 10 elements
-    if len(data) >= 10:
-        Tp_nir_add_plannedFinancing_textEdit_2.setText(str(data[9]))
-    else:
-        Tp_nir_add_plannedFinancing_textEdit_2.setText("")
+    Tp_nir_add_grntiHeadPost_textEdit_2.setText(str(data[7]))
+    Tp_nir_add_plannedFinancing_textEdit_2.setText(str(data[8]))
 
 
 
+
+form.save_add_confrm_pushButton.clicked.connect(save_data)
 form.action_show_VUZ.triggered.connect(table_show_VUZ)
 form.action_show_Tp_nir.triggered.connect(table_show_Tp_nir)
 form.action_show_grntirub.triggered.connect(table_show_grntirub)
 form.action_show_Tp_fv.triggered.connect(table_show_Tp_fv)
-form.Tp_nir_add_grntiNature_comboBox.addItems(["П", "Р", "Ф"])
 form.Select_rows_action.triggered.connect(selectRows)
 form.Select_columns_action.triggered.connect(selectColums)
 form.Select_items_action.triggered.connect(selectItems)

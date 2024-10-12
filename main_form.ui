@@ -51,8 +51,8 @@
      <widget class="QWidget" name="Tp_nir_add_widget" native="true">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>10</y>
+        <x>-10</x>
+        <y>-20</y>
         <width>1381</width>
         <height>651</height>
        </rect>
@@ -115,7 +115,7 @@
          <x>20</x>
          <y>230</y>
          <width>1101</width>
-         <height>31</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -126,7 +126,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>270</y>
+         <y>290</y>
          <width>1101</width>
          <height>31</height>
         </rect>
@@ -139,7 +139,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>310</y>
+         <y>330</y>
          <width>1101</width>
          <height>31</height>
         </rect>
@@ -151,8 +151,8 @@
       <widget class="QPushButton" name="Tp_nir_add_widget_saveButton">
        <property name="geometry">
         <rect>
-         <x>20</x>
-         <y>400</y>
+         <x>30</x>
+         <y>390</y>
          <width>93</width>
          <height>28</height>
         </rect>
@@ -165,7 +165,7 @@
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>400</y>
+         <y>390</y>
          <width>93</width>
          <height>28</height>
         </rect>
@@ -256,7 +256,7 @@
        <property name="geometry">
         <rect>
          <x>1140</x>
-         <y>270</y>
+         <y>290</y>
          <width>191</width>
          <height>31</height>
         </rect>
@@ -269,7 +269,7 @@
        <property name="geometry">
         <rect>
          <x>1140</x>
-         <y>310</y>
+         <y>330</y>
          <width>191</width>
          <height>31</height>
         </rect>
@@ -281,8 +281,8 @@
       <widget class="QWidget" name="add_confirm_widget" native="true">
        <property name="geometry">
         <rect>
-         <x>420</x>
-         <y>350</y>
+         <x>480</x>
+         <y>380</y>
          <width>361</width>
          <height>221</height>
         </rect>
