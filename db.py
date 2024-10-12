@@ -2,8 +2,8 @@ import os
 import sqlite3
 import csv
 from PyQt6.QtSql import *
-from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
-
+from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem, QTextEdit
+from PyQt6.QtCore import Qt
 
 db_name = 'databases//database.db'
 
@@ -15,13 +15,12 @@ def create_database():
     conn.close()
 
 def connect_db(db_name_name):
-    db_name = QSqlDatabase.addDatabase('QSQLITE')
-    db_name.setDatabaseName(db_name_name)
-    if not db_name.open():
+    db = QSqlDatabase.addDatabase('QSQLITE')
+    db.setDatabaseName(db_name_name)
+    if not db.open():
         print('не удалось подключиться к базе')
         return False
-    return db_name
-
+    return db
 
 def create_table_tp_nir():
     conn = sqlite3.connect(db_name)
@@ -227,9 +226,6 @@ def input_short_name_from_vuz():
     conn.commit()
     conn.close()
 
-
-
-
 def fill_tp_fv():
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
@@ -294,26 +290,38 @@ def get_column_name_with_linked_value(value):
             conn.close()
     return None
 
-def hard_filter(selected_value):
+def hard_filter(selected_values):
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
 
-    column_name = get_column_name_with_linked_value(selected_value)
+    previous_results = None
+    for selected_value in selected_values:
+        column_name = get_column_name_with_linked_value(selected_value)
 
-    query = '''
-        SELECT *
-        FROM Tp_fv
-        INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
-        WHERE {} = ?
-    '''.format(column_name)
+        if previous_results is None:
+            query = '''
+                SELECT *
+                FROM Tp_fv
+                INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
+                WHERE {} = ?
+            '''.format(column_name)
+        else:
+            query = '''
+                SELECT *
+                FROM ({}) AS prev
+                INNER JOIN Tp_fv ON prev."Код" = Tp_fv."Код"
+                INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
+                WHERE {} = ?
+            '''.format(previous_results, column_name)
 
-    c.execute(query, (selected_value,))
+        c.execute(query, (selected_value,))
 
-    model = QSqlQueryModel()
-    model.setQuery(c)
-    tableView.setModel(model)
+        model = QSqlQueryModel()
+        model.setQuery(c)
+        tableView.setModel(model)
 
-    conn.commit()
+        previous_results = c.fetchall()
+
     conn.close()
 
 def delete_string_in_table(table_view, table_model):
@@ -333,24 +341,6 @@ def delete_string_in_table(table_view, table_model):
         print(f"An error occurred: {e}")
     return False
 
-# def change_string_in_table(table):
-#     '''Изменение строки таблицы'''
-#     selected_values = table.selectedItems()
-#     if not selected_values:
-#         return
-#     row = selected_values[0].row()
-#     popup_menu_values = [item.text() for item in selected_values]
-#     display_popup_menu(popup_menu_values)
-#     for col, item in enumerate(selected_values):
-#         table.setItem(row, col, QTableWidgetItem(item.text()))
-#
-# def display_popup_menu(lst):
-#     '''отображение строки в возникающем меню для возможности изменения строки'''
-#     for item in lst:
-#         #установка в ячейку каждого меню соответствующего значения
-#         pass
-
-
 def prepare_tables():
     create_database()
 
@@ -367,8 +357,6 @@ def prepare_tables():
     make_correct_cod_grnti()
     input_short_name_from_vuz()
     fill_tp_fv()
-
-
 
 def codes():
     conn = sqlite3.connect('databases//database.db')
@@ -389,4 +377,3 @@ def column():
     #print(name_list)
     conn.close()
     return name_list
-

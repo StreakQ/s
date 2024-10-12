@@ -30,7 +30,7 @@
      <string notr="true">background-color: rgb(240, 240, 240);</string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView">
@@ -281,8 +281,8 @@
       <widget class="QWidget" name="add_confirm_widget" native="true">
        <property name="geometry">
         <rect>
-         <x>400</x>
-         <y>150</y>
+         <x>420</x>
+         <y>350</y>
          <width>361</width>
          <height>221</height>
         </rect>
@@ -621,8 +621,8 @@
       <widget class="QWidget" name="redact_confirm_widget" native="true">
        <property name="geometry">
         <rect>
-         <x>470</x>
-         <y>150</y>
+         <x>510</x>
+         <y>390</y>
          <width>371</width>
          <height>231</height>
         </rect>

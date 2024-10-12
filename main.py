@@ -4,17 +4,15 @@ import csv
 import re
 import sys
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QAbstractItemView,
-                             QTableWidget,QInputDialog, QTableWidgetItem, QMenu, QMessageBox)
+                             QTableWidget, QInputDialog, QTableWidgetItem, QTextEdit, QMenu, QComboBox, QMessageBox)
 from PyQt6.QtCore import Qt
 from PyQt6.QtSql import *
 from PyQt6 import QtWidgets, QtCore, uic
 from db import *
-
-
+from PyQt6.QtCore import QItemSelectionModel
 
 Form, Window = uic.loadUiType('main_form.ui')
 db_name = 'databases//database.db'
-
 
 def input_cod_grnti(table):
     print("Функция input_cod_grnti вызвана")
@@ -63,7 +61,6 @@ def input_cod_grnti(table):
                 print(f"Ошибка установки элемента: {e}")
             break
 
-
 def add_delimiters_to_grnti_code(string):
     if len(string) == 2:
         return "{}.".format(string)
@@ -100,10 +97,8 @@ def filter_by_cod_grnti():
     except Exception as e:
         QMessageBox.critical(None, "Ошибка", "Ошибка при фильтрации: {}".format(e))
 
-name_list=column()
-code_list=codes()
-#prepare_tables()
-#[str(i) + ' ' + var for var, i in zip(name_list, range(1,100))]
+name_list = column()
+code_list = codes()
 
 app = QApplication([])
 window = Window()
@@ -111,12 +106,12 @@ form = Form()
 form.setupUi(window)
 
 def connect_db(db_name_name):
-    db_name = QSqlDatabase.addDatabase('QSQLITE')
-    db_name.setDatabaseName(db_name_name)
-    if not db_name.open():
+    db = QSqlDatabase.addDatabase('QSQLITE')
+    db.setDatabaseName(db_name)
+    if not db.open():
         print('не удалось подключиться к базе')
         return False
-    return db_name
+    return db
 
 if not connect_db(db_name):
     sys.exit(-1)
@@ -142,7 +137,6 @@ Tp_fv.select()
 form.tableView.setSortingEnabled(True)
 form.tableView.horizontalHeader().setStretchLastSection(True)
 form.tableView.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-#form.widget.
 form.Tp_nir_redact_widget.setVisible(False)
 
 form.add_confirm_widget.setVisible(False)
@@ -151,18 +145,26 @@ form.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRo
 form.stackedWidget.setCurrentWidget(form.page)
 
 def table_show_VUZ():
+    if form.tableView.model() is not None:
+        form.tableView.model().deleteLater()
     form.tableView.setModel(VUZ)
     form.Tp_nir_redact_widget.setVisible(False)
 
 def table_show_Tp_nir():
+    if form.tableView.model() is not None:
+        form.tableView.model().deleteLater()
     form.tableView.setModel(Tp_nir)
     form.Tp_nir_redact_widget.setVisible(True)
 
 def table_show_grntirub():
+    if form.tableView.model() is not None:
+        form.tableView.model().deleteLater()
     form.tableView.setModel(grntirub)
     form.Tp_nir_redact_widget.setVisible(False)
 
 def table_show_Tp_fv():
+    if form.tableView.model() is not None:
+        form.tableView.model().deleteLater()
     form.tableView.setModel(Tp_fv)
     form.Tp_nir_redact_widget.setVisible(False)
 
@@ -202,6 +204,98 @@ def close_redact_confirm():
     form.stackedWidget.setCurrentWidget(form.page)
 
 
+Tp_nir_redact_VUZcode_textEdit = QTextEdit()
+Tp_nir_redact_VUZshortName_textEdit = QTextEdit()
+Tp_nir_add_grntiNature_comboBox_2 = QComboBox()
+Tp_nir_add_grntiCode_textEdit_2 = QTextEdit()
+Tp_nir_add_grntiName_textEdit_2 = QTextEdit()
+Tp_nir_add_grntiHead_textEdit_2 = QTextEdit()
+Tp_nir_add_grntiHeadPost_textEdit_2 = QTextEdit()
+Tp_nir_add_plannedFinancing_textEdit_2 = QTextEdit()
+Tp_nir_add_grntiHead = QTextEdit()
+
+def edit_row(tableView, edit_button, Tp_nir_redact_VUZcode_textEdit, Tp_nir_redact_VUZshortName_textEdit,
+             Tp_nir_add_grntiNumber_textEdit_2, Tp_nir_add_grntiNature_comboBox_2,
+             Tp_nir_add_grntiHead_textEdit_2, Tp_nir_add_grntiCode_textEdit_2,
+             Tp_nir_add_grntiName_textEdit_2, Tp_nir_add_grntiHead_textEdit,
+             Tp_nir_add_grntiHeadPost_textEdit_2, Tp_nir_add_plannedFinancing_textEdit_2):
+    print("Edit row function called")
+    print("TableView:", tableView)
+    print("TableView model:", tableView.model())
+
+    if tableView is None:
+        print("Ошибка: tableView is None")
+        return
+
+    if tableView.model() is None:
+        print("Ошибка: модель таблицы не установлена")
+        return
+
+    print("Model is set, proceeding...")
+    selection_model = tableView.selectionModel()
+    if selection_model is None:
+        print("Ошибка: selection_model is None")
+        return
+
+    selected_row = tableView.selectedIndexes()
+    if selected_row is None:
+        print("Ошибка: selected_row is None")
+        return
+
+    data = []
+    for index in selected_row:
+        if index is None:
+            print("Ошибка: index is None")
+            return
+        data.append(index.data())
+
+    fill_edit_menu(data, Tp_nir_redact_VUZcode_textEdit, Tp_nir_redact_VUZshortName_textEdit,
+                   Tp_nir_add_grntiNumber_textEdit_2, Tp_nir_add_grntiNature_comboBox_2,
+                   Tp_nir_add_grntiHead_textEdit_2, Tp_nir_add_grntiCode_textEdit_2,
+                   Tp_nir_add_grntiName_textEdit_2, Tp_nir_add_grntiHead_textEdit,
+                   Tp_nir_add_grntiHeadPost_textEdit_2, Tp_nir_add_plannedFinancing_textEdit_2)
+
+
+
+form.redact_widget_open_pushButton.clicked.connect(lambda: edit_row(
+    tableView=form.tableView,
+    edit_button=form.redact_widget_open_pushButton,
+    Tp_nir_redact_VUZcode_textEdit=form.Tp_nir_redact_VUZcode_textEdit,
+    Tp_nir_redact_VUZshortName_textEdit=form.Tp_nir_redact_VUZshortName_textEdit,
+    Tp_nir_add_grntiNumber_textEdit_2=form.Tp_nir_add_grntiNumber_textEdit_2,
+    Tp_nir_add_grntiNature_comboBox_2=form.Tp_nir_add_grntiNature_comboBox_2,
+    Tp_nir_add_grntiHead_textEdit_2=form.Tp_nir_add_grntiHead_textEdit_2,
+    Tp_nir_add_grntiCode_textEdit_2=form.Tp_nir_add_grntiCode_textEdit_2,
+    Tp_nir_add_grntiName_textEdit_2=form.Tp_nir_add_grntiName_textEdit_2,
+    Tp_nir_add_grntiHead_textEdit=form.Tp_nir_add_grntiHead_textEdit,
+    Tp_nir_add_grntiHeadPost_textEdit_2=form.Tp_nir_add_grntiHeadPost_textEdit_2,
+    Tp_nir_add_plannedFinancing_textEdit_2=form.Tp_nir_add_plannedFinancing_textEdit_2
+))
+
+
+def fill_edit_menu(data, Tp_nir_redact_VUZcode_textEdit, Tp_nir_redact_VUZshortName_textEdit,
+                   Tp_nir_add_grntiNumber_textEdit_2, Tp_nir_add_grntiNature_comboBox_2,
+                   Tp_nir_add_grntiHead_textEdit_2, Tp_nir_add_grntiCode_textEdit_2,
+                   Tp_nir_add_grntiName_textEdit_2, Tp_nir_add_grntiHead_textEdit,
+                   Tp_nir_add_grntiHeadPost_textEdit_2, Tp_nir_add_plannedFinancing_textEdit_2):
+    # Fill the edit menu with the data
+    Tp_nir_redact_VUZcode_textEdit.setText(str(data[0]))
+    Tp_nir_redact_VUZshortName_textEdit.setText(str(data[1]))
+    Tp_nir_add_grntiNumber_textEdit_2.setText(str(data[2]))
+    Tp_nir_add_grntiNature_comboBox_2.setCurrentText(str(data[3]))
+    Tp_nir_add_grntiHead_textEdit_2.setText(str(data[4]))
+    Tp_nir_add_grntiCode_textEdit_2.setText(str(data[5]))
+    Tp_nir_add_grntiName_textEdit_2.setText(str(data[6]))
+    Tp_nir_add_grntiHead_textEdit.setText(str(data[7]))
+    Tp_nir_add_grntiHeadPost_textEdit_2.setText(str(data[8]))
+
+    # Check if data has at least 10 elements
+    if len(data) >= 10:
+        Tp_nir_add_plannedFinancing_textEdit_2.setText(str(data[9]))
+    else:
+        Tp_nir_add_plannedFinancing_textEdit_2.setText("")
+
+
 
 form.action_show_VUZ.triggered.connect(table_show_VUZ)
 form.action_show_Tp_nir.triggered.connect(table_show_Tp_nir)
@@ -219,24 +313,14 @@ form.Tp_nir_add_widget_saveButton.clicked.connect(save_add_widget)
 form.redact_widget_saveButton.clicked.connect(save_redact_widget)
 form.close_add_confirm_pushButton.clicked.connect(close_add_confirm)
 form.close_redact_confirm_pushButton.clicked.connect(close_redact_confirm)
-form.Tp_nir_add_VUZcode_name_comboBox.addItems([str(i) + ' ' + var for var, i in zip(name_list, code_list)] )
+form.Tp_nir_add_VUZcode_name_comboBox.addItems([str(i) + ' ' + var for var, i in zip(name_list, code_list)])
 
 
 
-#form.add_widget_open_pushButton.clicked.connect()
-#form.redact_widget_open_pushButton.clicked.connect()
 form.widget_del_pushButton.clicked.connect(lambda: delete_string_in_table(form.tableView, form.tableView.model()))
-#form.add_widget_close_pushButton.clicked.connect()
 form.widget_add_grnti_cod_pushbutton.clicked.connect(lambda: input_cod_grnti(form.tableView))
 form.widget_filter_grnti_cod_pushButton.clicked.connect(filter_by_cod_grnti)
 form.widget_hard_filter_pushButton.clicked.connect(hard_filter)
-
-#form.action_.triggered.connect()
-#form.action_.triggered.connect()
-#form.action_.triggered.connect()
-#form.action_.triggered.connect()
-#form.action_.triggered.connect()
-
 
 window.show()
 app.exec()
