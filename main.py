@@ -5,7 +5,7 @@ import re
 import sys
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QAbstractItemView,
                              QTableWidget,QInputDialog, QTableWidgetItem, QMenu, QMessageBox)
-
+from PyQt6.QtCore import Qt
 from PyQt6.QtSql import *
 from PyQt6 import QtWidgets, QtCore, uic
 from db import *
@@ -17,28 +17,52 @@ db_name = 'databases//database.db'
 
 
 def input_cod_grnti(table):
-    current_item = table.currentItem()
+    print("Функция input_cod_grnti вызвана")
+    selection_model = table.selectionModel()
+    selected_indexes = selection_model.selectedIndexes()
+    if not selected_indexes:
+        print("Ошибка: не выбран текущий элемент")
+        return
+
+    current_index = selected_indexes[0]
+    record = table.model().record(current_index.row())
+    current_value = record.value(current_index.column())
+
+    print("Текущий элемент:", current_value)
+
     menu = QMenu()
     clear_action = menu.addAction("Очистить ячейку")
     add_new_code_action = menu.addAction("Добавить новый код ГРНТИ")
-    action = menu.exec(table.mapToGlobal(table.visualItemRect(current_item).center()))
+    action = menu.exec(table.mapToGlobal(table.visualRect(current_index).center()))
 
     if action == clear_action:
-        table.setItem(current_item.row(), current_item.column(), QTableWidgetItem(""))
+        print("Действие очистки выбрано")
+        try:
+            table.model().setData(current_index, "", Qt.ItemDataRole.EditRole)
+        except Exception as e:
+            print(f"Ошибка очистки элемента: {e}")
     elif action == add_new_code_action:
+        print("Действие добавления нового кода ГРНТИ выбрано")
         while True:
             cod, ok = QInputDialog.getText(None, "Введите значение", 'Введите весь код ГРНТИ из шести цифр '
                                                                      'без разделителей и пробелов')
-            if not ok or cod is None or cod.isalpha():
-                show_error_message("Неправильное значение. Пожалуйста, введите численные значения.")
+            if not ok:
+                print("Диалог ввода отменен")
+                break
+            if cod is None or cod.isalpha():
+                print("Неверный ввод: пожалуйста, введите 6-значный код")
                 continue
             if len(cod) != 6:
-                show_error_message("Неправильное значение. Пожалуйста, введите шесть цифр без разделителей и пробелов.")
+                print("Неверный ввод: код должен быть 6 цифр длинной")
                 continue
             cod = add_delimiters_to_grnti_code(cod)
-            result = str(current_item.text()) + str(cod)
-            table.setItem(current_item.row(), current_item.column(), QTableWidgetItem(result.strip()))
+            result = str(current_value) + str(cod)
+            try:
+                table.model().setData(current_index, result.strip(), Qt.ItemDataRole.EditRole)
+            except Exception as e:
+                print(f"Ошибка установки элемента: {e}")
             break
+
 
 def add_delimiters_to_grnti_code(string):
     if len(string) == 2:
@@ -78,7 +102,7 @@ def filter_by_cod_grnti():
 
 name_list=column()
 code_list=codes()
-prepare_tables()
+#prepare_tables()
 #[str(i) + ' ' + var for var, i in zip(name_list, range(1,100))]
 
 app = QApplication([])
@@ -199,7 +223,11 @@ form.Tp_nir_add_VUZcode_name_comboBox.addItems([str(i) + ' ' + var for var, i in
 
 
 
-#form.widget_del_pushButton.clicked.connect(delete_row)
+#form.add_widget_open_pushButton.clicked.connect()
+#form.redact_widget_open_pushButton.clicked.connect()
+form.widget_del_pushButton.clicked.connect(lambda: delete_string_in_table(form.tableView, form.tableView.model()))
+#form.add_widget_close_pushButton.clicked.connect()
+form.widget_add_grnti_cod_pushbutton.clicked.connect(lambda: input_cod_grnti(form.tableView))
 form.widget_filter_grnti_cod_pushButton.clicked.connect(filter_by_cod_grnti)
 form.widget_hard_filter_pushButton.clicked.connect(hard_filter)
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1402</width>
+    <width>1407</width>
     <height>945</height>
    </rect>
   </property>
@@ -355,7 +355,7 @@
         <x>0</x>
         <y>10</y>
         <width>1381</width>
-        <height>651</height>
+        <height>601</height>
        </rect>
       </property>
       <widget class="QPushButton" name="redact_widget_close_pushButton">
@@ -680,9 +680,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>680</y>
+      <y>620</y>
       <width>1391</width>
-      <height>111</height>
+      <height>171</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -725,12 +725,22 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="widget_add_grnti_cod_pushbutton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="text">
+          <string>ДОБАВИТЬ КОД ГРНТИ</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="widget_filter_grnti_cod_pushButton">
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="text">
-          <string>ФИЛЬТРАЦИЯ</string>
+          <string>ФИЛЬТРАЦИЯ ПО КОДУ ГРНТИ</string>
          </property>
         </widget>
        </item>
@@ -756,7 +766,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1402</width>
+     <width>1407</width>
      <height>21</height>
     </rect>
    </property>

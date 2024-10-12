@@ -4,6 +4,7 @@ import csv
 from PyQt6.QtSql import *
 from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 
+
 db_name = 'databases//database.db'
 
 def create_database():
@@ -315,20 +316,22 @@ def hard_filter(selected_value):
     conn.commit()
     conn.close()
 
-def delete_string_in_table(table):
+def delete_string_in_table(table_view, table_model):
     '''Удаление всей строки таблицы'''
-    selected_values = table.selectedItems()
-    if not selected_values:
-        return
+    try:
+        selection_model = table_view.selectionModel()
+        selected_rows = selection_model.selectedRows()
+        if not selected_rows:
+            return
 
-    row = table.row(selected_values[0])
-    prompt = QMessageBox.critical(None,"Удаление строки",f"Вы уверены, что желаете удалить строку: {selected_values[0]}")
-    if prompt == QMessageBox.Yes:
-        table.removeRow(row)
-        return True
-    else:
-        return False
-
+        prompt = QMessageBox.question(None,"Удаление строки",f"Вы уверены, что желаете удалить строку?")
+        if prompt == QMessageBox.StandardButton.Yes:
+            for row in sorted(index.row() for index in selected_rows)[::-1]:
+                table_model.removeRow(row)
+            return True
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    return False
 
 # def change_string_in_table(table):
 #     '''Изменение строки таблицы'''
