@@ -100,6 +100,14 @@ def filter_by_cod_grnti():
 
 name_list = column()
 code_list = codes()
+region_list = Federal_District()
+region_list=list(set(region_list))
+subject_list=Federation_subject()
+subject_list=list(set(subject_list))
+City_list = City_list()
+City_list=list(set(City_list))
+#VUZ_list=VUZ_list()
+VUZ_list=list(set(VUZ_list()))
 
 app = QApplication([])
 window = Window()
@@ -204,16 +212,27 @@ def close_redact_confirm():
     form.redact_confirm_widget.setVisible(False)
     form.stackedWidget.setCurrentWidget(form.page)
 
+def hard_filter():
+    form.stackedWidget.setCurrentWidget(form.page_complex_filter_widget)
+
 
 Tp_nir_redact_VUZcode_textEdit = QTextEdit()
 Tp_nir_redact_VUZshortName_textEdit = QTextEdit()
-Tp_nir_add_grntiNature_comboBox_2 = QComboBox()
+#Tp_nir_add_grntiNature_comboBox
+Tp_nir_add_grntiNature_comboBox = QComboBox()
+Tp_nir_add_grntiNature_comboBox.addItem("П - Природное")
+Tp_nir_add_grntiNature_comboBox.setItemData(0, "П")
+Tp_nir_add_grntiNature_comboBox.addItem("Р - Развивающее")
+Tp_nir_add_grntiNature_comboBox.setItemData(1, "Р")
+Tp_nir_add_grntiNature_comboBox.addItem("Ф - Фундаментальное")
+Tp_nir_add_grntiNature_comboBox.setItemData(2, "Ф")
+'''Tp_nir_add_grntiNature_comboBox_2 = QComboBox()
 Tp_nir_add_grntiNature_comboBox_2.addItem("П - Природное")
 Tp_nir_add_grntiNature_comboBox_2.setItemData(0, "П")
 Tp_nir_add_grntiNature_comboBox_2.addItem("Р - Развивающее")
 Tp_nir_add_grntiNature_comboBox_2.setItemData(1, "Р")
 Tp_nir_add_grntiNature_comboBox_2.addItem("Ф - Фундаментальное")
-Tp_nir_add_grntiNature_comboBox_2.setItemData(2, "Ф")
+Tp_nir_add_grntiNature_comboBox_2.setItemData(2, "Ф")'''
 Tp_nir_add_grntiCode_textEdit_2 = QTextEdit()
 Tp_nir_add_grntiName_textEdit_2 = QTextEdit()
 Tp_nir_add_grntiHead_textEdit_2 = QTextEdit()
@@ -227,7 +246,7 @@ def save_data():
     grnti_code = form.Tp_nir_add_grntiCode_textEdit.toPlainText()
     grnti_head_post = form.Tp_nir_add_grntiHeadPost_textEdit.toPlainText()
     grnti_number = form.Tp_nir_add_grntiNumber_textEdit.toPlainText()
-    vuz_code = form.Tp_nir_add_VUZcode_name_comboBox.currentText()
+    vuz_code = form.Tp_nir_add_VUZcode_name_comboBox.currentText().split(" ", 1)
     planned_financing = form.Tp_nir_add_plannedFinancing_textEdit.toPlainText()
     grnti_head = form.Tp_nir_add_grntiHead_textEdit.toPlainText()
     grnti_name = form.Tp_nir_add_grntiName_textEdit.toPlainText()
@@ -243,17 +262,17 @@ def save_data():
     try:
         query = QSqlQuery()
         query.prepare(
-            "INSERT INTO Tp_nir (Коды_ГРНТИ, Заголовок, Номер, Код_ВУЗ, Плановое_финансирование, Заголовок_ГРНТИ, "
-            "Имя_ГРНТИ, Природа_ГРНТИ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+            "INSERT INTO Tp_nir (Коды_ГРНТИ, Должность, Номер, Код, Сокращенное_имя, Плановое_финансирование, Руководитель, "
+            "НИР, Характер) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
         query.addBindValue(grnti_code)
         query.addBindValue(grnti_head_post)
         query.addBindValue(grnti_number)
-        query.addBindValue(vuz_code)
+        query.addBindValue(vuz_code[0])
+        query.addBindValue(vuz_code[1])
         query.addBindValue(planned_financing)
         query.addBindValue(grnti_head)
         query.addBindValue(grnti_name)
         query.addBindValue(grnti_nature)
-
         if not query.exec():
             raise Exception("Ошибка выполнения запроса: {}".format(query.lastError().text()))
 
@@ -313,7 +332,6 @@ def edit_row(tableView, edit_button, Tp_nir_redact_VUZcode_textEdit, Tp_nir_reda
                    Tp_nir_add_grntiHeadPost_textEdit_2, Tp_nir_add_plannedFinancing_textEdit_2)
 
 
-
 form.redact_widget_open_pushButton.clicked.connect(lambda: edit_row(
     tableView=form.tableView,
     edit_button=form.redact_widget_open_pushButton,
@@ -349,7 +367,7 @@ def fill_edit_menu(data, Tp_nir_redact_VUZcode_textEdit, Tp_nir_redact_VUZshortN
 
 
 
-form.save_add_confrm_pushButton.clicked.connect(save_data)
+form.save_add_confirm_pushButton.clicked.connect(save_data)
 form.action_show_VUZ.triggered.connect(table_show_VUZ)
 form.action_show_Tp_nir.triggered.connect(table_show_Tp_nir)
 form.action_show_grntirub.triggered.connect(table_show_grntirub)
@@ -365,7 +383,18 @@ form.Tp_nir_add_widget_saveButton.clicked.connect(save_add_widget)
 form.redact_widget_saveButton.clicked.connect(save_redact_widget)
 form.close_add_confirm_pushButton.clicked.connect(close_add_confirm)
 form.close_redact_confirm_pushButton.clicked.connect(close_redact_confirm)
+form.Tp_nir_add_grntiNature_comboBox.addItems(['прикладное исследование (П)','экспериментальная разработка (Р)','фундаментальное исследование (Ф)'])
 form.Tp_nir_add_VUZcode_name_comboBox.addItems([str(i) + ' ' + var for var, i in zip(name_list, code_list)])
+form.Tp_nir_add_VUZcode_name_comboBox.setEditable(True)
+form.widget_hard_filter_pushButton.clicked.connect(hard_filter)
+form.Federal_District_comboBox.addItems(region_list)
+form.Federal_District_comboBox.setEditable(True)
+form.Federation_subject_comboBox.addItems(subject_list)
+form.Federation_subject_comboBox.setEditable(True)
+form.City_comboBox.addItems(City_list)
+form.City_comboBox.setEditable(True)
+form.VUZ_comboBox.addItems(VUZ_list)
+form.VUZ_comboBox.setEditable(True)
 
 
 

@@ -377,3 +377,45 @@ def column():
     #print(name_list)
     conn.close()
     return name_list
+
+def Federal_District():
+    conn = sqlite3.connect('databases//database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT Регион FROM VUZ")
+    names = cursor.fetchall()
+    region_list = [name[0] for name in names]
+    # print(name_list)
+    conn.close()
+    return region_list
+
+def Federation_subject():
+    conn = sqlite3.connect('databases//database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT Область FROM VUZ")
+    names = cursor.fetchall()
+    subject_list = [name[0] for name in names]
+    # print(name_list)
+    conn.close()
+    return subject_list
+
+
+def City_list():
+    conn = sqlite3.connect('databases//database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT Город FROM VUZ")
+    names = cursor.fetchall()
+    city_list = [name[0] for name in names]
+    # print(name_list)
+    conn.close()
+    return city_list
+
+
+def VUZ_list():
+    conn = sqlite3.connect('databases//database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT Сокращенное_имя FROM VUZ")
+    names = cursor.fetchall()
+    VUZ_list=[name[0] for name in names]
+    #print(name_list)
+    conn.close()
+    return VUZ_list
