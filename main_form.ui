@@ -30,7 +30,7 @@
      <string notr="true">background-color: rgb(240, 240, 240);</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView">
@@ -294,7 +294,7 @@
      </widget>
     </widget>
     <widget class="QWidget" name="page_redact_widget">
-     <widget class="QWidget" name="redact_widget" native="true">
+     <widget class="QWidget" name="Tp_nir_edit_row_menu" native="true">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -303,7 +303,7 @@
         <height>601</height>
        </rect>
       </property>
-      <widget class="QPushButton" name="redact_widget_close_pushButton">
+      <widget class="QPushButton" name="Tp_nir_edit_row_menu_close_btn">
        <property name="geometry">
         <rect>
          <x>130</x>
@@ -329,7 +329,7 @@
         <string>Должность руководителя НИР</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="Tp_nir_add_grntiNumber_textEdit_2">
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiNumber_txt">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -368,7 +368,7 @@
         <string>Номер НИР</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="Tp_nir_add_grntiName_textEdit_2">
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiName_txt">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -381,7 +381,7 @@
         <string notr="true">background-color: rgb(255, 255, 255);</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="Tp_nir_add_plannedFinancing_textEdit_2">
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_plannedFinancing_txt">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -394,7 +394,7 @@
         <string notr="true">background-color: rgb(255, 255, 255);</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="redact_widget_saveButton">
+      <widget class="QPushButton" name="Tp_nir_edit_row_menu_save_btn">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -433,7 +433,7 @@
         <string>Название НИР</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="Tp_nir_add_grntiNature_comboBox_2">
+      <widget class="QComboBox" name="Tp_nir_edit_row_menu_grntiNature_cmb">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -446,7 +446,7 @@
         <string notr="true">background-color: rgb(255, 255, 255);</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="Tp_nir_add_grntiCode_textEdit_2">
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiCode_txt">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -459,7 +459,7 @@
         <string notr="true">background-color: rgb(255, 255, 255);</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="Tp_nir_add_grntiHeadPost_textEdit_2">
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiHeadPost_txt">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -485,7 +485,7 @@
         <string>Код ВУЗа</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="Tp_nir_add_grntiHead_textEdit_2">
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiHead_txt">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -524,7 +524,7 @@
         <string>Плановое финансирование НИР</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="Tp_nir_redact_VUZshortName_textEdit">
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_VUZ_short_name_txt">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -550,7 +550,7 @@
         <string>Название ВУЗа</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="Tp_nir_redact_VUZcode_textEdit">
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_VUZcode_txt">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -562,61 +562,6 @@
        <property name="styleSheet">
         <string notr="true">background-color: rgb(255, 255, 255);</string>
        </property>
-      </widget>
-      <widget class="QWidget" name="redact_confirm_widget" native="true">
-       <property name="geometry">
-        <rect>
-         <x>500</x>
-         <y>190</y>
-         <width>371</width>
-         <height>231</height>
-        </rect>
-       </property>
-       <widget class="QPushButton" name="pushButton_2">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>170</y>
-          <width>93</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="cursor">
-         <cursorShape>PointingHandCursor</cursorShape>
-        </property>
-        <property name="text">
-         <string>Сохранить</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="close_redact_confirm_pushButton">
-        <property name="geometry">
-         <rect>
-          <x>220</x>
-          <y>170</y>
-          <width>93</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="cursor">
-         <cursorShape>PointingHandCursor</cursorShape>
-        </property>
-        <property name="text">
-         <string>Отменить</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_2">
-        <property name="geometry">
-         <rect>
-          <x>60</x>
-          <y>50</y>
-          <width>241</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Изменить данные значения в таблице?</string>
-        </property>
-       </widget>
       </widget>
      </widget>
     </widget>
@@ -853,17 +798,17 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_show_VUZ">
    <property name="text">
-    <string>VUZ</string>
+    <string>ВУЗы</string>
    </property>
   </action>
   <action name="action_show_Tp_nir">
    <property name="text">
-    <string>Tp_nir</string>
+    <string>НИР</string>
    </property>
   </action>
   <action name="action_show_grntirub">
    <property name="text">
-    <string>grntirub</string>
+    <string>Рубирки ГРНТИ</string>
    </property>
   </action>
   <action name="action_check">
@@ -928,7 +873,7 @@
   </action>
   <action name="action_show_Tp_fv">
    <property name="text">
-    <string>Tp_fv</string>
+    <string>Финансирование</string>
    </property>
   </action>
  </widget>
