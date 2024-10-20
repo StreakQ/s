@@ -184,7 +184,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Код ВУЗа/название ВУЗа</string>
+        <string>Код ВУЗа - название ВУЗа</string>
        </property>
       </widget>
       <widget class="QLabel" name="num_nir">

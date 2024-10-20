@@ -5,7 +5,7 @@ from PyQt6.QtSql import QSqlDatabase, QSqlQuery
 from PyQt6.QtWidgets import QMessageBox
 
 class DatabaseManager:
-    def __init__(self, db_name):  # Corrected to __init__
+    def __init__(self, db_name):
         self.db_name = db_name
         self.connect()
 

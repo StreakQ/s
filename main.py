@@ -6,7 +6,7 @@ from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt6.QtCore import Qt
 import re
-
+from db import DatabaseManager
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
         # Установка начального индекса для QStackedWidget
-        self.stackedWidget.setCurrentIndex(0)  # Установите нужный индекс, например, 0 для первой страницы
+        self.stackedWidget.setCurrentIndex(0)
 
         # Подключение действий для отображения таблиц
         self.action_show_VUZ.triggered.connect(lambda: self.table_show('VUZ'))
@@ -56,61 +56,119 @@ class MainWindow(QMainWindow):
         self.action_show_grntirub.triggered.connect(lambda: self.table_show('grntirub'))
         self.action_show_Tp_fv.triggered.connect(lambda: self.table_show('Tp_fv'))
 
-    # Подключение кнопок
-        # меню добавить
-        self.Tp_nir_redact_add_row_btn.clicked.connect(lambda: self.show_menu(self.Tp_nir_add_row_menu))
+        # Подключение кнопок
+        self.Tp_nir_redact_add_row_btn.clicked.connect(
+            lambda: (self.show_menu(self.Tp_nir_add_row_menu), self.fill_comboboxes_tp_nir_add_row_menu()))
         self.Tp_nir_add_row_menu_save_btn.clicked.connect(self.save_new_row)
         self.Tp_nir_add_row_menu_close_btn.clicked.connect(self.cancel_save_new_row)
 
-        #удалить запись
+        # Удалить запись
         self.Tp_nir_redact_del_row_btn.clicked.connect(lambda: self.delete_string_in_table(self.tableView))
-
-        # Заполнение комбобоксов
-        #self.populate_comboboxes()
 
     def show_menu(self, menu):
         """Отображение указанного меню."""
         self.stackedWidget.setCurrentIndex(1)
         menu.activateWindow()
 
+    def fill_comboboxes_tp_nir_add_row_menu(self):
+        """Заполнение комбобоксов tp_nir_add_row_menu."""
+        # Очистка комбобоксов
+        self.Tp_nir_add_row_menu_VUZcode_name_cmb.clear()
+        self.Tp_nir_add_row_menu_grntiNature_cmb.clear()
+
+        # Заполнение комбобокса
+        query = "SELECT Код, Сокращенное_имя FROM VUZ"
+        db_manager = DatabaseManager('databases//database.db')
+        results = db_manager.fetch_all(query)
+
+        for cod, name in results:
+            self.Tp_nir_add_row_menu_VUZcode_name_cmb.addItem(f"{cod} - {name}", cod)
+
+        nature_options = [
+            ("П - Природное", "П"),
+            ("Р - Развивающее", "Р"),
+            ("Ф - Фундаментальное", "Ф")
+        ]
+
+        for display_text, data_value in nature_options:
+            self.Tp_nir_add_row_menu_grntiNature_cmb.addItem(display_text)
+            index = self.Tp_nir_add_row_menu_grntiNature_cmb.count() - 1
+            self.Tp_nir_add_row_menu_grntiNature_cmb.setItemData(index, data_value)
 
     def save_new_row(self):
         """Сохранение новой строки в таблице Tp_nir."""
         # Получаем данные из полей ввода
         grnti_number = self.Tp_nir_add_row_menu_grntiNumber_txt.toPlainText()
-        grnti_nature = self.Tp_nir_add_row_menu_grntiNature_cmb.currentText()
+        grnti_nature = self.Tp_nir_add_row_menu_grntiNature_cmb.currentData()
         grnti_head = self.Tp_nir_add_add_row_menu_grntiHead_txt.toPlainText()
         grnti_code = self.Tp_nir_add_row_menu_grntiCode_txt.toPlainText()
         grnti_name = self.Tp_nir_add_row_menu_grntiName_txt.toPlainText()
         grnti_head_post = self.Tp_nir_add_row_menu_grntiHeadPost_txt.toPlainText()
         planned_financing = self.Tp_nir_add_row_menu_plannedFinancing_txt.toPlainText()
+        vuz_code = self.Tp_nir_add_row_menu_VUZcode_name_cmb.currentText()
 
-        # Создаем новую запись
+        # Проверка на пустые поля
+        if not all([grnti_number, grnti_nature, grnti_head, grnti_code, grnti_name, grnti_head_post, planned_financing,
+                    vuz_code]):
+            self.show_error_message("Пожалуйста, заполните все поля.")
+            return
+
+        vuz_parts = vuz_code.split(" - ")
+
+        if len(vuz_parts) == 2:
+            vuz_name = vuz_parts[1]
+            vuz_code = vuz_parts[0]
+        else:
+            self.show_error_message("Неверный формат vuz_code. Ожидалось 'вуз - код'.")
+            return
+
         new_record = {
-            'grntiNumber': grnti_number,
-            'grntiNature': grnti_nature,
-            'grntiHead': grnti_head,
-            'grntiCode': grnti_code,
-            'grntiName': grnti_name,
-            'grntiHeadPost ': grnti_head_post,
-            'plannedFinancing': planned_financing
+            'Номер': grnti_number,  # Изменено на соответствующее имя поля
+            'Характер': grnti_nature,
+            'Руководитель': grnti_head,
+            'Коды_ГРНТИ': grnti_code,
+            'НИР': grnti_name,
+            'Должность': grnti_head_post,
+            'Плановое_финансирование': planned_financing,
+            'Код': vuz_code,  # Если Код - это код в базе данных, то его нужно правильно сопоставить
+            'Сокращенное_имя': vuz_name  # Если у вас есть необходимость сохранять сокращенное имя
         }
 
-        # Добавляем новую строку в модель
-        model = self.models['Tp_nir']
-        model.insertRow(model.rowCount())  # Добавляем новую строку в конец
-        for key, value in new_record.items():
-            model.setData(model.index(model.rowCount() - 1, model.fieldIndex(key)), value)
+        print("Данные для сохранения:", new_record)  # Отладка
 
-        # Сохраняем изменения в базе данных
-        model.submitAll()
-        new_index = model.index(model.rowCount() - 1, 0)
-        self.tableView.setCurrentIndex(new_index)
-        self.Tp_nir_add_row_menu.close()
-        self.stackedWidget.setCurrentIndex(0)
+        try:
+            # Добавляем новую строку в модель
+            model = self.models['Tp_nir']
+            row_position = model.rowCount()
+            model.insertRow(row_position)
+
+            for key, value in new_record.items():
+                if value:  # Проверяем, что значение не пустое
+                    model.setData(model.index(row_position, model.fieldIndex(key)), value)
+                    print(f"Установлено: {key} = {value}")  # Отладка
+                else:
+                    print(f"Пустое значение для поля: {key}")
+
+            # Проверка количества строк в модели перед сохранением
+            print(f"Количество строк в модели перед сохранением: {model.rowCount()}")
+
+            # Сохраняем изменения в базе данных
+            if not model.submitAll():
+                print("Ошибка при сохранении данных:", model.lastError().text())  # Отладка
+                raise Exception("Ошибка сохранения данных: {}".format(model.lastError().text()))
+
+            # Обновляем интерфейс
+            new_index = model.index(row_position, 0)
+            self.tableView.setCurrentIndex(new_index)
+            self.Tp_nir_add_row_menu.close()
+            self.stackedWidget.setCurrentIndex(0)
+
+            QMessageBox.information(None, "Успех", "Данные успешно сохранены.")
+        except Exception as e:
+            self.show_error_message(f"Ошибка при сохранении данных: {e}")
 
     def cancel_save_new_row(self):
-        """Отмена сохранения данных и закрытие окна ."""
+        """Отмена сохранения данных и закрытие окна."""
         # Очистка полей ввода
         input_fields = {
             'grntiNumber': self.Tp_nir_add_row_menu_grntiNumber_txt,
