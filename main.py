@@ -228,6 +228,11 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
 
+    def fill_combobox(self,combobox_name, values):
+        """Заполнение комбобокса значениями."""
+        combobox_name.clear()
+        combobox_name.addItems(values)
+
     def fill_widgets_from_selected_row(self):
         """Заполнение виджетов данными из выбранной строки таблицы."""
         selection_model = self.tableView.selectionModel()
@@ -246,10 +251,16 @@ class MainWindow(QMainWindow):
         # Заполняем виджеты данными из выбранной строки
         self.Tp_nir_edit_row_menu_VUZcode_txt.setPlainText(
             str(model.data(model.index(selected_row, model.fieldIndex('Код')))))
+        self.Tp_nir_edit_row_menu_VUZ_short_name_txt.setPlainText(
+            str(model.data(model.index(selected_row, model.fieldIndex('Сокращенное_имя')))))
         self.Tp_nir_edit_row_menu_grntiNumber_txt.setPlainText(
             str(model.data(model.index(selected_row, model.fieldIndex('Номер')))))
+
+        grnti_nature_values = []
+        self.fill_combobox(self.Tp_nir_edit_row_menu_grntiNature_cmb, grnti_nature_values)
         self.Tp_nir_edit_row_menu_grntiNature_cmb.setCurrentText(
             str(model.data(model.index(selected_row, model.fieldIndex('Характер')))))
+
         self.Tp_nir_edit_row_menu_grntiHead_txt.setPlainText(
             str(model.data(model.index(selected_row, model.fieldIndex('Руководитель')))))
         self.Tp_nir_edit_row_menu_grntiCode_txt.setPlainText(
