@@ -130,13 +130,7 @@ class MainWindow(QMainWindow):
     def open_add_row_menu(self):
         """Сброс состояния и открытие меню добавления строки."""
         self.reset_add_row_menu()  # Сброс состояния меню
-        self.fill_comboboxes_tp_nir_add_row_menu()  # Заполнение комбобоксов
-        self.show_menu(self.Tp_nir_add_row_menu, 1)  # Показ меню
-
-        # # Если меню уже открыто, активируем его
-        # if self.Tp_nir_add_row_menu.isVisible():
-        #     self.Tp_nir_add_row_menu.activateWindow()
-
+        self.show_menu(self.Tp_nir_add_row_menu, 1)
 
     def reset_add_row_menu(self):
         """Сброс состояния полей ввода в меню добавления."""
@@ -177,29 +171,29 @@ class MainWindow(QMainWindow):
             name = model.record(row).value("Сокращенное_имя")
             self.Tp_nir_add_row_menu_VUZcode_name_cmb.addItem(f"{cod} - {name}", cod)
 
-        print("Заполнен комбобокс VUZ")  # Отладка
-
         # Заполнение комбобокса для характера
-        self.Tp_nir_add_row_menu_grntiNature_cmb.addItem("П - Природное")
-        self.Tp_nir_add_row_menu_grntiNature_cmb.setItemData(0, "П")
-        self.Tp_nir_add_row_menu_grntiNature_cmb.addItem("Р - Развивающее")
-        self.Tp_nir_add_row_menu_grntiNature_cmb.setItemData(1, "Р")
-        self.Tp_nir_add_row_menu_grntiNature_cmb.addItem("Ф - Фундаментальное")
-        self.Tp_nir_add_row_menu_grntiNature_cmb.setItemData(2, "Ф")
+        nature_options = [
+            ("П - Природное", "П"),
+            ("Р - Развивающее", "Р"),
+            (" Ф - Фундаментальное", "Ф")
+        ]
 
-        print("Заполнен комбобокс характера")  # Отладка
+        for display_text, data_value in nature_options:
+            self.Tp_nir_add_row_menu_grntiNature_cmb.addItem(display_text)
+            index = self.Tp_nir_add_row_menu_grntiNature_cmb.count() - 1
+            self.Tp_nir_add_row_menu_grntiNature_cmb.setItemData(index, data_value)
 
     def save_new_row(self):
         """Сохранение новой строки в таблице Tp_nir."""
         # Получаем данные из полей ввода
         grnti_number = self.Tp_nir_add_row_menu_grntiNumber_txt.toPlainText()
-        grnti_nature = self.Tp_nir_add_row_menu_grntiNature_cmb.currentData()  # Получаем значение
+        grnti_nature = self.Tp_nir_add_row_menu_grntiNature_cmb.currentData()
         grnti_head = self.Tp_nir_add_add_row_menu_grntiHead_txt.toPlainText()
         grnti_code = self.Tp_nir_add_row_menu_grntiCode_txt.toPlainText()
         grnti_name = self.Tp_nir_add_row_menu_grntiName_txt.toPlainText()
         grnti_head_post = self.Tp_nir_add_row_menu_grntiHeadPost_txt.toPlainText()
         planned_financing = self.Tp_nir_add_row_menu_plannedFinancing_txt.toPlainText()
-        vuz_code = self.Tp_nir_add_row_menu_VUZcode_name_cmb.currentData()  # Получаем код ВУЗа
+        vuz_code = self.Tp_nir_add_row_menu_VUZcode_name_cmb.currentText()
 
         # Проверка на пустые поля
         if not all([grnti_number, grnti_nature, grnti_head, grnti_code, grnti_name, grnti_head_post, planned_financing,
@@ -207,15 +201,10 @@ class MainWindow(QMainWindow):
             self.show_error_message("Пожалуйста, заполните все поля.")
             return
 
-            # Проверка на существование записи
-            existing_record_query = '''
-                SELECT COUNT(*) FROM Tp_nir WHERE "Код" = ? AND "Номер" = ?
-            '''
-            existing_count = self.database.execute(existing_record_query, (vuz_code, grnti_number)).fetchone()[0]
-            if existing_count > 0:
-                self.show_error_message("Запись с таким Кодом и Номером уже существует.")
-                return
-        # Создаем новый словарь для записи
+        vuz_parts = vuz_code.split(" - ")
+        vuz_name = vuz_parts[1]
+        vuz_code = vuz_parts[0]
+
         new_record = {
             'Номер': grnti_number,
             'Характер': grnti_nature,
@@ -225,8 +214,7 @@ class MainWindow(QMainWindow):
             'Должность': grnti_head_post,
             'Плановое_финансирование': planned_financing,
             'Код': vuz_code,
-            'Сокращенное_имя': self.Tp_nir_add_row_menu_VUZcode_name_cmb.currentText().split(" - ")[1]
-            # Получаем название ВУЗа
+            'Сокращенное_имя': vuz_name
         }
 
         print("Данные для сохранения:", new_record)
@@ -250,9 +238,11 @@ class MainWindow(QMainWindow):
                 raise Exception("Ошибка сохранения данных: {}".format(model.lastError().text()))
 
             # Обновляем интерфейс
-            new_index = model.index(row_position, 0)
+            new_index = model.index(row_position - 1, 0)
             self.tableView.setCurrentIndex(new_index)
+            self.Tp_nir_add_row_menu.close()
             self.stackedWidget.setCurrentIndex(0)
+
             QMessageBox.information(None, "Успех", "Данные успешно сохранены.")
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
@@ -309,6 +299,7 @@ class MainWindow(QMainWindow):
             # Обновляем интерфейс
             new_index = model.index(row_position - 1, 0)
             self.tableView.setCurrentIndex(new_index)
+            self.Tp_nir_edit_row_menu.close()
             self.stackedWidget.setCurrentIndex(0)
 
             QMessageBox.information(None, "Успех", "Данные успешно сохранены.")
