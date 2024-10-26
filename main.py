@@ -3,7 +3,7 @@ import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
                              QAbstractItemView, QMenu, QComboBox, QTextEdit, QHeaderView, QWidget, QVBoxLayout)
 from PyQt6 import uic
-from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
+from PyQt6.QtSql import *
 from PyQt6.QtGui import QKeyEvent, QTextCursor
 
 
@@ -193,13 +193,13 @@ class MainWindow(QMainWindow):
         """Сохранение новой строки в таблице Tp_nir."""
         # Получаем данные из полей ввода
         grnti_number = self.Tp_nir_add_row_menu_grntiNumber_txt.toPlainText()
-        grnti_nature = self.Tp_nir_add_row_menu_grntiNature_cmb.currentData()  # Получаем значение
+        grnti_nature = self.Tp_nir_add_row_menu_grntiNature_cmb.currentData()
         grnti_head = self.Tp_nir_add_add_row_menu_grntiHead_txt.toPlainText()
         grnti_code = self.Tp_nir_add_row_menu_grntiCode_txt.toPlainText()
         grnti_name = self.Tp_nir_add_row_menu_grntiName_txt.toPlainText()
         grnti_head_post = self.Tp_nir_add_row_menu_grntiHeadPost_txt.toPlainText()
         planned_financing = self.Tp_nir_add_row_menu_plannedFinancing_txt.toPlainText()
-        vuz_code = self.Tp_nir_add_row_menu_VUZcode_name_cmb.currentData()  # Получаем код ВУЗа
+        vuz_code = self.Tp_nir_add_row_menu_VUZcode_name_cmb.currentData()
 
         # Проверка на пустые поля
         if not all([grnti_number, grnti_nature, grnti_head, grnti_code, grnti_name, grnti_head_post, planned_financing,
@@ -207,14 +207,26 @@ class MainWindow(QMainWindow):
             self.show_error_message("Пожалуйста, заполните все поля.")
             return
 
-            # Проверка на существование записи
-            existing_record_query = '''
-                SELECT COUNT(*) FROM Tp_nir WHERE "Код" = ? AND "Номер" = ?
-            '''
-            existing_count = self.database.execute(existing_record_query, (vuz_code, grnti_number)).fetchone()[0]
-            if existing_count > 0:
-                self.show_error_message("Запись с таким Кодом и Номером уже существует.")
-                return
+        # Проверка на существование записи
+        existing_record_query = '''
+            SELECT COUNT(*) FROM Tp_nir WHERE "Код" = ? AND "Номер" = ?
+        '''
+        query = QSqlQuery()  # Создаем объект QSqlQuery
+        query.prepare(existing_record_query)  # Подготавливаем запрос
+        query.addBindValue(vuz_code)  # Привязываем значения
+        query.addBindValue(grnti_number)
+
+        if not query.exec():  # Выполняем запрос
+            self.show_error_message("Ошибка при выполнении запроса: " + query.lastError().text())
+            return
+
+        if query.next():  # Переходим к результату
+            existing_count = query.value(0)  # Получаем значение COUNT(*)
+
+        if existing_count > 0:
+            self.show_error_message("Запись с таким Кодом и Номером уже существует.")
+            return
+
         # Создаем новый словарь для записи
         new_record = {
             'Номер': grnti_number,
@@ -226,34 +238,31 @@ class MainWindow(QMainWindow):
             'Плановое_финансирование': planned_financing,
             'Код': vuz_code,
             'Сокращенное_имя': self.Tp_nir_add_row_menu_VUZcode_name_cmb.currentText().split(" - ")[1]
-            # Получаем название ВУЗа
         }
 
         print("Данные для сохранения:", new_record)
 
         try:
-            # Добавляем новую строку в модель
+            # Получаем модель и добавляем новую строку
             model = self.models['Tp_nir']
             row_position = model.rowCount()
             model.insertRow(row_position)
 
+            # Заполняем новую строку данными
             for key, value in new_record.items():
                 if value:  # Проверяем, что значение не пустое
                     model.setData(model.index(row_position, model.fieldIndex(key)), value)
                     print(f"Установлено: {key} = {value}")  # Отладка
-                else:
-                    print(f"Пустое значение для поля: {key}")
 
             # Сохраняем изменения в базе данных
             if not model.submitAll():
-                print("Ошибка при сохранении данных:", model.lastError().text())  # Отладка
-                raise Exception("Ошибка сохранения данных: {}".format(model.lastError().text()))
+                raise Exception(f"Ошибка сохранения данных: {model.lastError().text()}")
 
-            # Обновляем интерфейс
-            new_index = model.index(row_position, 0)
-            self.tableView.setCurrentIndex(new_index)
+            # Устанавливаем выделение на новую строку и обновляем интерфейс
+            self.tableView.setCurrentIndex(model.index(row_position, 0))
             self.stackedWidget.setCurrentIndex(0)
-            QMessageBox.information(None, "Успех", "Данные успешно сохранены.")
+            QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
+
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
 
