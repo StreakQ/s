@@ -1,9 +1,9 @@
 import os
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
-                             QAbstractItemView, QMenu, QComboBox, QTextEdit, QHeaderView, QWidget, QVBoxLayout)
+                             QAbstractItemView, QComboBox, QTextEdit, QHeaderView)
 from PyQt6 import uic
-from PyQt6.QtSql import *
+from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 from PyQt6.QtGui import QKeyEvent, QTextCursor
 
 
@@ -12,30 +12,24 @@ class CustomTextEdit(QTextEdit):
         current_text = self.toPlainText()
         key = event.text()
 
-        # Проверка на ввод цифр и точки
         if key.isdigit() or key == '.':
-            # Разрешаем ввод только в формате 2.2.2
             parts = current_text.split('.')
             if key == '.':
                 if len(parts) < 3:  # Максимум 2 точки
                     super().keyPressEvent(event)
             else:
-                # Проверка на количество цифр в каждой части
                 if len(parts) < 3:
                     super().keyPressEvent(event)
                 else:
-                    # Проверка длины каждой части
                     if len(parts[-1]) < 2:  # Последняя часть должна быть не более 2 цифр
                         super().keyPressEvent(event)
         else:
-            # Игнорируем все остальные символы
             return
 
         self.auto_format()
 
     def auto_format(self):
         text = self.toPlainText().replace(" ", "")
-
         if len(text) > 0:
             text = text.replace('.', '')
             formatted_text = ''
@@ -45,10 +39,9 @@ class CustomTextEdit(QTextEdit):
                     formatted_text += '.'
             self.setPlainText(formatted_text)
 
-            # Перемещаем курсор в конец текста
             cursor = self.textCursor()
-            cursor.movePosition(QTextCursor.MoveOperation.End)  # Перемещаем курсор в конец
-            self.setTextCursor(cursor)  # Устанавливаем курсор
+            cursor.movePosition(QTextCursor.MoveOperation.End)
+            self.setTextCursor(cursor)
 
 
 class MainWindow(QMainWindow):
@@ -60,6 +53,9 @@ class MainWindow(QMainWindow):
         self.setup_models()
         self.setup_ui()
         self.show()
+
+        # Подключаем сигнал изменения данных в Tp_nir к слоту обновления Tp_fv
+        self.models['Tp_nir'].dataChanged.connect(self.update_tp_fv)
 
     def connect_db(self):
         """Подключение к базе данных."""
@@ -107,10 +103,8 @@ class MainWindow(QMainWindow):
 
         # Кнопки для редактирования
         self.Tp_nir_redact_edit_row_btn.clicked.connect(self.tp_nir_redact_edit_row_btn_clicked)
-        self.Tp_nir_edit_row_menu_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_edit_row_menu))
+        self.Tp_nir_edit_row_menu_close_btn.clicked.connect(lambda : self.cancel(self.Tp_nir_edit_row_menu))
         self.Tp_nir_edit_row_menu_save_btn.clicked.connect(self.save_edit_row)
-
-
 
         self.Tp_nir_add_row_menu_grntiCode_txt = self.findChild(QTextEdit, 'Tp_nir_add_row_menu_grntiCode_txt')
 
@@ -136,10 +130,6 @@ class MainWindow(QMainWindow):
         self.fill_comboboxes_tp_nir_add_row_menu()  # Заполнение комбобоксов
         self.show_menu(self.Tp_nir_add_row_menu, 1)  # Показ меню
 
-        # # Если меню уже открыто, активиру ем его
-        # if self.Tp_nir_add_row_menu.isVisible():
-        #     self.Tp_nir_add_row_menu.activateWindow()
-
     def reset_add_row_menu(self):
         """Сброс состояния полей ввода в меню добавления."""
         self.Tp_nir_add_row_menu_grntiNumber_txt.clear()
@@ -151,8 +141,6 @@ class MainWindow(QMainWindow):
         self.Tp_nir_add_row_menu_plannedFinancing_txt.clear()
         self.Tp_nir_add_row_menu_VUZcode_name_cmb.setCurrentIndex(0)
 
-        # Если есть другие поля, сбросьте их тоже
-
     def show_menu(self, menu, index):
         """Отображение указанного меню."""
         self.stackedWidget.setCurrentIndex(index)
@@ -163,7 +151,6 @@ class MainWindow(QMainWindow):
         self.show_menu(self.Tp_nir_edit_row_menu, 2)
         self.fill_comboboxes_tp_nir_edit_row_menu()  # Заполнение комбобоксов перед заполнением виджетов
         self.fill_widgets_from_selected_row()
-
 
     def fill_comboboxes_tp_nir_add_row_menu(self):
         """Заполнение комбобоксов в меню добавления строки."""
@@ -196,7 +183,6 @@ class MainWindow(QMainWindow):
     def fill_comboboxes_tp_nir_edit_row_menu(self):
         """Заполнение комбобоксов в меню редактирования строки."""
         self.Tp_nir_edit_row_menu_grntiNature_cmb.clear()
-
 
         # Заполнение комбобокса для характера
         self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("П - Природное")
@@ -342,10 +328,43 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
 
-    def fill_combobox(self, combobox_name, values):
-        """Заполнение комбобокса значениями."""
-        combobox_name.clear()
-        combobox_name.addItems(values)
+    def update_tp_fv(self):
+        """Обновление данных в таблице Tp_fv на основе изменений в Tp_nir."""
+        conn = QSqlDatabase.database()  # Используем подключение к базе данных
+        if not conn.isOpen():
+            print("Ошибка: база данных не открыта.")
+            return
+
+        # Выполняем SQL-запрос для обновления всех необходимых полей в Tp_fv
+        query = '''
+            UPDATE Tp_fv
+            SET 
+                "Сокращенное_имя" = (
+                    SELECT VUZ."Сокращенное_имя"
+                    FROM VUZ
+                    WHERE VUZ."Код" = Tp_fv."Код"
+                ),
+                "Плановое_финансирование" = (
+                    SELECT SUM("Плановое_финансирование")
+                    FROM Tp_nir
+                    WHERE Tp_nir."Код" = Tp_fv."Код"
+                ),
+                "Количество_НИР" = (
+                    SELECT COUNT("Номер")
+                    FROM Tp_nir
+                    WHERE Tp_nir."Код" = Tp_fv."Код"
+                )
+        '''
+
+        sql_query = QSqlQuery(conn)  # Создаем объект QSqlQuery
+        if not sql_query.exec(query):
+            print("Ошибка при выполнении запроса:", sql_query.lastError().text())
+            return
+
+        # После обновления, можно перезагрузить данные в Tp_fv
+        self.models['Tp_fv'].select()
+
+        print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
 
     def fill_widgets_from_selected_row(self):
         """Заполнение виджетов данными из выбранной строки таблицы."""
@@ -364,7 +383,7 @@ class MainWindow(QMainWindow):
 
         # Заполняем виджеты данными из выбранной строки
         self.Tp_nir_edit_row_menu_VUZcode_txt.setPlainText(
-            str (model.data(model.index(selected_row, model.fieldIndex('Код')))))
+            str(model.data(model.index(selected_row, model.fieldIndex('Код')))))
         self.Tp_nir_edit_row_menu_VUZ_short_name_txt.setPlainText(
             str(model.data(model.index(selected_row, model.fieldIndex('Сокращенное_имя')))))
         self.Tp_nir_edit_row_menu_grntiNumber_txt.setPlainText(
