@@ -50,6 +50,7 @@ class CustomTextEdit(QTextEdit):
             cursor.movePosition(QTextCursor.MoveOperation.End)  # Перемещаем курсор в конец
             self.setTextCursor(cursor)  # Устанавливаем курсор
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -97,8 +98,7 @@ class MainWindow(QMainWindow):
         self.action_show_Tp_fv.triggered.connect(lambda: self.table_show('Tp_fv'))
 
         # Кнопки для добавления
-        self.Tp_nir_redact_add_row_btn.clicked.connect(
-            lambda: (self.show_menu(self.Tp_nir_add_row_menu, 1), self.fill_comboboxes_tp_nir_add_row_menu()))
+        self.Tp_nir_redact_add_row_btn.clicked.connect(self.open_add_row_menu)
         self.Tp_nir_add_row_menu_save_btn.clicked.connect(self.save_new_row)
         self.Tp_nir_add_row_menu_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_add_row_menu))
 
@@ -127,15 +127,33 @@ class MainWindow(QMainWindow):
         # Показываем новый виджет
         self.Tp_nir_add_row_menu_grntiCode_txt.show()
 
+    def open_add_row_menu(self):
+        """Сброс состояния и открытие меню добавления строки."""
+        self.reset_add_row_menu()  # Сброс состояния меню
+        self.show_menu(self.Tp_nir_add_row_menu, 1)
+
+    def reset_add_row_menu(self):
+        """Сброс состояния полей ввода в меню добавления."""
+        self.Tp_nir_add_row_menu_grntiNumber_txt.clear()
+        self.Tp_nir_add_row_menu_grntiNature_cmb.setCurrentIndex(0)
+        self.Tp_nir_add_add_row_menu_grntiHead_txt.clear()
+        self.Tp_nir_add_row_menu_grntiCode_txt.clear()
+        self.Tp_nir_add_row_menu_grntiName_txt.clear()
+        self.Tp_nir_add_row_menu_grntiHeadPost_txt.clear()
+        self.Tp_nir_add_row_menu_plannedFinancing_txt.clear()
+        self.Tp_nir_add_row_menu_VUZcode_name_cmb.setCurrentIndex(0)
+
+        # Если есть другие поля, сбросьте их тоже
+
+    def show_menu(self, menu, index):
+        """Отображение указанного меню."""
+        self.stackedWidget.setCurrentIndex(index)
+        menu.activateWindow()
+
     def tp_nir_redact_edit_row_btn_clicked(self):
         """Обработчик нажатия кнопки редактирования строки."""
         self.show_menu(self.Tp_nir_edit_row_menu, 2)
         self.fill_widgets_from_selected_row()
-
-    def show_menu (self, menu, index):
-        """Отображение указанного меню."""
-        self.stackedWidget.setCurrentIndex(index)
-        menu.activateWindow()
 
     def fill_comboboxes_tp_nir_add_row_menu(self):
         """Заполнение комбобоксов в меню добавления строки."""
@@ -334,8 +352,7 @@ class MainWindow(QMainWindow):
 
     def cancel(self, name_widget):
         """Закрытие окна."""
-        name_widget.close()
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(0)  # Переключаемся на основной экран
 
     def clear_input_fields(self, input_fields):
         """Очистка указанных полей ввода."""
@@ -350,10 +367,10 @@ class MainWindow(QMainWindow):
         self.tableView.setModel(self.models[table_name])
 
     def filter_by_cod_grnti(self):
-        """Ф ильтрация по коду ГРНТИ."""
+        """Фильтрация по коду ГРНТИ."""
         while True:
             str_cod, ok = QInputDialog.getText(None, "Введите значение",
-                                               'Введите весь код ГРНТИ или его часть без разделителей и пробелов')
+                                               'Введите весь код ГРН ТИ или его часть без разделителей и пробелов')
             if not ok:
                 return
             if str_cod is None or not str_cod.isdigit():
