@@ -1,10 +1,54 @@
 import os
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
-                             QAbstractItemView, QMenu, QComboBox, QTextEdit, QHeaderView, QWidget)
+                             QAbstractItemView, QMenu, QComboBox, QTextEdit, QHeaderView, QWidget, QVBoxLayout)
 from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeyEvent, QTextCursor
+
+
+class CustomTextEdit(QTextEdit):
+    def keyPressEvent(self, event: QKeyEvent):
+        current_text = self.toPlainText()
+        key = event.text()
+
+        # Проверка на ввод цифр и точки
+        if key.isdigit() or key == '.':
+            # Разрешаем ввод только в формате 2.2.2
+            parts = current_text.split('.')
+            if key == '.':
+                if len(parts) < 3:  # Максимум 2 точки
+                    super().keyPressEvent(event)
+            else:
+                # Проверка на количество цифр в каждой части
+                if len(parts) < 3:
+                    super().keyPressEvent(event)
+                else:
+                    # Проверка длины каждой части
+                    if len(parts[-1]) < 2:  # Последняя часть должна быть не более 2 цифр
+                        super().keyPressEvent(event)
+        else:
+            # Игнорируем все остальные символы
+            return
+
+        self.auto_format()
+
+    def auto_format(self):
+        text = self.toPlainText().replace(" ", "")
+
+        if len(text) > 0:
+            text = text.replace('.', '')
+            formatted_text = ''
+            for i in range(len(text)):
+                formatted_text += text[i]
+                if (i + 1) % 2 == 0 and (i + 1) < len(text):
+                    formatted_text += '.'
+            self.setPlainText(formatted_text)
+
+            # Перемещаем курсор в конец текста
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.End)  # Перемещаем курсор в конец
+            self.setTextCursor(cursor)  # Устанавливаем курсор
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -65,12 +109,30 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact_edit_row_btn.clicked.connect(self.tp_nir_redact_edit_row_btn_clicked)
         self.Tp_nir_edit_row_menu_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_edit_row_menu))
 
+        self.Tp_nir_add_row_menu_grntiCode_txt = self.findChild(QTextEdit, 'Tp_nir_add_row_menu_grntiCode_txt')
+
+        # Удаляем старый QTextEdit
+        self.Tp_nir_add_row_menu_grntiCode_txt.deleteLater()
+
+        # Создаем новый CustomTextEdit
+        self.Tp_nir_add_row_menu_grntiCode_txt = CustomTextEdit()
+        self.Tp_nir_add_row_menu_grntiCode_txt.setObjectName('Tp_nir_add_row_menu_grntiCode_txt')
+
+        # Устанавливаем родителем Tp_nir_add_row_menu
+        self.Tp_nir_add_row_menu_grntiCode_txt.setParent(self.Tp_nir_add_row_menu)
+
+        # Устанавливаем геометрию вручную
+        self.Tp_nir_add_row_menu_grntiCode_txt.setGeometry(20, 190, 1101, 31)
+
+        # Показываем новый виджет
+        self.Tp_nir_add_row_menu_grntiCode_txt.show()
+
     def tp_nir_redact_edit_row_btn_clicked(self):
         """Обработчик нажатия кнопки редактирования строки."""
         self.show_menu(self.Tp_nir_edit_row_menu, 2)
         self.fill_widgets_from_selected_row()
 
-    def show_menu(self, menu, index):
+    def show_menu (self, menu, index):
         """Отображение указанного меню."""
         self.stackedWidget.setCurrentIndex(index)
         menu.activateWindow()
