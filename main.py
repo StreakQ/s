@@ -5,8 +5,6 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidge
 from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt6.QtCore import Qt
-import re
-from db import prepare_tables
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -26,7 +24,6 @@ class MainWindow(QMainWindow):
             print('Не удалось подключиться к базе данных')
             sys.exit(-1)
         print('Подключение успешно')
-        #prepare_tables()
 
     def setup_models(self):
         """Настройка моделей для таблиц."""
@@ -42,13 +39,11 @@ class MainWindow(QMainWindow):
 
     def setup_ui(self):
         """Настройка пользовательского интерфейса."""
-        # Настройка таблицы
         self.tableView.setSortingEnabled(True)
         self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
-        # Установка начального индекса для QStackedWidget
         self.stackedWidget.setCurrentIndex(0)
 
         # Подключение действий для отображения таблиц
@@ -87,17 +82,20 @@ class MainWindow(QMainWindow):
 
         # Заполнение комбобокса VUZ
         query = "SELECT Код, Сокращенное_имя FROM VUZ"
-        db_manager = DatabaseManager('databases//database.db')
-        results = db_manager.fetch_all(query)
+        model = self.models['VUZ']
+        model.setFilter("")  # Сброс фильтра
+        model.select()
 
-        for cod, name in results:
+        for row in range(model.rowCount()):
+            cod = model.record(row).value("Код")
+            name = model.record(row).value("Сокращенное_имя")
             self.Tp_nir_add_row_menu_VUZcode_name_cmb.addItem(f"{cod} - {name}", cod)
 
         # Заполнение комбобокса для характера
         nature_options = [
             ("П - Природное", "П"),
             ("Р - Развивающее", "Р"),
-            ("Ф - Фундаментальное", "Ф")
+            (" Ф - Фундаментальное", "Ф")
         ]
 
         for display_text, data_value in nature_options:
@@ -228,7 +226,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
 
-    def fill_combobox(self,combobox_name, values):
+    def fill_combobox(self, combobox_name, values):
         """Заполнение комбобокса значениями."""
         combobox_name.clear()
         combobox_name.addItems(values)
