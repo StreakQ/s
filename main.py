@@ -108,6 +108,9 @@ class MainWindow(QMainWindow):
         # Кнопки для редактирования
         self.Tp_nir_redact_edit_row_btn.clicked.connect(self.tp_nir_redact_edit_row_btn_clicked)
         self.Tp_nir_edit_row_menu_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_edit_row_menu))
+        self.Tp_nir_edit_row_menu_save_btn.clicked.connect(self.save_edit_row)
+
+
 
         self.Tp_nir_add_row_menu_grntiCode_txt = self.findChild(QTextEdit, 'Tp_nir_add_row_menu_grntiCode_txt')
 
@@ -133,10 +136,9 @@ class MainWindow(QMainWindow):
         self.fill_comboboxes_tp_nir_add_row_menu()  # Заполнение комбобоксов
         self.show_menu(self.Tp_nir_add_row_menu, 1)  # Показ меню
 
-        # # Если меню уже открыто, активируем его
+        # # Если меню уже открыто, активиру ем его
         # if self.Tp_nir_add_row_menu.isVisible():
         #     self.Tp_nir_add_row_menu.activateWindow()
-
 
     def reset_add_row_menu(self):
         """Сброс состояния полей ввода в меню добавления."""
@@ -159,7 +161,9 @@ class MainWindow(QMainWindow):
     def tp_nir_redact_edit_row_btn_clicked(self):
         """Обработчик нажатия кнопки редактирования строки."""
         self.show_menu(self.Tp_nir_edit_row_menu, 2)
+        self.fill_comboboxes_tp_nir_edit_row_menu()  # Заполнение комбобоксов перед заполнением виджетов
         self.fill_widgets_from_selected_row()
+
 
     def fill_comboboxes_tp_nir_add_row_menu(self):
         """Заполнение комбобоксов в меню добавления строки."""
@@ -188,6 +192,21 @@ class MainWindow(QMainWindow):
         self.Tp_nir_add_row_menu_grntiNature_cmb.setItemData(2, "Ф")
 
         print("Заполнен комбобокс характера")  # Отладка
+
+    def fill_comboboxes_tp_nir_edit_row_menu(self):
+        """Заполнение комбобоксов в меню редактирования строки."""
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.clear()
+
+
+        # Заполнение комбобокса для характера
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("П - Природное")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(0, "П")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Р - Развивающее")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(1, "Р")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Ф - Фундаментальное")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(2, "Ф")
+
+        print("Заполнен комбобокс характера для редактирования")  # Отладка
 
     def save_new_row(self):
         """Сохранение новой строки в таблице Tp_nir."""
@@ -295,29 +314,29 @@ class MainWindow(QMainWindow):
             'Плановое_финансирование': planned_financing,
         }
 
-        print("Данные для сохранения:", new_record)
-
         try:
-            # Добавляем новую строку в модель
+            # Получаем модель и находим индекс редактируемой строки
             model = self.models['Tp_nir']
-            row_position = model.rowCount()
-            model.insertRow(row_position)
+            selection_model = self.tableView.selectionModel()
+            selected_indexes = selection_model.selectedIndexes()
 
+            if not selected_indexes:
+                self.show_error_message("Ошибка: не выбрана строка.")
+                return
+
+            selected_row = selected_indexes[0].row()  # Получаем индекс выбранной строки
+
+            # Обновляем данные в модели
             for key, value in new_record.items():
-                if value:  # Проверяем, что значение не пустое
-                    model.setData(model.index(row_position, model.fieldIndex(key)), value)
-                    print(f"Установлено: {key} = {value}")  # Отладка
-                else:
-                    print(f"Пустое значение для поля: {key}")
+                model.setData(model.index(selected_row, model.fieldIndex(key)), value)
 
             # Сохраняем изменения в базе данных
             if not model.submitAll():
-                print("Ошибка при сохранении данных:", model.lastError().text())  # Отладка
-                raise Exception("Ошибка сохранения данных: {}".format(model.lastError().text()))
+                raise Exception(f"Ошибка сохранения данных: {model.lastError().text()}")
 
             # Обновляем интерфейс
-            self.tableView.setModel(model)  # Убедитесь, что модель установлена
-            self.tableView.setCurrentIndex(model.index(row_position, 0))  # Устанавливаем выделение на новую строку
+            self.tableView.setModel(model)
+            self.tableView.setCurrentIndex(model.index(selected_row, 0))
             self.stackedWidget.setCurrentIndex(0)
             QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
         except Exception as e:
@@ -345,16 +364,17 @@ class MainWindow(QMainWindow):
 
         # Заполняем виджеты данными из выбранной строки
         self.Tp_nir_edit_row_menu_VUZcode_txt.setPlainText(
-            str(model.data(model.index(selected_row, model.fieldIndex('Код')))))
+            str (model.data(model.index(selected_row, model.fieldIndex('Код')))))
         self.Tp_nir_edit_row_menu_VUZ_short_name_txt.setPlainText(
             str(model.data(model.index(selected_row, model.fieldIndex('Сокращенное_имя')))))
         self.Tp_nir_edit_row_menu_grntiNumber_txt.setPlainText(
             str(model.data(model.index(selected_row, model.fieldIndex('Номер')))))
 
-        grnti_nature_values = []
-        self.fill_combobox(self.Tp_nir_edit_row_menu_grntiNature_cmb, grnti_nature_values)
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.setCurrentText(
-            str(model.data(model.index(selected_row, model.fieldIndex('Характер')))))
+        # Установка текущего значения комбобокса
+        grnti_nature = str(model.data(model.index(selected_row, model.fieldIndex('Характер'))))
+        index = self.Tp_nir_edit_row_menu_grntiNature_cmb.findData(grnti_nature)
+        if index != -1:
+            self.Tp_nir_edit_row_menu_grntiNature_cmb.setCurrentIndex(index)
 
         self.Tp_nir_edit_row_menu_grntiHead_txt.setPlainText(
             str(model.data(model.index(selected_row, model.fieldIndex('Руководитель')))))
