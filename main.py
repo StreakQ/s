@@ -4,8 +4,9 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidge
                              QAbstractItemView, QComboBox, QTextEdit, QHeaderView)
 from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
-from PyQt6.QtGui import QKeyEvent, QTextCursor
+from PyQt6.QtGui import QKeyEvent, QTextCursor, QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
+from db import *
 
 class CustomTextEdit(QTextEdit):
     def keyPressEvent(self, event: QKeyEvent):
@@ -112,21 +113,45 @@ class MainWindow(QMainWindow):
 
         self.Tp_nir_add_row_menu_grntiCode_txt = self.findChild(QTextEdit, 'Tp_nir_add_row_menu_grntiCode_txt')
 
-        # Удаляем старый QTextEdit
+        # переопределение Qtextedit для форматного ввода/редактирования кода ГРНТИ
         self.Tp_nir_add_row_menu_grntiCode_txt.deleteLater()
-
-        # Создаем новый CustomTextEdit
         self.Tp_nir_add_row_menu_grntiCode_txt = CustomTextEdit()
         self.Tp_nir_add_row_menu_grntiCode_txt.setObjectName('Tp_nir_add_row_menu_grntiCode_txt')
-
-        # Устанавливаем родителем Tp_nir_add_row_menu
         self.Tp_nir_add_row_menu_grntiCode_txt.setParent(self.Tp_nir_add_row_menu)
-
-        # Устанавливаем геометрию вручную
         self.Tp_nir_add_row_menu_grntiCode_txt.setGeometry(20, 190, 1101, 31)
-
-        # Показываем новый виджет
         self.Tp_nir_add_row_menu_grntiCode_txt.show()
+
+        # Подключение сигналов для отчетов///////////пока не активно
+        self.action_show_reports.triggered.connect(self.show_reports_menu)
+        self.generate_report_by_vuz_btn.clicked.connect(self.generate_report_by_vuz)
+        self.generate_report_by_grnti_btn.clicked.connect(self.generate_report_by_grnti)
+        self.generate_report_by_character_btn.clicked.connect(self.generate_report_by_character)
+
+    def generate_report_by_vuz(self):
+        """Генерация отчета по вузам."""
+        report_data = get_report_by_vuz()
+        self.display_report(report_data)
+
+    def generate_report_by_grnti(self):
+        """Генерация отчета по рубрикам ГРНТИ."""
+        report_data = get_report_by_grnti()
+        self.display_report(report_data)
+
+    def generate_report_by_character(self):
+        """Генерация отчета по характеру НИР."""
+        report_data = get_report_by_character()
+        self.display_report(report_data)
+
+    def display_report(self, report_data):
+        """Отображение отчета в QTableView."""
+        model = QStandardItemModel()
+        model.setHorizontalHeaderLabels(["Наименование", "Количество НИР", "Объем финансирования"])
+
+        for row in report_data:
+            items = [QStandardItem(str(item)) for item in row]
+            model.appendRow(items)
+
+        self.report_table_view.setModel(model)
 
     def open_add_row_menu(self):
         """Сброс состояния и открытие меню добавления строки."""
