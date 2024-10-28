@@ -236,6 +236,11 @@ class MainWindow(QMainWindow):
             self.show_error_message("Запись с таким Кодом и Номером уже существует.")
             return
 
+        if int(planned_financing) <= 0:
+            self.show_error_message("Плановое финансирование не может быть равна нулю или меньше нуля")
+            return
+
+
         # Создаем новый словарь для записи
         new_record = {
             'Номер': grnti_number,
@@ -292,6 +297,9 @@ class MainWindow(QMainWindow):
                     planned_financing]):
             self.show_error_message("Пожалуйста, заполните все поля.")
             return
+        if int(planned_financing) <= 0:
+            self.show_error_message("Плановое финансирование не может быть равна нулю или меньше нуля")
+            return
 
         new_record = {
             'Код': vuz_code,
@@ -330,7 +338,7 @@ class MainWindow(QMainWindow):
             self.stackedWidget.setCurrentIndex(0)
             QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
         except Exception as e:
-            self.show_error_message(f"Ошибка при сохранении данных: {e}")
+            self.show_error_message(f"Ошибка при сохранении данных:")
 
     def update_tp_fv(self):
         """Обновление данных в таблице Tp_fv на основе изменений в Tp_nir."""
