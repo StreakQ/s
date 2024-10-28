@@ -2,32 +2,37 @@ import os
 import sqlite3
 import csv
 from PyQt6.QtSql import *
-from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
+from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem, QTextEdit
+from PyQt6.QtCore import Qt
 
 db_name = 'databases//database.db'
 
+
 def create_database():
+    """Создание базы данных."""
     if os.path.exists(db_name):
-        os.remove(db_name)
+        try:
+            os.remove(db_name)
+        except PermissionError:
+            print("Ошибка: файл занят другим процессом. Попробуйте закрыть все соединения с базой данных.")
+            return  # Выход из функции, если файл занят
     conn = sqlite3.connect(db_name)
     conn.commit()
     conn.close()
 
-def connect_db(db_name_name):
-    db_name = QSqlDatabase.addDatabase('QSQLITE')
-    db_name.setDatabaseName(db_name_name)
-    if not db_name.open():
-        print('не удалось подключиться к базе')
-        return False
-    return db_name
 
-# if not connect_db(db_name):
-#     sys.exit(-1)
-# else:
-#     print('Connection OK')
+def connect_db(db_name_name):
+    """Подключение к базе данных."""
+    db = QSqlDatabase.addDatabase('QSQLITE')
+    db.setDatabaseName(db_name_name)
+    if not db.open():
+        print('Не удалось подключиться к базе')
+        return False
+    return db
 
 
 def create_table_tp_nir():
+    """Создание таблицы Tp_nir."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
     c.execute('DROP TABLE IF EXISTS Tp_nir')
@@ -49,7 +54,9 @@ def create_table_tp_nir():
     conn.commit()
     conn.close()
 
+
 def create_table_vuz():
+    """Создание таблицы VUZ."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
     c.execute('DROP TABLE IF EXISTS VUZ')
@@ -73,7 +80,9 @@ def create_table_vuz():
     conn.commit()
     conn.close()
 
+
 def create_table_grntirub():
+    """Создание таблицы grntir ub."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
     c.execute('DROP TABLE IF EXISTS grntirub')
@@ -85,7 +94,9 @@ def create_table_grntirub():
     conn.commit()
     conn.close()
 
+
 def create_table_tp_fv():
+    """Создание таблицы Tp_fv."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
     c.execute('DROP TABLE IF EXISTS Tp_fv')
@@ -101,7 +112,9 @@ def create_table_tp_fv():
     conn.commit()
     conn.close()
 
+
 def import_table_tp_nir_from_csv():
+    """Импорт таблицы Tp_nir из CSV."""
     csv_file = 'databases//Tp_nir.csv'
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
@@ -126,7 +139,9 @@ def import_table_tp_nir_from_csv():
     conn.commit()
     conn.close()
 
+
 def import_table_vuz_from_csv():
+    """Импорт таблицы VUZ из CSV."""
     csv_file = 'databases//VUZ.csv'
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
@@ -150,7 +165,9 @@ def import_table_vuz_from_csv():
     conn.commit()
     conn.close()
 
+
 def import_table_grntirub_from_csv():
+    """Импорт таблицы grntirub из CSV."""
     csv_file = 'databases//grntirub.csv'
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
@@ -172,7 +189,9 @@ def import_table_grntirub_from_csv():
     conn.commit()
     conn.close()
 
+
 def import_table_tp_fv_from_csv():
+    """Импорт таблицы Tp_fv из CSV."""
     csv_file = 'databases//Tp_fv.csv'
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
@@ -197,6 +216,7 @@ def import_table_tp_fv_from_csv():
 
 
 def make_correct_cod_grnti():
+    """Создание правильного кода ГРНТИ."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
     c.execute('''SELECT 
@@ -216,7 +236,9 @@ def make_correct_cod_grnti():
     conn.commit()
     conn.close()
 
+
 def input_short_name_from_vuz():
+    """Ввод сокращенного имени из VUZ."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
     c.execute('''SELECT VUZ."Код",
@@ -232,9 +254,8 @@ def input_short_name_from_vuz():
     conn.close()
 
 
-
-
 def fill_tp_fv():
+    """Заполнение таблицы Tp_fv."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
     c.execute('''INSERT INTO Tp_fv ("Код", "Сокращенное_имя", "Плановое_финансирование", "Количество_НИР")
@@ -252,15 +273,19 @@ def fill_tp_fv():
     conn.commit()
     conn.close()
 
+
 def connect_db(db_name):
+    """Подключение к базе данных."""
     db = QSqlDatabase.addDatabase('QSQLITE')
     db.setDatabaseName(db_name)
     if not db.open():
-        print('не удалось подключиться к базе')
+        print('Не удалось подключиться к базе')
         return False
     return db
 
+
 def get_column_values_from_table(column_name):
+    """Получение значений столбца из таблицы."""
     try:
         conn = sqlite3.connect(db_name)
         c = conn.cursor()
@@ -275,8 +300,9 @@ def get_column_values_from_table(column_name):
             conn.close()
     return column
 
+
 def get_column_name_with_linked_value(value):
-    '''Получение имени столбца выбранного значения из GUI'''
+    """Получение имени столбца с выбранным значением."""
     try:
         conn = sqlite3.connect(db_name)
         c = conn.cursor()
@@ -285,110 +311,76 @@ def get_column_name_with_linked_value(value):
         c.execute("PRAGMA table_info(VUZ)")
         rows2 = c.fetchall()
         rows = rows1 + rows2
+
         for row in rows:
-            query = "SELECT ? FROM Tp_nir INNER JOIN VUZ ON VUZ.Код = Tp_nir.Код WHERE ? = ?"
-            c.execute(query, (row[1], row[1], value))
+            column_name = row[1]  # Имя столбца
+            query = f"SELECT {column_name} FROM Tp_nir INNER JOIN VUZ ON VUZ.Код = Tp_nir.Код WHERE {column_name} = ?"
+            c.execute(query, (value,))
             if c.fetchone():
-                return row[1]
+                return column_name
     except sqlite3.Error as e:
         print(f"Error: {e}")
         return None
     finally:
         if conn:
             conn.close()
-    return None
 
-def hard_filter(selected_value):
-    '''Фильтрация по области, оркругу, городу, вузу'''
-    #selected_value - это значение, выбранное из выпадающего  меню в GUI и переданное в функцию
-    # получение из GUI selected_value
-
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    column_name = get_column_name_with_linked_value(selected_value)
-    c.execute(f'''CREATE VIEW table_1 AS
-                        SELECT * 
-                        FROM Tp_fv
-                        INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код" 
-                        WHERE {column_name} = ?''', selected_value)
-    rows = c.fetchall()
-
-    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
-    # получение нового selected_value и  column_name из GUI
-    column_name = get_column_name_with_linked_value(selected_value)
-    c.execute(f'''CREATE VIEW table_2 AS
-                            SELECT * 
-                            FROM table_1
-                            INNER JOIN VUZ ON VUZ."Код" = table_1."Код" 
-                            WHERE {column_name} = ?''', selected_value)
-    rows = c.fetchall()
-
-    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
-    # получение нового selected_value и  column_name из GUI
-    column_name = get_column_name_with_linked_value(selected_value)
-    c.execute(f'''CREATE VIEW table_3 AS
-                               SELECT * 
-                               FROM table_2
-                               INNER JOIN VUZ ON VUZ."Код" = table_2."Код" 
-                               WHERE {column_name} = ?''', selected_value)
-    rows = c.fetchall()
-
-    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
-    # получение нового selected_value и  column_name из GUI
-    column_name = get_column_name_with_linked_value(selected_value)
-    c.execute(f'''
-                               SELECT * 
-                               FROM table_3
-                               INNER JOIN VUZ ON VUZ."Код" = table_3."Код" 
-                               WHERE {column_name} = ?''', selected_value)
-    rows = c.fetchall()
-    # отображение полученных значений в GUI(создание нового экземпляра QSqlTableModel?)
-    conn.commit()
-    conn.close()
-
-def delete_string_in_table(table):
-    '''Удаление всей строки таблицы'''
-    selected_values = table.selectedItems()
-    if not selected_values:
-        return
-
-    row = table.row(selected_values[0])
-    prompt = QMessageBox.critical(None,"Удаление строки",f"Вы уверены, что желаете удалить строку: {selected_values[0]}")
-    if prompt == QMessageBox.Yes:
-        table.removeRow(row)
-        return True
-    else:
-        return False
+# def hard_filter(selected_values):
+#     """Фильтрация по выбранным значениям."""
+#     conn = sqlite3.connect(db_name)
+#     c = conn.cursor()
+#
+#     previous_results = None
+#     for selected_value in selected_values:
+#         column_name = get_column_name_with_linked_value(selected_value)
+#
+#         if previous_results is None:
+#             query = '''
+#                 SELECT *
+#                 FROM Tp_fv
+#                 INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
+#                 WHERE {} = ?
+#             '''.format(column_name)
+#         else:
+#             query = '''
+#                 SELECT *
+#                 FROM ({}) AS prev
+#                 INNER JOIN Tp_fv ON prev."Код" = Tp_fv."Код"
+#                 INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
+#                 WHERE {} = ?
+#             '''.format(previous_results, column_name)
+#
+#         c.execute(query, (selected_value,))
+#
+#         model = QSqlQueryModel()
+#         model.setQuery(c)
+#         tableView.setModel(model)
+#
+#         previous_results = c.fetchall()
+#
+#     conn.close()
 
 
-def change_string_in_table(table):
-    '''Изменение строки таблицы'''
-    selected_values = table.selectedItems()
-    if not selected_values:
-        return
+def delete_string_in_table(table_view, table_model):
+    """Удаление строки из таблицы."""
+    try:
+        selection_model = table_view.selectionModel()
+        selected_rows = selection_model.selectedRows()
+        if not selected_rows:
+            return
 
-    # Get the row index of the selected items
-    row = selected_values[0].row()
-
-    # Create a list to store the values to be displayed in the popup menu
-    popup_menu_values = [item.text() for item in selected_values]
-
-    # Display the popup menu with the updated values
-    # (assuming you have a function to display the popup menu)
-    display_popup_menu(popup_menu_values)
-
-    # Update the table with the new values
-    for col, item in enumerate(selected_values):
-        table.setItem(row, col, QTableWidgetItem(item.text()))
-
-def display_popup_menu(lst):
-    '''отображение строки в возникающем меню для возможности изменения строки'''
-    for item in lst:
-        #установка в ячейку каждого меню соответствующего значения
-        pass
+        prompt = QMessageBox.question(None,"Удаление строки",f"Вы уверены, что желаете удалить строку?")
+        if prompt == QMessageBox.StandardButton.Yes:
+            for row in sorted(index.row() for index in selected_rows)[::-1]:
+                table_model.removeRow(row)
+            return True
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    return False
 
 
 def prepare_tables():
+    """Подготовка таблиц."""
     create_database()
 
     create_table_tp_nir()
@@ -404,8 +396,3 @@ def prepare_tables():
     make_correct_cod_grnti()
     input_short_name_from_vuz()
     fill_tp_fv()
-
-
-
-
-
