@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1127</width>
-    <height>703</height>
+    <width>1403</width>
+    <height>933</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,764 +17,665 @@
    <string notr="true">background-color: rgb(240, 240, 240);</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTableView" name="tableView">
+   <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>15</x>
+      <x>11</x>
       <y>11</y>
-      <width>541</width>
-      <height>641</height>
+      <width>1388</width>
+      <height>671</height>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: rgb(255, 255, 255);</string>
+     <string notr="true">background-color: rgb(240, 240, 240);</string>
     </property>
-   </widget>
-   <widget class="QWidget" name="add_widget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>560</x>
-      <y>20</y>
-      <width>531</width>
-      <height>631</height>
-     </rect>
+    <property name="currentIndex">
+     <number>2</number>
     </property>
-    <widget class="QWidget" name="Tp_fv_add_widget" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>531</width>
-       <height>601</height>
-      </rect>
-     </property>
-     <widget class="QTextEdit" name="Tp_fv_add_Code_textEdit">
+    <widget class="QWidget" name="page">
+     <widget class="QTableView" name="tableView">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>30</y>
-        <width>211</width>
-        <height>31</height>
+        <x>0</x>
+        <y>10</y>
+        <width>1381</width>
+        <height>651</height>
        </rect>
       </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_fv_add_VUZshortname_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>70</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_fv_add_plannedFinancing_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>110</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_fv_add_actualFinancing_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>150</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_23">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>30</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Код</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_24">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>70</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Сокращенное название ВУЗа</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_25">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>110</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Плановое финансирование</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_26">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>150</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Фактическое финансирование</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="Tp_fv_add_widget_saveButton">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>200</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Сохранить</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="add_widget_close_pushButton4">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>200</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Отменить</string>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(255, 255, 255);</string>
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="grntirub_add_widget" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>531</width>
-       <height>601</height>
-      </rect>
-     </property>
-     <widget class="QTextEdit" name="grnti_add_categoryCode_textEdit">
+    <widget class="QWidget" name="page_add_widget">
+     <widget class="QWidget" name="Tp_nir_add_row_menu" native="true">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>30</y>
-        <width>211</width>
-        <height>31</height>
+        <x>0</x>
+        <y>0</y>
+        <width>1381</width>
+        <height>651</height>
        </rect>
       </property>
-     </widget>
-     <widget class="QTextEdit" name="grnti_add_categoryName_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>70</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_21">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>30</y>
-        <width>201</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Код рубрики</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_22">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>70</y>
-        <width>201</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Название рубрики</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="grnti_add_widget_saveButton">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>120</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Сохранить</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="add_widget_close_pushButton3">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>120</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Отменить</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="Tp_nir_add_widget" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>531</width>
-       <height>601</height>
-      </rect>
-     </property>
-     <widget class="QTextEdit" name="Tp_nir_add_VUZcode_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>30</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_nir_add_grntiNumber_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>70</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="Tp_nir_add_grntiNature_comboBox">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>110</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_nir_add_VUZshortname_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>150</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_nir_add_grntiHead_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>190</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_nir_add_grntiCode_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>230</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_nir_add_grntiName_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>270</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_nir_add_grntiHeadPost_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>310</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="Tp_nir_add_plannedFinancing_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>350</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="Tp_nir_add_widget_saveButton">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>400</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Сохранить</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="add_widget_close_pushButton2">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>400</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Отменить</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_12">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>30</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Код ВУЗа</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_13">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>70</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Номер НИР</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_14">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>110</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Характер НИР</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_15">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>150</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Сокращенное название ВУЗа</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_16">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>190</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Руководитель НИР</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_17">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>230</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Коды ГРНТИ</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_18">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>270</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Название НИР</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_19">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>310</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Должность руководителя НИР</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_20">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>350</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Плановое финансирование НИР</string>
-      </property>
+      <widget class="QTextEdit" name="Tp_nir_add_row_menu_grntiNumber_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>70</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Tp_nir_add_row_menu_grntiNature_cmb">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>110</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_add_add_row_menu_grntiHead_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>150</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_add_row_menu_grntiCode_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>190</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_add_row_menu_grntiName_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>230</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_add_row_menu_grntiHeadPost_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>270</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_add_row_menu_plannedFinancing_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>310</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="Tp_nir_add_row_menu_save_btn">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>390</y>
+         <width>93</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Сохранить</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="Tp_nir_add_row_menu_close_btn">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>390</y>
+         <width>93</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Отменить</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="cod">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>30</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Код ВУЗа - название ВУЗа</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="num_nir">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>70</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Номер НИР</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="character">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>110</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Характер НИР</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="prepod_name">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>150</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Руководитель НИР</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="grnti_cod">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>190</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Коды ГРНТИ</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="name_nir">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>230</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Название НИР</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="prepod_job">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>270</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Должность руководителя НИР</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="plan_fin">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>310</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Плановое финансирование НИР</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Tp_nir_add_row_menu_VUZcode_name_cmb">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>30</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
      </widget>
     </widget>
-    <widget class="QWidget" name="VUZ_add_widget" native="true">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>531</width>
-       <height>601</height>
-      </rect>
-     </property>
-     <widget class="QTextEdit" name="VUZ_add_VUZcode_textEdit">
+    <widget class="QWidget" name="page_redact_widget">
+     <widget class="QWidget" name="Tp_nir_edit_row_menu" native="true">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>30</y>
-        <width>211</width>
+        <x>0</x>
+        <y>10</y>
+        <width>1381</width>
+        <height>601</height>
+       </rect>
+      </property>
+      <widget class="QPushButton" name="Tp_nir_edit_row_menu_close_btn">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>400</y>
+         <width>93</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Отменить</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_21">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>310</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Должность руководителя НИР</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiNumber_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>110</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_22">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>230</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Коды ГРНТИ</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_23">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>110</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Номер НИР</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiName_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>270</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_plannedFinancing_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>350</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="Tp_nir_edit_row_menu_save_btn">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>400</y>
+         <width>93</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Сохранить</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_25">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>190</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Руководитель НИР</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_26">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>270</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Название НИР</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Tp_nir_edit_row_menu_grntiNature_cmb">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>150</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiCode_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>230</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiHeadPost_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>310</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_27">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>30</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Код ВУЗа</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_grntiHead_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>190</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_28">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>150</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Характер НИР</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_29">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>350</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Плановое финансирование НИР</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_VUZ_short_name_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>70</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_24">
+       <property name="geometry">
+        <rect>
+         <x>1140</x>
+         <y>70</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Название ВУЗа</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="Tp_nir_edit_row_menu_VUZcode_txt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>30</y>
+         <width>1101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_complex_filter_widget">
+     <widget class="QComboBox" name="Federal_District_comboBox">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>1021</width>
         <height>31</height>
        </rect>
       </property>
      </widget>
-     <widget class="QTextEdit" name="VUZ_add_VUZname_textEdit">
+     <widget class="QComboBox" name="Federation_subject_comboBox">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>70</y>
-        <width>211</width>
+        <x>10</x>
+        <y>60</y>
+        <width>1021</width>
         <height>31</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="label">
+     <widget class="QComboBox" name="City_comboBox">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>30</y>
-        <width>81</width>
+        <x>10</x>
+        <y>110</y>
+        <width>1021</width>
         <height>31</height>
        </rect>
-      </property>
-      <property name="text">
-       <string> Код ВУЗа</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_2">
+     <widget class="QComboBox" name="VUZ_comboBox">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>70</y>
-        <width>151</width>
+        <x>10</x>
+        <y>160</y>
+        <width>1021</width>
         <height>31</height>
        </rect>
-      </property>
-      <property name="text">
-       <string>Наименование ВУЗа</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>110</y>
-        <width>151</width>
-        <height>31</height>
+        <x>1040</x>
+        <y>10</y>
+        <width>121</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Полное название ВУЗа</string>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="VUZ_add_VUZfullname_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>110</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="VUZ_add_VUZshortname_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>150</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="VUZ_add_region_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>190</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="VUZ_add_city_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>230</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
+       <string>Федеральный округ</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>150</y>
-        <width>171</width>
-        <height>31</height>
+        <x>1040</x>
+        <y>60</y>
+        <width>121</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Сокращенное название ВУЗа</string>
+       <string>Субъект федераци</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>190</y>
-        <width>151</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Регион</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_6">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>230</y>
-        <width>151</width>
-        <height>31</height>
+        <x>1040</x>
+        <y>110</y>
+        <width>121</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
        <string>Город</string>
       </property>
      </widget>
-     <widget class="QTextEdit" name="VUZ_add_status_textEdit">
+     <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>270</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="VUZ_add_areacode_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>310</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_7">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>270</y>
-        <width>151</width>
-        <height>31</height>
+        <x>1040</x>
+        <y>160</y>
+        <width>121</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Статус</string>
+       <string>ВУЗ</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_8">
+     <widget class="QPushButton" name="pushButton">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>310</y>
-        <width>151</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Код области</string>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="VUZ_add_area_textEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>350</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_9">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>350</y>
-        <width>151</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Область</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_10">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>390</y>
-        <width>151</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Тип учебного заведения</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_11">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>430</y>
-        <width>151</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Профиль ВУЗа</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="VUZ_add_VUZtype_comboBox">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>390</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="VUZ_add_profile_comboBox">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>430</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="VUZ_add_widget_saveButton">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>480</y>
+        <x>10</x>
+        <y>220</y>
         <width>93</width>
         <height>28</height>
        </rect>
       </property>
       <property name="text">
-       <string>Сохранить</string>
+       <string>ОК</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="add_widget_close_pushButton1">
+     <widget class="QPushButton" name="pushButton_3">
       <property name="geometry">
        <rect>
         <x>140</x>
-        <y>480</y>
+        <y>220</y>
         <width>93</width>
         <height>28</height>
        </rect>
@@ -784,50 +685,78 @@
       </property>
      </widget>
     </widget>
-    <widget class="QComboBox" name="add_tableChoice_comboBox">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>10</y>
-       <width>211</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_27">
-     <property name="geometry">
-      <rect>
-       <x>270</x>
-       <y>10</y>
-       <width>111</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Выберете таблицу</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="add_widget_reload_pushButton">
-     <property name="geometry">
-      <rect>
-       <x>400</x>
-       <y>10</y>
-       <width>93</width>
-       <height>28</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Обновить</string>
-     </property>
-    </widget>
    </widget>
+   <widget class="QWidget" name="Tp_nir_redact" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>620</y>
+      <width>1391</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="Tp_nir_redact_add_row_btn">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="text">
+          <string>ДОБАВИТЬ</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Tp_nir_redact_edit_row_btn">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="text">
+          <string>РЕДАКТИРОВАТЬ</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Tp_nir_redact_del_row_btn">
+         <property name="sizeIncrement">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="text">
+          <string>УДАЛИТЬ</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Tp_nir_redact_filters_btn">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="text">
+          <string>ФИЛЬТРЫ</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <zorder>Tp_nir_redact</zorder>
+   <zorder>stackedWidget</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1127</width>
+     <width>1403</width>
      <height>21</height>
     </rect>
    </property>
@@ -835,53 +764,51 @@
     <property name="title">
      <string>Отображение таблиц</string>
     </property>
-    <addaction name="action_show_VUZ"/>
-    <addaction name="separator"/>
     <addaction name="action_show_Tp_nir"/>
-    <addaction name="separator"/>
-    <addaction name="action_show_grntirub"/>
-    <addaction name="separator"/>
     <addaction name="action_show_Tp_fv"/>
+    <addaction name="separator"/>
+    <addaction name="action_show_VUZ"/>
+    <addaction name="action_show_grntirub"/>
    </widget>
    <widget class="QMenu" name="menu">
     <property name="title">
      <string>Работа с бд</string>
     </property>
-    <addaction name="action_check"/>
-    <addaction name="separator"/>
-    <addaction name="action_add"/>
-    <addaction name="action_6"/>
-    <addaction name="action_7"/>
-    <addaction name="separator"/>
-    <addaction name="add_cod_grnti"/>
-    <addaction name="separator"/>
-    <addaction name="filter_grnti"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>Формирование отчетности</string>
+     <string>Анализ</string>
     </property>
     <addaction name="action_9"/>
     <addaction name="action_10"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>Тип выделения значений</string>
+    </property>
+    <addaction name="Select_rows_action"/>
+    <addaction name="Select_columns_action"/>
+    <addaction name="Select_items_action"/>
+   </widget>
    <addaction name="menu_1"/>
-   <addaction name="menu"/>
    <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_show_VUZ">
    <property name="text">
-    <string>VUZ</string>
+    <string>ВУЗы</string>
    </property>
   </action>
   <action name="action_show_Tp_nir">
    <property name="text">
-    <string>Tp_nir</string>
+    <string>НИР</string>
    </property>
   </action>
   <action name="action_show_grntirub">
    <property name="text">
-    <string>grntirub</string>
+    <string>Рубирки ГРНТИ</string>
    </property>
   </action>
   <action name="action_check">
@@ -904,11 +831,6 @@
     <string>Удаление запси</string>
    </property>
   </action>
-  <action name="action_show_Tp_fv">
-   <property name="text">
-    <string>Tp_fv</string>
-   </property>
-  </action>
   <action name="action_9">
    <property name="text">
     <string>Формирование документов</string>
@@ -926,12 +848,32 @@
   </action>
   <action name="add_cod_grnti">
    <property name="text">
-    <string>Добавление кода грнти</string>
+    <string>Редактирование кода грнти</string>
    </property>
   </action>
   <action name="filter_grnti">
    <property name="text">
     <string>Фильтрация по коду ГРНТИ</string>
+   </property>
+  </action>
+  <action name="Select_rows_action">
+   <property name="text">
+    <string>По строкам</string>
+   </property>
+  </action>
+  <action name="Select_columns_action">
+   <property name="text">
+    <string>По столбцам</string>
+   </property>
+  </action>
+  <action name="Select_items_action">
+   <property name="text">
+    <string>Отдельная ячейка</string>
+   </property>
+  </action>
+  <action name="action_show_Tp_fv">
+   <property name="text">
+    <string>Финансирование</string>
    </property>
   </action>
  </widget>
