@@ -325,40 +325,40 @@ def get_column_name_with_linked_value(value):
         if conn:
             conn.close()
 
-# def hard_filter(selected_values):
-#     """Фильтрация по выбранным значениям."""
-#     conn = sqlite3.connect(db_name)
-#     c = conn.cursor()
-#
-#     previous_results = None
-#     for selected_value in selected_values:
-#         column_name = get_column_name_with_linked_value(selected_value)
-#
-#         if previous_results is None:
-#             query = '''
-#                 SELECT *
-#                 FROM Tp_fv
-#                 INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
-#                 WHERE {} = ?
-#             '''.format(column_name)
-#         else:
-#             query = '''
-#                 SELECT *
-#                 FROM ({}) AS prev
-#                 INNER JOIN Tp_fv ON prev."Код" = Tp_fv."Код"
-#                 INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
-#                 WHERE {} = ?
-#             '''.format(previous_results, column_name)
-#
-#         c.execute(query, (selected_value,))
-#
-#         model = QSqlQueryModel()
-#         model.setQuery(c)
-#         tableView.setModel(model)
-#
-#         previous_results = c.fetchall()
-#
-#     conn.close()
+def hard_filter(selected_values, table_view):
+    """Фильтрация по выбранным значениям."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+
+    previous_results = None
+    for selected_value in selected_values:
+        column_name = get_column_name_with_linked_value(selected_value)
+
+        if previous_results is None:
+            query = '''
+                SELECT *
+                FROM Tp_fv
+                INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
+                WHERE {} = ?
+            '''.format(column_name)
+        else:
+            query = '''
+                SELECT *
+                FROM ({}) AS prev
+                INNER JOIN Tp_fv ON prev."Код" = Tp_fv."Код"
+                INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
+                WHERE {} = ?
+            '''.format(previous_results, column_name)
+
+        c.execute(query, (selected_value,))
+
+        model = QSqlQueryModel()
+        model.setQuery(c)
+        table_view.setModel(model)
+
+        previous_results = c.fetchall()
+
+    conn.close()
 
 
 def delete_string_in_table(table_view, table_model):
@@ -396,3 +396,52 @@ def prepare_tables():
     make_correct_cod_grnti()
     input_short_name_from_vuz()
     fill_tp_fv()
+
+def get_report_by_vuz():
+    """Получение отчета по вузам."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    query = '''
+    SELECT VUZ."Сокращенное_имя", COUNT(Tp_nir."Номер") AS "Количество НИР", 
+           SUM(Tp_nir."Плановое_финансирование") AS "Объем финансирования"
+    FROM Tp_nir
+    JOIN VUZ ON Tp_nir."Код" = VUZ."Код"
+    GROUP BY VUZ."Сокращенное_имя"
+    '''
+    c.execute(query)
+    report_data = c.fetchall()
+    conn.close()
+    return report_data
+
+
+def get_report_by_grnti():
+    """Получение отчета по рубрикам ГРНТИ."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    query = '''
+    SELECT grntirub."Рубрика", COUNT(Tp_nir."Номер") AS "Количество НИР", 
+           SUM(Tp_nir."Плановое_финансирование") AS "Объем финансирования"
+    FROM Tp_nir
+    JOIN grntirub ON Tp_nir."Коды_ГРНТИ" LIKE '%' || grntirub."Код_рубрики" || '%'
+    GROUP BY grntirub."Рубрика"
+    '''
+    c.execute(query)
+    report_data = c.fetchall()
+    conn.close()
+    return report_data
+
+
+def get_report_by_character():
+    """Получение отчета по характеру НИР."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    query = '''
+    SELECT Tp_nir."Характер", COUNT(Tp_nir."Номер") AS "Количество НИР", 
+           SUM(Tp_nir."Плановое_финансирование") AS "Объем финансирования"
+    FROM Tp_nir
+    GROUP BY Tp_nir."Характер"
+    '''
+    c.execute(query)
+    report_data = c.fetchall()
+    conn.close()
+    return report_data
