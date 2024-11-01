@@ -833,8 +833,8 @@
       <widget class="QPushButton" name="Tp_nir_redact_filters_close_btn">
        <property name="geometry">
         <rect>
-         <x>80</x>
-         <y>350</y>
+         <x>170</x>
+         <y>360</y>
          <width>93</width>
          <height>28</height>
         </rect>
@@ -851,8 +851,8 @@
       <widget class="QPushButton" name="cancel_filtration_btn">
        <property name="geometry">
         <rect>
-         <x>50</x>
-         <y>310</y>
+         <x>10</x>
+         <y>360</y>
          <width>141</width>
          <height>28</height>
         </rect>
@@ -882,6 +882,24 @@
        </property>
        <property name="text">
         <string>Фильтрация по Коду ГРНТИ</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="refresh_table_btn">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>290</y>
+         <width>211</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Обновление таблицы</string>
        </property>
       </widget>
      </widget>

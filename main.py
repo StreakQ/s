@@ -7,7 +7,7 @@ from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery,QSqlQueryModel
 from PyQt6.QtGui import QKeyEvent, QTextCursor
 import sqlite3
 import pandas as pd
-
+import re
 
 class CustomTextEdit(QTextEdit):
     def keyPressEvent(self, event: QKeyEvent):
@@ -473,18 +473,26 @@ class MainWindow(QMainWindow):
 
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
-        # Get the input from the QTextEdit
-        str_cod = self.grnticode_txt.toPlainText().strip()  # Get the text and strip whitespace
+        str_cod = self.grnticode_txt.toPlainText().strip()
 
-        # Check if the input is empty or not a digit
-        if not str_cod or not str_cod.isdigit():
-            self.show_error_message("Неправильное значение. Пожалуйста, введите численные значения.")
+        # Регулярное выражение для проверки, что строка состоит из цифр и точек
+        if not str_cod or not re.match(r'^[\d.]+$', str_cod):
+            self.show_error_message(
+                "Неправильное значение. Пожалуйста, введите численные значения, разделенные точками.")
             return
 
-        # Prepare the query for filtering
-        query = f'"Коды_ГРНТИ" LIKE "{str_cod}%" '
+        # Подготовка фильтра для поиска по каждому коду
+        # Разделяем значения по точке с запятой и создаем условия
+        conditions = []
+        for part in str_cod.split(';'):
+            # Убираем пробелы и создаем условие для каждого кода
+            part = part.strip()
+            conditions.append(f'"Коды_ГРНТИ" LIKE "{part}%"')
 
-        # Set the filter on the model and refresh the view
+        # Объединяем условия с помощью AND, чтобы обе части соответствовали
+        query = ' AND '.join(conditions)
+
+        # Устанавливаем фильтр на модель
         self.models['Tp_nir'].setFilter(query)
         self.models['Tp_nir'].select()
         self.tableView.setModel(self.models['Tp_nir'])
@@ -528,6 +536,12 @@ class MainWindow(QMainWindow):
         self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
         self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
+        self.refresh_table_btn.clicked.connect(self.refresh_table)
+
+    def refresh_table(self):
+        """Обновление таблицы Tp_nir."""
+        self.update_table()  # Вызываем метод обновления таблицы
+        QMessageBox.information(self, "Обновление", "Таблица успешно обновлена.")
 
     def populate_comboboxes(self):
         """Заполнение комбобоксов значениями из столбцов VUZ."""
@@ -597,7 +611,7 @@ class MainWindow(QMainWindow):
             self.populate_combobox("Область", self.obl_cmb, filters)
 
             # Обновление таблицы Tp_nir
-            self.update_table()
+            self.update_table()  # Убедитесь, что этот метод вызывается
         finally:
             self.updating_comboboxes = False  # Сбрасываем флаг
 
@@ -628,35 +642,55 @@ class MainWindow(QMainWindow):
     def update_table(self):
         """Обновление таблицы Tp_nir на основе выбранных значений в комбобоксах."""
         filters = []
-        if self.vuz_cmb.currentText():
-            filters.append(f'"Сокращенное_имя" = "{self.vuz_cmb.currentText()}"')
-        if self.region_cmb.currentText():
-            filters.append(f'"Регион" = "{self.region_cmb.currentText()}"')
-        if self.city_cmb.currentText():
-            filters.append(f'"Город" = "{self.city_cmb.currentText()}"')
-        if self.obl_cmb.currentText():
-            filters.append(f'"Область" = "{self.obl_cmb.currentText()}"')
 
-        query = 'SELECT * FROM Tp_nir'
+        # Добавляем фильтры на основе выбранных значений в комбобоксах
+        if self.vuz_cmb.currentText():
+            filters.append(f'VUZ."Сокращенное_имя" = "{self.vuz_cmb.currentText()}"')
+        if self.region_cmb.currentText():
+            filters.append(f'VUZ."Регион" = "{self.region_cmb.currentText()}"')
+        if self.city_cmb.currentText():
+            filters.append(f'VUZ."Город" = "{self.city_cmb.currentText()}"')
+        if self.obl_cmb.currentText():
+            filters.append(f'VUZ."Область" = "{self.obl_cmb.currentText()}"')
+
+        # Формируем SQL-запрос с JOIN
+        query = '''
+            SELECT Tp_nir.*
+            FROM Tp_nir
+            JOIN VUZ ON Tp_nir."Код" = VUZ."Код"
+        '''
+
+        # Если есть фильтры, добавляем их к запросу
         if filters:
             query += ' WHERE ' + ' AND '.join(filters)
 
-        # Create a QSqlQuery object
-        ql_query = QSqlQuery()
+        print("Применяемые фильтры:", filters)
+        print("SQL-запрос:", query)
 
-        # Execute the query
+        # Создаем объект QSqlQuery и выполняем запрос
+        ql_query = QSqlQuery()
         if not ql_query.exec(query):
             print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
             return
 
-        # Set the model with the executed query
+        # Проверяем количество строк
+        if ql_query.size() == -1:
+            print("Запрос не вернул никаких данных или произошла ошибка.")
+            return
+
+        # Устанавливаем модель с выполненным запросом
         model = QSqlQueryModel()
-        model.setQuery(ql_query)  # Use the QSqlQuery object here
+        model.setQuery(ql_query)
+
+        # Проверяем количество строк в модели
+        if model.rowCount() == 0:
+            print("Нет данных, соответствующих выбранным фильтрам.")
+            self.show_error_message("Нет данных, соответствующих выбранным фильтрам.")
+
         self.tableView.setModel(model)
 
     def setup_combobox_signals(self):
-        """Подключение сигналов для комбобок сов."""
-        self.updating_comboboxes = False
+        """Подключение сигналов для комбобоксов."""
         self.vuz_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Сокращенное_имя"))
         self.region_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Регион"))
         self.city_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Город"))
