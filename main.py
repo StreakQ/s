@@ -84,6 +84,10 @@ class MainWindow(QMainWindow):
         self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableView_2.setSortingEnabled(True) #new
+        self.tableView_2.horizontalHeader().setStretchLastSection(True) #new
+        self.tableView_2.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) #new
+        self.tableView_2.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows) #new
 
         self.stackedWidget.setCurrentIndex(0)
 
@@ -92,11 +96,20 @@ class MainWindow(QMainWindow):
         self.action_show_Tp_nir.triggered.connect(lambda: self.table_show('Tp_nir'))
         self.action_show_grntirub.triggered.connect(lambda: self.table_show('grntirub'))
         self.action_show_Tp_fv.triggered.connect(lambda: self.table_show('Tp_fv'))
+        self.tableView_2.setModel(self.models['Tp_nir']) #new
 
         # Кнопки для добавления
         self.Tp_nir_redact_add_row_btn.clicked.connect(self.open_add_row_menu)
         self.Tp_nir_add_row_menu_save_btn.clicked.connect(self.save_new_row)
         self.Tp_nir_add_row_menu_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_add_row_menu))
+
+        self.Tp_nir_add_row_menu_grntiCode_txt = self.findChild(QTextEdit, 'Tp_nir_add_row_menu_grntiCode_txt')
+        self.Tp_nir_add_row_menu_grntiCode_txt.deleteLater()
+        self.Tp_nir_add_row_menu_grntiCode_txt = CustomTextEdit()
+        self.Tp_nir_add_row_menu_grntiCode_txt.setObjectName('Tp_nir_add_row_menu_grntiCode_txt')
+        self.Tp_nir_add_row_menu_grntiCode_txt.setParent(self.Tp_nir_add_row_menu)
+        self.Tp_nir_add_row_menu_grntiCode_txt.setGeometry(20, 190, 1101, 31)
+        self.Tp_nir_add_row_menu_grntiCode_txt.show()
 
         # Удалить запись
         self.Tp_nir_redact_del_row_btn.clicked.connect(lambda: self.delete_string_in_table(self.tableView))
@@ -106,23 +119,15 @@ class MainWindow(QMainWindow):
         self.Tp_nir_edit_row_menu_close_btn.clicked.connect(lambda : self.cancel(self.Tp_nir_edit_row_menu))
         self.Tp_nir_edit_row_menu_save_btn.clicked.connect(self.save_edit_row)
 
-        self.Tp_nir_add_row_menu_grntiCode_txt = self.findChild(QTextEdit, 'Tp_nir_add_row_menu_grntiCode_txt')
 
-        # Удаляем старый QTextEdit
-        self.Tp_nir_add_row_menu_grntiCode_txt.deleteLater()
+        # Фильтр
+        self.Tp_nir_redact_filters_btn.clicked.connect(self.filter) #new
+        self.Tp_nir_redact_filters_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_add_row_menu)) #new
 
-        # Создаем новый CustomTextEdit
-        self.Tp_nir_add_row_menu_grntiCode_txt = CustomTextEdit()
-        self.Tp_nir_add_row_menu_grntiCode_txt.setObjectName('Tp_nir_add_row_menu_grntiCode_txt')
 
-        # Устанавливаем родителем Tp_nir_add_row_menu
-        self.Tp_nir_add_row_menu_grntiCode_txt.setParent(self.Tp_nir_add_row_menu)
+    def on_reset_filter(self):
+        pass
 
-        # Устанавливаем геометрию вручную
-        self.Tp_nir_add_row_menu_grntiCode_txt.setGeometry(20, 190, 1101, 31)
-
-        # Показываем новый виджет
-        self.Tp_nir_add_row_menu_grntiCode_txt.show()
 
     def open_add_row_menu(self):
         """Сброс состояния и открытие меню добавления строки."""
@@ -424,24 +429,23 @@ class MainWindow(QMainWindow):
 
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
-        while True:
-            str_cod, ok = QInputDialog.getText(None, "Введите значение",
-                                               'Введите весь код ГРН ТИ или его часть без разделителей и пробелов')
-            if not ok:
-                return
-            if str_cod is None or not str_cod.isdigit():
-                self.show_error_message("Неправильное значение. Пожалуйста, введите численные значения.")
-                return
-            str_cod = str_cod.strip()
-            str_cod = self.add_delimiters_to_grnti_code(str_cod)
-            query = f' "Коды_ГРНТИ" LIKE "{str_cod}%" '
-            #query = f' "Коды_ГРНТИ" LIKE "{str_cod}%" OR "Коды_ГРНТИ" LIKE ";{str_cod}%" '
-            self.models['Tp_nir'].setFilter(query)
-            self.models['Tp_nir'].select()
-            self.tableView.setModel(self.models['Tp_nir'])
-            self.tableView.reset()
-            self.tableView.show()
-            break
+        # Get the input from the QTextEdit
+        str_cod = self.grnticode_txt.toPlainText().strip()  # Get the text and strip whitespace
+
+        # Check if the input is empty or not a digit
+        if not str_cod or not str_cod.isdigit():
+            self.show_error_message("Неправильное значение. Пожалуйста, введите численные значения.")
+            return
+
+        # Prepare the query for filtering
+        query = f'"Коды_ГРНТИ" LIKE "{str_cod}%" '
+
+        # Set the filter on the model and refresh the view
+        self.models['Tp_nir'].setFilter(query)
+        self.models['Tp_nir'].select()
+        self.tableView.setModel(self.models['Tp_nir'])
+        self.tableView.reset()
+        self.tableView.show()
 
     def show_error_message(self, message):
         """Отображение ошибочного сообщения."""
@@ -473,6 +477,14 @@ class MainWindow(QMainWindow):
         """Сохранение данных."""
         for model in self.models.values():
             model.submitAll()
+
+    def filter(self):
+        self.show_menu(self.Tp_nir_add_row_menu, 3)
+
+
+        self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
+        self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
+        self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
 
 
 if __name__ == '__main__':

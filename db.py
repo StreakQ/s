@@ -325,40 +325,41 @@ def get_column_name_with_linked_value(value):
         if conn:
             conn.close()
 
-# def hard_filter(selected_values):
-#     """Фильтрация по выбранным значениям."""
-#     conn = sqlite3.connect(db_name)
-#     c = conn.cursor()
-#
-#     previous_results = None
-#     for selected_value in selected_values:
-#         column_name = get_column_name_with_linked_value(selected_value)
-#
-#         if previous_results is None:
-#             query = '''
-#                 SELECT *
-#                 FROM Tp_fv
-#                 INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
-#                 WHERE {} = ?
-#             '''.format(column_name)
-#         else:
-#             query = '''
-#                 SELECT *
-#                 FROM ({}) AS prev
-#                 INNER JOIN Tp_fv ON prev."Код" = Tp_fv."Код"
-#                 INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
-#                 WHERE {} = ?
-#             '''.format(previous_results, column_name)
-#
-#         c.execute(query, (selected_value,))
-#
-#         model = QSqlQueryModel()
-#         model.setQuery(c)
-#         tableView.setModel(model)
-#
-#         previous_results = c.fetchall()
-#
-#     conn.close()
+def hard_filter(self, selected_values):
+    """Фильтрация по выбранным значениям."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+
+    previous_results = None
+    for selected_value in selected_values:
+        column_name = get_column_name_with_linked_value(selected_value)
+
+        if previous_results is None:
+            query = '''
+                SELECT *
+                FROM Tp_fv
+                INNER JOIN VUZ ON VUZ."Код" = Tp_fv."Код"
+                INNER JOIN Tp_nir ON Tp_nir."Код" = Tp_fv."Код"  -- Добавлено
+                WHERE {} = ?
+            '''.format(column_name)
+        else:
+            query = '''
+                SELECT *
+                FROM ({}) AS prev
+                INNER JOIN Tp_fv ON prev."Код" = Tp_fv."Код"
+                INNER JOIN VUZ ON VUZ."Код" = Tp_nir."Код"
+                WHERE {} = ?
+            '''.format(previous_results, column_name)
+
+        c.execute(query, (selected_value,))
+
+        model = QSqlQueryModel()
+        model.setQuery(c)
+        self.tableView.setModel(model)  # Используйте self.tableView
+
+        previous_results = "SELECT * FROM ({})".format(model.query().lastQuery())  # Сохраните запрос для следующего цикла
+
+    conn.close()
 
 
 def delete_string_in_table(table_view, table_model):
