@@ -5,6 +5,7 @@ from PyQt6.QtSql import *
 from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem, QTextEdit
 from PyQt6.QtCore import Qt
 
+
 db_name = 'databases//database.db'
 
 
@@ -397,3 +398,5 @@ def prepare_tables():
     make_correct_cod_grnti()
     input_short_name_from_vuz()
     fill_tp_fv()
+
+
