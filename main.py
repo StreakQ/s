@@ -124,10 +124,12 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact_filters_btn.clicked.connect(self.filter) #new
         self.Tp_nir_redact_filters_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_add_row_menu)) #new
 
-
     def on_reset_filter(self):
-        pass
-
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView.setModel(self.models['Tp_nir'])
+        self.tableView.reset()
+        self.tableView.show()
 
     def open_add_row_menu(self):
         """Сброс состояния и открытие меню добавления строки."""
