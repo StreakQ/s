@@ -64,9 +64,9 @@ def create_table_vuz():
     c.execute('''
        CREATE TABLE IF NOT EXISTS VUZ (
        "Код" INTEGER,
-       "Наименование" , 
-        "Полное_имя", 
-        "Сокращенное_имя",
+       "Наименование" TEXT, 
+       "Полное_имя" TEXT, 
+       "Сокращенное_имя" TEXT,
        "Регион" TEXT,
        "Город" TEXT,
        "Статус" TEXT,
@@ -77,7 +77,6 @@ def create_table_vuz():
        PRIMARY KEY ("Код")
        )
        ''')
-
     conn.commit()
     conn.close()
 
@@ -380,6 +379,43 @@ def delete_string_in_table(table_view, table_model):
         print(f"An error occurred: {e}")
     return False
 
+
+db_path = 'databases//database.db'
+
+# Connect to the SQLite database
+try:
+    connection = sqlite3.connect(db_path)
+    cursor = connection.cursor()
+
+    # Define the SQL query
+    query = '''
+     SELECT Tp_nir.*
+            FROM Tp_nir
+            JOIN VUZ ON Tp_nir."Код" = VUZ."Код"
+         WHERE VUZ."Сокращенное_имя" = "МАМИ" 
+         AND VUZ."Регион" = "Центральный"
+         AND VUZ."Город" = "Москва" 
+         AND VUZ."Область" = "Москва" '''
+
+    # Execute the query
+    cursor.execute(query)
+
+    # Fetch all results
+    results = cursor.fetchall()
+
+    # Print the results
+    for row in results:
+        print(row)
+
+except sqlite3.Error as e:
+    print(f"An error occurred: {e}")
+
+finally:
+    # Close the cursor and connection
+    if cursor:
+        cursor.close()
+    if connection:
+        connection.close()
 
 def prepare_tables():
     """Подготовка таблиц."""

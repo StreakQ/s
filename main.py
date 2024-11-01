@@ -9,6 +9,9 @@ import sqlite3
 import pandas as pd
 import re
 
+from db import prepare_tables
+
+
 class CustomTextEdit(QTextEdit):
     def keyPressEvent(self, event: QKeyEvent):
         current_text = self.toPlainText()
@@ -673,11 +676,6 @@ class MainWindow(QMainWindow):
             print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
             return
 
-        # Проверяем количество строк
-        if ql_query.size() == -1:
-            print("Запрос не вернул никаких данных или произошла ошибка.")
-            return
-
         # Устанавливаем модель с выполненным запросом
         model = QSqlQueryModel()
         model.setQuery(ql_query)
@@ -688,6 +686,19 @@ class MainWindow(QMainWindow):
             self.show_error_message("Нет данных, соответствующих выбранным фильтрам.")
 
         self.tableView.setModel(model)
+
+        # Проверяем количество строк в модели
+        if model.rowCount() == 0:
+            print("Нет данных, соответствующих выбранным фильтрам.")
+            self.show_error_message("Нет данных, соответствующих выбранным фильтрам.")
+
+        self.tableView.setModel(model)
+
+        # self.models['Tp_nir'].setFilter(query)
+        # self.models['Tp_nir'].select()
+        # self.tableView.setModel(self.models['Tp_nir'])
+        # self.tableView.reset()
+        # self.tableView.show()
 
     def setup_combobox_signals(self):
         """Подключение сигналов для комбобоксов."""
@@ -749,7 +760,7 @@ class MainWindow(QMainWindow):
                 self.obl_cmb.addItem(row[0])  # row[0] содержит "Область"
 
         finally:
-            conn.close()  # Убедитесь, что соединение закрыто
+            conn.close()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
