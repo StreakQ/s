@@ -629,7 +629,7 @@ class MainWindow(QMainWindow):
             self.populate_combobox("Область", self.obl_cmb, filters)
 
             # Обновление таблицы Tp_nir
-            self.update_table()  # Убедитесь, что этот метод вызывается
+            self.update_table()
         finally:
             self.updating_comboboxes = False  # Сбрасываем флаг
 
@@ -700,14 +700,8 @@ class MainWindow(QMainWindow):
             print("Нет данных, соответствующих выбранным фильтрам.")
             self.show_error_message("Нет данных, соответствующих выбранным фильтрам.")
 
-        self.tableView.setModel(model)
+        self.tableView_2.setModel(model)
 
-        # Проверяем количество строк в модели
-        if model.rowCount() == 0:
-            print("Нет данных, соответствующих выбранным фильтрам.")
-            self.show_error_message("Нет данных, соответствующих выбранным фильтрам.")
-
-        self.tableView.setModel(model)
 
         # self.models['Tp_nir'].setFilter(query)
         # self.models['Tp_nir'].select()
