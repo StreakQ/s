@@ -484,19 +484,34 @@ class MainWindow(QMainWindow):
                 "Неправильное значение. Пожалуйста, введите численные значения, разделенные точками.")
             return
 
-        # Подготовка фильтра для поиска по каждому коду
-        # Разделяем значения по точке с запятой и создаем условия
+        # Получаем количество строк в модели
+        row_count = self.models['Tp_nir'].rowCount()
         conditions = []
-        for part in str_cod.split(';'):
-            # Убираем пробелы и создаем условие для каждого кода
-            part = part.strip()
-            conditions.append(f'"Коды_ГРНТИ" LIKE "{part}%"')
 
-        # Объединяем условия с помощью AND, чтобы обе части соответствовали
-        query = ' AND '.join(conditions)
+        for row in range(row_count):
+            # Получаем значение из столбца "Коды_ГРНТИ"
+            cods = self.models['Tp_nir'].data(self.models['Tp_nir'].index(row, 5))
 
-        # Устанавливаем фильтр на модель
-        self.models['Tp_nir'].setFilter(query)
+            if cods is not None:
+                cods = cods.split(';')  # Предполагаем, что коды разделены точкой с запятой
+                cods = [cod.strip() for cod in cods]  # Убираем пробелы
+
+                if len(cods) == 1:
+                    # Если один код, применяем фильтр для одного кода
+                    if cods[0].startswith(str_cod):
+                        conditions.append(f'"Коды_ГРНТИ" = "{cods[0]}%;"')
+                elif len(cods) == 2:
+                    # Если два кода, применяем фильтр для двух кодов
+                    if any(cod.startswith(str_cod) for cod in cods):
+                        conditions.append(f'"Коды_ГРНТИ" LIKE "{str_cod}%"')
+
+
+        if conditions:
+            query = ' AND '.join(conditions)
+            self.models['Tp_nir'].setFilter(query)
+        else:
+            self.models['Tp_nir'].setFilter("")  # Если нет условий, сбрасываем фильтр
+
         self.models['Tp_nir'].select()
         self.tableView.setModel(self.models['Tp_nir'])
         self.tableView.reset()
