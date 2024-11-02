@@ -1009,21 +1009,14 @@
     <addaction name="action_show_VUZ"/>
     <addaction name="action_show_grntirub"/>
    </widget>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>Работа с бд</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
      <string>Анализ</string>
     </property>
     <addaction name="action_9"/>
-    <addaction name="action_10"/>
    </widget>
    <addaction name="menu_1"/>
    <addaction name="menu_2"/>
-   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_show_VUZ">

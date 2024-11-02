@@ -146,9 +146,11 @@ class MainWindow(QMainWindow):
     def on_reset_filter(self):
         self.models['Tp_nir'].setFilter("")
         self.models['Tp_nir'].select()
-        self.tableView.setModel(self.models['Tp_nir'])
-        self.tableView.reset()
-        self.tableView.show()
+        self.tableView_2.setModel(self.models['Tp_nir'])
+        self.tableView_2.reset()
+        self.tableView_2.show()
+        # Сброс значений в комбобоксах
+        self.populate_initial_comboboxes()
 
     def open_add_row_menu(self):
         """Сброс состояния и открытие меню добавления строки."""
@@ -701,13 +703,6 @@ class MainWindow(QMainWindow):
             self.show_error_message("Нет данных, соответствующих выбранным фильтрам.")
 
         self.tableView_2.setModel(model)
-
-
-        # self.models['Tp_nir'].setFilter(query)
-        # self.models['Tp_nir'].select()
-        # self.tableView.setModel(self.models['Tp_nir'])
-        # self.tableView.reset()
-        # self.tableView.show()
 
     def setup_combobox_signals(self):
         """Подключение сигналов для комбобоксов."""
