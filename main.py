@@ -412,65 +412,30 @@ class MainWindow(QMainWindow):
     def update_tp_fv(self):
         """Обновление данных в таблице Tp_fv на основе изменений в Tp_nir."""
         conn = QSqlDatabase.database()  # Используем подключение к базе данных
-        if not conn.isOpen():
+        if not conn.isOpen() and not conn.open():
             print("Ошибка: база данных не открыта.")
             return
 
-        # Выполняем SQL-запрос для обновления всех необходимых полей в Tp_fv
         query = '''
-            UPDATE Tp_fv
-            SET 
-                "Сокращенное_имя" = (
-                    SELECT VUZ."Сокращенное_имя"
-                    FROM VUZ
-                    WHERE Tp_fv."Код" = VUZ."Код"
-                ),
-                "Номер" = (
-                    SELECT Tp_nir."Номер"
-                    FROM Tp_nir
-                    WHERE Tp_fv."Код" = Tp_nir."Код" AND Tp_fv."Номер" = Tp_nir."Номер"
-                ),
-                "Характер" = (
-                    SELECT Tp_nir."Характер"
-                    FROM Tp_nir
-                    WHERE Tp_fv."Код" = Tp_nir."Код" AND Tp_fv."Номер" = Tp_nir."Номер"
-                ),
-                "Руководитель" = (
-                    SELECT Tp_nir."Руководитель"
-                    FROM Tp_nir
-                    WHERE Tp_fv."Код" = Tp_nir."Код" AND Tp_fv."Номер" = Tp_nir."Номер"
-                ),
-                "Коды_ГРНТИ" = (
-                    SELECT Tp_nir."Коды_ГРНТИ"
-                    FROM Tp_nir
-                    WHERE Tp_fv."Код" = Tp_nir."Код" AND Tp_fv."Номер" = Tp_nir."Номер"
-                ),
-                "НИР" = (
-                    SELECT Tp_nir."НИР"
-                    FROM Tp_nir
-                    WHERE Tp_fv."Код" = Tp_nir."Код" AND Tp_fv."Номер" = Tp_nir."Номер"
-                ),
-                "Должность" = (
-                    SELECT Tp_nir."Должность"
-                    FROM Tp_nir
-                    WHERE Tp_fv."Код" = Tp_nir."Код" AND Tp_fv."Номер" = Tp_nir."Номер"
-                ),
-                "Плановое_финансирование" = (
-                    SELECT Tp_nir."Плановое_финансирование"
-                    FROM Tp_nir
-                    WHERE Tp_fv."Код" = Tp_nir."Код" AND Tp_fv."Номер" = Tp_nir."Номер"
-                )
+                UPDATE Tp_fv
+                SET 
+                     "Плановое_финансирование" = (
+                     SELECT SUM(Tp_nir."Плановое_финансирование")
+                     FROM Tp_nir
+                     WHERE Tp_fv."Код" = Tp_nir."Код"
+                     GROUP BY Tp_nir."Код"
+    )
         '''
 
-        # Создаем объект QSqlQuery и выполняем запрос
         ql_query = QSqlQuery(conn)
         if not ql_query.exec(query):
             print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
             return
+        else:
+            print(f"Обновлено строк: {ql_query.numRowsAffected()}")
 
-        # После обновления, можно перезагрузить данные в Tp_fv
+        # Перезагрузка модели
         self.models['Tp_fv'].select()
-
         print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
 
     def fill_widgets_from_selected_row(self):
