@@ -97,6 +97,11 @@ class MainWindow(QMainWindow):
         self.city_cmb.clear()
         self.obl_cmb.clear()
 
+        self.vuz_cmb.setCurrentIndex(-1)
+        self.region_cmb.setCurrentIndex(-1)
+        self.city_cmb.setCurrentIndex(-1)
+        self.obl_cmb.setCurrentIndex(-1)
+
         self.setup_ui()
         self.show()
 
@@ -174,6 +179,7 @@ class MainWindow(QMainWindow):
         self.region_cmb.clear()  # Clear the combo box initially
         self.city_cmb.clear()  # Clear the combo box initially
         self.obl_cmb.clear()  # Clear the combo box initially
+
 
         self.populate_comboboxes()  # Populate combo boxes on UI setup
         self.setup_combobox_signals()  # Connect signals for combo boxes
@@ -493,6 +499,13 @@ class MainWindow(QMainWindow):
     def table_show(self, table_name):
         """Отображение таблицы."""
         self.tableView.setModel(self.models[table_name])
+
+        # Установка сортировки по имени вуза (например, по столбцу "Сокращенное_имя")
+        if table_name == 'Tp_nir':
+            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
+                                            Qt.SortOrder.AscendingOrder)
+
+        self.models[table_name].select()  # Обновление модели для применения сортировки
 
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""

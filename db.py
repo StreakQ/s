@@ -379,24 +379,7 @@ def delete_string_in_table(table_view, table_model):
     return False
 
 
-def print_table_info(table_name):
-    """Вывод информации о структуре таблицы."""
-    conn = sqlite3.connect(db_name)
-    cursor = conn.cursor()
 
-    try:
-        cursor.execute(f"PRAGMA table_info({table_name});")
-        columns = cursor.fetchall()
-
-        print(f"Структура таблицы {table_name}:")
-        for column in columns:
-            print(f"Имя: {column[1]}, Тип: {column[2]}, Не NULL: {column[3]}, По умолчанию: {column[4]}")
-
-    except sqlite3.Error as e:
-        print(f"Ошибка при получении информации о таблице {table_name}: {e}")
-
-    finally:
-        conn.close()
 
 
 
@@ -418,8 +401,7 @@ def prepare_tables():
     make_correct_cod_grnti()
     input_short_name_from_vuz()
     fill_tp_fv()
-    print_table_info("Tp_nir")
-    print_table_info("VUZ")
+
 
 
 prepare_tables()
