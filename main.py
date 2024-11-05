@@ -6,10 +6,7 @@ from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery,QSqlQueryModel
 from PyQt6.QtGui import QKeyEvent, QTextCursor
 import sqlite3
-import pandas as pd
 import re
-
-from db import prepare_tables
 
 
 class CustomTextEdit(QTextEdit):
@@ -134,7 +131,7 @@ class MainWindow(QMainWindow):
 
         # Фильтр
         self.Tp_nir_redact_filters_btn.clicked.connect(self.filter)  # New
-        self.Tp_nir_redact_filters_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_add_row_menu))  # New
+          # New
         self.vuz_cmb.clear()  # Clear the combo box initially
         self.region_cmb.clear()  # Clear the combo box initially
         self.city_cmb.clear()  # Clear the combo box initially
@@ -142,6 +139,22 @@ class MainWindow(QMainWindow):
 
         self.populate_comboboxes()  # Populate combo boxes on UI setup
         self.setup_combobox_signals()  # Connect signals for combo boxes
+
+
+
+
+
+    def hide_buttons(self):
+        self.Tp_nir_redact_add_row_btn.hide()
+        self.Tp_nir_redact_del_row_btn.hide()
+        self.Tp_nir_redact_edit_row_btn.hide()
+        self.Tp_nir_redact_filters_btn.hide()
+
+    def show_buttons(self):
+        self.Tp_nir_redact_add_row_btn.show()
+        self.Tp_nir_redact_del_row_btn.show()
+        self.Tp_nir_redact_edit_row_btn.show()
+        self.Tp_nir_redact_filters_btn.show()
 
     def on_reset_filter(self):
         self.models['Tp_nir'].setFilter("")
@@ -550,13 +563,25 @@ class MainWindow(QMainWindow):
         for model in self.models.values():
             model.submitAll()
 
+
+    def on_Tp_nir_redact_filters_close_btn_clicked(self):
+        self.cancel(self.Tp_nir_add_row_menu)
+        self.show_buttons()
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView.setModel(self.models['Tp_nir'])
+        self.tableView.reset()
+        self.tableView.show()
+
+
     def filter(self):
         self.show_menu(self.Tp_nir_add_row_menu, 3)
-
+        self.hide_buttons()
         self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
         self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
         self.refresh_table_btn.clicked.connect(self.refresh_table)
+        self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
 
     def refresh_table(self):
         """Обновление таблицы Tp_nir."""
