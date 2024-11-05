@@ -1,5 +1,7 @@
 import os
 import sys
+
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
                              QAbstractItemView, QComboBox, QTextEdit, QHeaderView)
 from PyQt6 import uic
@@ -14,32 +16,68 @@ class CustomTextEdit(QTextEdit):
         current_text = self.toPlainText()
         key = event.text()
 
-        if key.isdigit() or key == '.':
-            parts = current_text.split('.')
-            if key == '.':
-                if len(parts) < 3:  # Максимум 2 точки
-                    super().keyPressEvent(event)
-            else:
-                if len(parts) < 3:
-                    super().keyPressEvent(event)
-                else:
-                    if len(parts[-1]) < 2:  # Последняя часть должна быть не более 2 цифр
-                        super().keyPressEvent(event)
-        else:
+        # Обработка клавиш Backspace и Delete
+        if event.key() in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
+            super().keyPressEvent(event)
             return
 
-        self.auto_format()
+        if key.isdigit() or key == '.' or key == ';':
+            parts = current_text.split(';')
+
+            # Обработка ввода точки с запятой
+            if key == ';':
+                if len(parts) < 2:  # Максимум 2 кода
+                    super().keyPressEvent(event)
+            else:
+                # Обработка ввода цифр и точек
+                if len(parts) == 1:  # Первый код
+                    first_part = parts[0].split('.')
+                    if key == '.':
+                        if len(first_part) < 3:  # Максимум 2 точки в первом коде
+                            super().keyPressEvent(event)
+                    else:  # Ввод цифр
+                        super().keyPressEvent(event)
+
+                    # Автоматически добавляем точку с запятой после первого кода
+                    if len(parts[0]) >= 8:  # Если длина кода больше или равна 8, добавляем точку с запятой
+                        self.setPlainText(current_text + ';')
+                        cursor = self.textCursor()
+                        cursor.movePosition(QTextCursor.MoveOperation.End)
+                        self.setTextCursor(cursor)
+                        return
+
+                elif len(parts) == 2:  # Второй код
+                    second_part = parts[1].split('.')
+                    if key == '.':
+                        if len(second_part) < 3:  # Максимум 2 точки во втором коде
+                            super().keyPressEvent(event)
+                    else:  # Ввод цифр
+                        # Запрещаем ввод больше 8 символов во втором коде
+                        if len(parts[1]) < 9:
+                            super().keyPressEvent(event)
+            self.auto_format()
+
+        else:
+            return
 
     def auto_format(self):
         text = self.toPlainText().replace(" ", "")
         if len(text) > 0:
-            text = text.replace('.', '')
-            formatted_text = ''
-            for i in range(len(text)):
-                formatted_text += text[i]
-                if (i + 1) % 2 == 0 and (i + 1) < len(text):
-                    formatted_text += '.'
-            self.setPlainText(formatted_text)
+            parts = text.split(';')
+            formatted_parts = []
+
+            for part in parts:
+                part = part.replace('.', '')  # Убираем точки для форматирования
+                formatted_part = ''
+                for i in range(len(part)):
+                    formatted_part += part[i]
+                    if (i + 1) % 2 == 0 and (i + 1) < len(part):
+                        formatted_part += '.'
+                if len(formatted_part) > 8:
+                    formatted_part = formatted_part[:8]
+                formatted_parts.append(formatted_part)
+
+            self.setPlainText('; '.join(formatted_parts))  # Объединяем части с точкой с запятой
 
             cursor = self.textCursor()
             cursor.movePosition(QTextCursor.MoveOperation.End)
@@ -169,6 +207,8 @@ class MainWindow(QMainWindow):
         """Сброс состояния и открытие меню добавления строки."""
         self.reset_add_row_menu()  # Сброс состояния меню
         self.fill_comboboxes_tp_nir_add_row_menu()  # Заполнение комбобоксов
+        self.Tp_nir_add_row_menu_VUZcode_name_cmb.setCurrentIndex(-1)
+        self.Tp_nir_add_row_menu_grntiNature_cmb.setCurrentIndex(-1)
         self.show_menu(self.Tp_nir_add_row_menu, 1)  # Показ меню
 
     def reset_add_row_menu(self):
@@ -180,7 +220,7 @@ class MainWindow(QMainWindow):
         self.Tp_nir_add_row_menu_grntiName_txt.clear()
         self.Tp_nir_add_row_menu_grntiHeadPost_txt.clear()
         self.Tp_nir_add_row_menu_plannedFinancing_txt.clear()
-        self.Tp_nir_add_row_menu_VUZcode_name_cmb.setCurrentIndex(0)
+        self.Tp_nir_add_row_menu_VUZcode_name_cmb.setCurrentIndex(-1)
 
     def show_menu(self, menu, index):
         """Отображение указанного меню."""
