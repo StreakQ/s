@@ -272,12 +272,10 @@ class MainWindow(QMainWindow):
         self.Tp_nir_edit_row_menu_grntiNature_cmb.clear()
 
         # Заполнение комбобокса для характера
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("П - Природное")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(0, "П")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Р - Развивающее")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(1, "Р")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Ф - Фундаментальное")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(2, "Ф")
+        # Добавление элементов в комбобокс с пояснениями
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("П - Природное", "П")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Р - Развивающее", "Р")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Ф - Фундаментальное", "Ф")
 
         print("Заполнен комбобокс характера для редактирования")  # Отладка
 
@@ -297,6 +295,9 @@ class MainWindow(QMainWindow):
         if not all([grnti_number, grnti_nature, grnti_head, grnti_code, grnti_name, grnti_head_post, planned_financing,
                     vuz_code]):
             self.show_error_message("Пожалуйста, заполните все поля.")
+            return
+        if int(planned_financing) <= 0:
+            self.show_error_message("Плановое финансирование не может быть меньше или равно 0")
             return
 
         # Проверка на существование записи
@@ -337,8 +338,8 @@ class MainWindow(QMainWindow):
         try:
             # Получаем модель и добавляем новую строку
             model = self.models['Tp_nir']
-            row_position = model.rowCount()
-            model.insertRow(row_position)
+            row_position = model.rowCount()  # Получаем текущую позицию для новой строки
+            model.insertRow(row_position)  # Вставляем новую строку
 
             # Заполняем новую строку данными
             for key, value in new_record.items():
@@ -350,10 +351,14 @@ class MainWindow(QMainWindow):
             if not model.submitAll():
                 raise Exception(f"Ошибка сохранения данных: {model.lastError().text()}")
 
-            # Устанавливаем выделение на новую строку и обновляем интерфейс
-            self.tableView.setCurrentIndex(model.index(row_position, 0))
-            self.stackedWidget.setCurrentIndex(0)
-            QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
+            # Обновляем модель
+            model.select()  # Обновляем модель, чтобы отобразить изменения
+
+            # Устанавливаем выделение на новую строку
+            self.tableView.setCurrentIndex(model.index(row_position, 0))  # Устанавливаем выделение на новую строку
+            self.stackedWidget.setCurrentIndex(0)  # Возвращаемся на основной экран
+            #QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
+
 
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
@@ -574,7 +579,15 @@ class MainWindow(QMainWindow):
         confirmation_box.exec()
 
         if confirmation_box.clickedButton() == delete_button:
+            # Удаляем строку
             table_view.model().removeRow(selected_indexes[0].row())
+
+            # Обновляем таблицу и сортируем по "Сокращенное имя"
+            self.models['Tp_nir'].select()
+            self.models['Tp_nir'].setSort(self.models['Tp_nir'].fieldIndex("Сокращенное_имя"),
+                                          Qt.SortOrder.AscendingOrder)
+            self.models['Tp_nir'].select()  # Применяем сортировку
+            self.tableView.setModel(self.models['Tp_nir'])
 
     def save_data(self):
         """Сохранение данных."""
