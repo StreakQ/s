@@ -174,15 +174,10 @@ class MainWindow(QMainWindow):
 
         # Фильтр
         self.Tp_nir_redact_filters_btn.clicked.connect(self.filter)  # New
-          # New
-        self.vuz_cmb.clear()  # Clear the combo box initially
-        self.region_cmb.clear()  # Clear the combo box initially
-        self.city_cmb.clear()  # Clear the combo box initially
-        self.obl_cmb.clear()  # Clear the combo box initially
 
 
-        self.populate_comboboxes()  # Populate combo boxes on UI setup
-        self.setup_combobox_signals()  # Connect signals for combo boxes
+        self.populate_comboboxes()
+        self.setup_combobox_signals()
 
 
 
@@ -604,28 +599,38 @@ class MainWindow(QMainWindow):
         self.tableView.reset()
         self.tableView.show()
 
-
     def filter(self):
         self.show_menu(self.Tp_nir_add_row_menu, 3)
         self.hide_buttons()
+
+        # Очистка текущих значений комбобоксов
+        self.vuz_cmb.setCurrentIndex(-1)
+        self.region_cmb.setCurrentIndex(-1)
+        self.city_cmb.setCurrentIndex(-1)
+        self.obl_cmb.setCurrentIndex(-1)
+
+        # Заполнение комбобоксов значениями
+        self.populate_comboboxes()
+        self.on_reset_filter()
+
+        # Подключение сигналов для фильтрации
         self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
         self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
-        self.refresh_table_btn.clicked.connect(self.refresh_table)
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
-
-    def refresh_table(self):
-        """Обновление таблицы Tp_nir."""
-        self.update_table()  # Вызываем метод обновления таблицы
-        QMessageBox.information(self, "Обновление", "Таблица успешно обновлена.")
 
     def populate_comboboxes(self):
         """Заполнение комбобоксов значениями из столбцов VUZ."""
-        # Заполняем комбобоксы только по выбору
+
+
+        # Заполняем комбобоксы значениями
         self.populate_combobox("Сокращенное_имя", self.vuz_cmb)
         self.populate_combobox("Регион", self.region_cmb)
         self.populate_combobox("Город", self.city_cmb)
         self.populate_combobox("Область", self.obl_cmb)
+
+
+
 
     def populate_combobox(self, column_name, combo_box, filters=None):
         """Заполнение конкретного комбобокса с учетом фильтра."""
@@ -642,6 +647,9 @@ class MainWindow(QMainWindow):
 
         df = conn.execute(query).fetchall()
 
+        # Отладка: выводим извлеченные данные
+        print(f"Данные для комбобокса {column_name}: {df}")
+
         current_value = combo_box.currentText()
         combo_box.clear()
 
@@ -649,8 +657,9 @@ class MainWindow(QMainWindow):
             if value:
                 combo_box.addItem(value[0])
 
-        if current_value in [combo_box.itemText(i) for i in range(combo_box.count())]:
-            combo_box.setCurrentText(current_value)
+        # Убедитесь, что текущий текст не устанавливается после заполнения
+        # if current_value in [combo_box.itemText(i) for i in range(combo_box.count())]:
+        #     combo_box.setCurrentText(current_value)
 
         conn.close()
 
@@ -679,9 +688,7 @@ class MainWindow(QMainWindow):
                 filters.append(f'VUZ."Область" = "{obl_selected}"')
 
             # Обновляем комбобоксы на основе фильтров
-            if column_name != "Сокращенное_имя":  # Если изменен не ВУЗ, обновляем его
-                self.populate_combobox("Сокращенное_имя", self.vuz_cmb, filters)
-
+            self.populate_combobox("Сокращенное_имя", self.vuz_cmb, filters)
             self.populate_combobox("Регион", self.region_cmb, filters)
             self.populate_combobox("Город", self.city_cmb, filters)
             self.populate_combobox("Область", self.obl_cmb, filters)
@@ -769,11 +776,7 @@ class MainWindow(QMainWindow):
 
     def populate_initial_comboboxes(self):
         """Заполнение комбобоксов существующими данными из связанных таблиц."""
-        # Очистка комбобоксов
-        # self.vuz_cmb.clear()
-        # self.region_cmb.clear()
-        # self.city_cmb.clear()
-        # self.obl_cmb.clear()
+
 
         # Создаем подключение к базе данных SQLite
         conn = sqlite3.connect(self.db_name)
