@@ -127,6 +127,37 @@ def create_table_vuz_summary():
     conn.commit()
     conn.close()
 
+def create_table_grnti_summary():
+    """Создание таблицы GRNTI_Summary."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS GRNTI_Summary')
+    c.execute('''
+       CREATE TABLE IF NOT EXISTS GRNTI_Summary (
+       "Код_рубрики" TEXT,
+       "Название_рубрики" TEXT,
+       "Количество_НИР" INTEGER,
+       "Сумма_планового_финансирования" INTEGER
+       )
+       ''')
+    conn.commit()
+    conn.close()
+
+def create_table_nir_character_summary():
+    """Создание таблицы NIR_Character_Summary."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS NIR_Character_Summary')
+    c.execute('''
+       CREATE TABLE IF NOT EXISTS NIR_Character_Summary (
+       "Характер" TEXT,
+       "Количество_НИР" INTEGER,
+       "Сумма_планового_финансирования" INTEGER
+       )
+       ''')
+    conn.commit()
+    conn.close()
+
 def import_table_tp_nir_from_csv():
     """Импорт таблицы Tp_nir из CSV."""
     csv_file = 'databases//Tp_nir.csv'
@@ -292,10 +323,8 @@ def fill_vuz_summary():
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
 
-    # Сначала очищаем таблицу
     c.execute('DELETE FROM VUZ_Summary')
 
-    # Заполняем таблицу данными только для вузов, которые есть в Tp_nir
     query = '''
         INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
         SELECT 
@@ -306,7 +335,7 @@ def fill_vuz_summary():
         FROM VUZ
         LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
         LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
-        WHERE Tp_nir."Код" IS NOT NULL  -- Условие для фильтрации вузов
+        WHERE Tp_nir."Код" IS NOT NULL 
         GROUP BY VUZ."Сокращенное_имя"
     '''
     c.execute(query)
@@ -320,6 +349,62 @@ def fill_vuz_summary():
             SUM("Сумма_количества_НИР"),
             SUM("Сумма_фактического_финансирования")
         FROM VUZ_Summary
+    ''')
+
+    conn.commit()
+    conn.close()
+
+def fill_grnti_summary():
+    """Заполнение таблицы GRNTI_Summary."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+
+    c.execute('DELETE FROM GRNTI_Summary')  # Очистка таблицы перед заполнением
+
+    query = '''
+        INSERT INTO GRNTI_Summary ("Код_рубрики", "Название_рубрики", "Количество_НИР", "Сумма_планового_финансирования")
+        SELECT 
+            substr(Tp_nir."Коды_ГРНТИ", 1, 2) AS "Код_рубрики",  -- Первые две цифры из Коды_ГРНТИ
+            grntirub."Рубрика" AS "Название_рубрики",
+            COUNT(Tp_nir."Номер") AS "Количество_НИР",  -- Количество НИР по рубрике
+            SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования"  -- Сумма планового финансирования
+        FROM Tp_nir
+        INNER JOIN grntirub ON substr(Tp_nir."Коды_ГРНТИ", 1, 2) = grntirub."Код_рубрики"
+        GROUP BY 
+            substr(Tp_nir."Коды_ГРНТИ", 1, 2),
+            grntirub."Рубрика"
+    '''
+    c.execute(query)
+
+    conn.commit()
+    conn.close()
+
+def fill_nir_character_summary():
+    """Заполнение таблицы NIR_Character_Summary."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+
+    c.execute('DELETE FROM NIR_Character_Summary')  # Очистка таблицы перед заполнением
+
+    query = '''
+        INSERT INTO NIR_Character_Summary ("Характер", "Количество_НИР", "Сумма_планового_финансирования")
+        SELECT 
+            "Характер",
+            COUNT("Номер") AS "Количество_НИР",
+            SUM("Плановое_финансирование") AS "Сумма_планового_финансирования"
+        FROM Tp_nir
+        GROUP BY "Характер"
+    '''
+    c.execute(query)
+
+    # Добавляем итоговую строку
+    c.execute('''
+        INSERT INTO NIR_Character_Summary ("Характер", "Количество_НИР", "Сумма_планового_финансирования")
+        SELECT 
+            'ИТОГО',
+            SUM("Количество_НИР"),
+            SUM("Сумма_планового_финансирования")
+        FROM NIR_Character_Summary
     ''')
 
     conn.commit()
@@ -453,7 +538,50 @@ def print_vuz_summary():
 
     conn.close()
 
+def print_grnti_summary():
+    """Вывод данных из таблицы GRNTI_Summary в консоль."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
 
+    query = "SELECT * FROM GRNTI_Summary"
+    c.execute(query)
+
+    rows = c.fetchall()
+
+    # Вывод заголовков
+    print(f"{'Код рубрики':<15} {'Название рубрики':<30} {'Количество НИР':<20} {'Сумма планового финансирования':<30}")
+    print("=" * 120)
+
+    # Вывод данных
+    for row in rows:
+        # Заменяем None на пустую строку
+        row_display = [str(value) if value is not None else '' for value in row]
+        print(f"{row_display[0]:<15} {row_display[1]:<30} {row_display[2]:<20} {row_display[3]:<30}")
+
+    conn.close()
+
+
+def print_nir_character_summary():
+    """Вывод данных из таблицы NIR_Character_Summary в консоль."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+
+    query = "SELECT * FROM NIR_Character_Summary"
+    c.execute(query)
+
+    rows = c.fetchall()
+
+    # Вывод заголовков
+    print(f"{'Характер':<30} {'Количество НИР':<20} {'Сумма планового финансирования':<30}")
+    print("=" * 80)
+
+    # Вывод данных
+    for row in rows:
+        # Заменяем None на пустую строку
+        row_display = [str(value) if value is not None else '' for value in row]
+        print(f"{row_display[0]:<30} {row_display[1]:<20} {row_display[2]:<30}")
+
+    conn.close()
 
 def prepare_tables():
     """Подготовка таблиц."""
@@ -464,6 +592,8 @@ def prepare_tables():
     create_table_grntirub()
     create_table_tp_fv()
     create_table_vuz_summary()
+    create_table_grnti_summary()
+    create_table_nir_character_summary()
 
     import_table_tp_nir_from_csv()
     import_table_vuz_from_csv()
@@ -475,7 +605,9 @@ def prepare_tables():
     fill_tp_fv()
 
     fill_vuz_summary()
-    print_vuz_summary()
+    fill_grnti_summary()
 
+    fill_nir_character_summary()
+    print_nir_character_summary()
 
 prepare_tables()
