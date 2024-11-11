@@ -111,6 +111,21 @@ def create_table_tp_fv():
     conn.commit()
     conn.close()
 
+def create_table_vuz_summary():
+    """Создание таблицы VUZ_Summary."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS VUZ_Summary')
+    c.execute('''
+       CREATE TABLE IF NOT EXISTS VUZ_Summary (
+       "Сокращенное_имя" TEXT,
+       "Сумма_планового_финансирования" INTEGER,
+       "Сумма_количества_НИР" INTEGER,
+       "Сумма_фактического_финансирования" INTEGER
+       )
+       ''')
+    conn.commit()
+    conn.close()
 
 def import_table_tp_nir_from_csv():
     """Импорт таблицы Tp_nir из CSV."""
@@ -272,6 +287,43 @@ def fill_tp_fv():
     conn.commit()
     conn.close()
 
+def fill_vuz_summary():
+    """Заполнение таблицы VUZ_Summary только для вузов, которые есть в Tp_nir."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+
+    # Сначала очищаем таблицу
+    c.execute('DELETE FROM VUZ_Summary')
+
+    # Заполняем таблицу данными только для вузов, которые есть в Tp_nir
+    query = '''
+        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+        SELECT 
+            VUZ."Сокращенное_имя",
+            SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования",
+            COUNT(Tp_nir."Номер") AS "Сумма_количества_НИР",
+            SUM(Tp_fv."Фактическое_финансирование") AS "Сумма_фактического_финансирования"
+        FROM VUZ
+        LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+        LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
+        WHERE Tp_nir."Код" IS NOT NULL  -- Условие для фильтрации вузов
+        GROUP BY VUZ."Сокращенное_имя"
+    '''
+    c.execute(query)
+
+    # Добавляем итоговую строку
+    c.execute('''
+        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+        SELECT 
+            'ИТОГО',
+            SUM("Сумма_планового_финансирования"),
+            SUM("Сумма_количества_НИР"),
+            SUM("Сумма_фактического_финансирования")
+        FROM VUZ_Summary
+    ''')
+
+    conn.commit()
+    conn.close()
 
 def connect_db(db_name):
     """Подключение к базе данных."""
@@ -379,8 +431,27 @@ def delete_string_in_table(table_view, table_model):
     return False
 
 
+def print_vuz_summary():
+    """Вывод данных из таблицы VUZ_Summary в консоль."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
 
+    query = "SELECT * FROM VUZ_Summary"
+    c.execute(query)
 
+    rows = c.fetchall()
+
+    # Вывод заголовков
+    print(f"{'Сокращенное имя':<30} {'Сумма планового финансирования':<30} {'Сумма количества НИР':<30} {'Сумма фактического финансирования':<30}")
+    print("=" * 120)
+
+    # Вывод данных
+    for row in rows:
+        # Заменяем None на пустую строку
+        row_display = [str(value) if value is not None else '' for value in row]
+        print(f"{row_display[0]:<30} {row_display[1]:<30} {row_display[2]:<30} {row_display[3]:<30}")
+
+    conn.close()
 
 
 
@@ -392,6 +463,7 @@ def prepare_tables():
     create_table_vuz()
     create_table_grntirub()
     create_table_tp_fv()
+    create_table_vuz_summary()
 
     import_table_tp_nir_from_csv()
     import_table_vuz_from_csv()
@@ -402,6 +474,8 @@ def prepare_tables():
     input_short_name_from_vuz()
     fill_tp_fv()
 
+    fill_vuz_summary()
+    print_vuz_summary()
 
 
 prepare_tables()
