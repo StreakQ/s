@@ -91,25 +91,26 @@ class MainWindow(QMainWindow):
         self.db_name = 'databases//database.db'
         self.connect_db()
         self.setup_models()
+        self.setup_ui()
+        self.show()
 
+        # Очистка комбобоксов
         self.vuz_cmb.clear()
         self.region_cmb.clear()
         self.city_cmb.clear()
         self.obl_cmb.clear()
 
-        self.vuz_cmb.setCurrentIndex(-1)
-        self.region_cmb.setCurrentIndex(-1)
-        self.city_cmb.setCurrentIndex(-1)
-        self.obl_cmb.setCurrentIndex(-1)
-
-        self.setup_ui()
-        self.show()
-
-
         self.models['Tp_nir'].dataChanged.connect(self.update_tp_fv)
         self.models['Tp_nir'].dataChanged.connect(self.update_summary_tables)
 
         self.updating_comboboxes = False
+
+        # Заполнение комбобоксов значениями из базы данных
+        self.populate_initial_comboboxes()
+
+        # Подключение сигналов для обновления таблицы
+        self.setup_combobox_signals()
+
 
     def connect_db(self):
         """Подключение к базе данных."""
@@ -642,15 +643,13 @@ class MainWindow(QMainWindow):
         self.hide_buttons()
 
         # Очистка текущих значений комбобоксов
-        self.vuz_cmb.setCurrentIndex(-1)
-        self.region_cmb.setCurrentIndex(-1)
-        self.city_cmb.setCurrentIndex(-1)
-        self.obl_cmb.setCurrentIndex(-1)
-
+        self.vuz_cmb.clear()  # Очищаем комбобокс VUZ
+        self.region_cmb.clear()  # Очищаем комбобокс Регион
+        self.city_cmb.clear()  # Очищаем комбобокс Город
+        self.obl_cmb.clear()  # Очищаем комбобокс Область
         # Заполнение комбобоксов значениями
-        self.populate_comboboxes()
+        #self.populate_comboboxes()
         self.on_reset_filter()
-
         # Подключение сигналов для фильтрации
         self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
@@ -659,8 +658,6 @@ class MainWindow(QMainWindow):
 
     def populate_comboboxes(self):
         """Заполнение комбобоксов значениями из столбцов VUZ."""
-
-
         # Заполняем комбобоксы значениями
         self.populate_combobox("Сокращенное_имя", self.vuz_cmb)
         self.populate_combobox("Регион", self.region_cmb)
@@ -703,10 +700,10 @@ class MainWindow(QMainWindow):
 
     def update_combobox(self, column_name):
         """Обновление значений в комбобоксах на основе выбранных значений."""
-        if self.updating_comboboxes:
+        if self.update_comboboxes:
             return  # Prevent recursion
 
-        self.updating_comboboxes = True  # Set flag to prevent recursion
+        self.update_comboboxes = True  # Set flag to prevent recursion
         try:
             # Получаем текущее значение выбранного комбобокса
             vuz_selected = self.vuz_cmb.currentText()
@@ -734,14 +731,14 @@ class MainWindow(QMainWindow):
             # Обновление таблицы Tp_nir
             self.update_table()
         finally:
-            self.updating_comboboxes = False  # Сбрасываем флаг
+            self.update_comboboxes = False  # Сбрасываем флаг
 
     def update_comboboxes(self):
         """Обновление значений в комбобоксах на основе выбранных значений."""
-        if self.updating_comboboxes:
+        if self.update_comboboxes:
             return  # Prevent recursion
 
-        self.updating_comboboxes = True  # Set flag to prevent recursion
+        self.update_comboboxes = True  # Set flag to prevent recursion
         try:
             selected_values = {
                 "Сокращенное_имя": self.vuz_cmb.currentText(),
@@ -758,20 +755,20 @@ class MainWindow(QMainWindow):
             # Обновление таблицы Tp_nir
             self.update_table()
         finally:
-            self.updating_comboboxes = False  # Reset flag
+            self.update_comboboxes = False  # Reset flag
 
     def update_table(self):
         """Обновление таблицы Tp_nir на основе выбранных значений в комбобоксах."""
         filters = []
 
         # Добавляем фильтры на основе выбранных значений в комбобоксах
-        if self.vuz_cmb.currentText():
+        if self.vuz_cmb.currentText() != "Выберите...":
             filters.append(f'VUZ."Сокращенное_имя" = "{self.vuz_cmb.currentText()}"')
-        if self.region_cmb.currentText():
+        if self.region_cmb.currentText() != "Выберите...":
             filters.append(f'VUZ."Регион" = "{self.region_cmb.currentText()}"')
-        if self.city_cmb.currentText():
+        if self.city_cmb.currentText() != "Выберите...":
             filters.append(f'VUZ."Город" = "{self.city_cmb.currentText()}"')
-        if self.obl_cmb.currentText():
+        if self.obl_cmb.currentText() != "Выберите...":
             filters.append(f'VUZ."Область" = "{self.obl_cmb.currentText()}"')
 
         # Формируем SQL-запрос с JOIN
@@ -799,23 +796,19 @@ class MainWindow(QMainWindow):
         model.setQuery(ql_query)
 
         # Проверяем количество строк в модели
-        if model.rowCount() == 0:
-            print("Нет данных, соответствующих выбранным фильтрам.")
-            self.show_error_message("Нет данных, соответствующих выбранным фильтрам.")
+
 
         self.tableView_2.setModel(model)
 
     def setup_combobox_signals(self):
         """Подключение сигналов для комбобоксов."""
-        self.vuz_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Сокращенное_имя"))
-        self.region_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Регион"))
-        self.city_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Город"))
-        self.obl_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Область"))
+        self.vuz_cmb.currentIndexChanged.connect(self.update_table)
+        self.region_cmb.currentIndexChanged.connect(self.update_table)
+        self.city_cmb.currentIndexChanged.connect(self.update_table)
+        self.obl_cmb.currentIndexChanged.connect(self.update_table)
 
     def populate_initial_comboboxes(self):
         """Заполнение комбобоксов существующими данными из связанных таблиц."""
-
-
         # Создаем подключение к базе данных SQLite
         conn = sqlite3.connect(self.db_name)
 
@@ -827,6 +820,7 @@ class MainWindow(QMainWindow):
                 JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
             '''
             df_vuz = conn.execute(query_vuz).fetchall()
+            self.vuz_cmb.addItem("Выберите...", None)  # Добавляем пустое значение
             for row in df_vuz:
                 self.vuz_cmb.addItem(row[0])  # row[0] содержит "Сокращенное_имя"
 
@@ -837,6 +831,7 @@ class MainWindow(QMainWindow):
                 JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
             '''
             df_region = conn.execute(query_region).fetchall()
+            self.region_cmb.addItem("Выберите...", None)  # Добавляем пустое значение
             for row in df_region:
                 self.region_cmb.addItem(row[0])  # row[0] содержит "Регион"
 
@@ -847,6 +842,7 @@ class MainWindow(QMainWindow):
                 JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
             '''
             df_city = conn.execute(query_city).fetchall()
+            self.city_cmb.addItem("Выберите...", None)  # Добавляем пустое значение
             for row in df_city:
                 self.city_cmb.addItem(row[0])  # row[0] содержит "Город"
 
@@ -857,11 +853,19 @@ class MainWindow(QMainWindow):
                 JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
             '''
             df_obl = conn.execute(query_obl).fetchall()
+            self.obl_cmb.addItem("Выберите...", None)  # Добавляем пустое значение
             for row in df_obl:
                 self.obl_cmb.addItem(row[0])  # row[0] содержит "Область"
 
         finally:
             conn.close()
+
+        # Устанавливаем "Выберите..." как выбранное значение
+        self.vuz_cmb.setCurrentIndex(0)  # Устанавливаем "Выберите..." как выбранное значение
+        self.region_cmb.setCurrentIndex(0)
+        self.city_cmb.setCurrentIndex(0)
+        self.obl_cmb.setCurrentIndex(0)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
