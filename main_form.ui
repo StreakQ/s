@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1403</width>
-    <height>933</height>
+    <width>1539</width>
+    <height>834</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <rect>
       <x>11</x>
       <y>11</y>
-      <width>1388</width>
+      <width>1511</width>
       <height>671</height>
      </rect>
     </property>
@@ -30,7 +30,7 @@
      <string notr="true">background-color: rgb(240, 240, 240);</string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView">
@@ -38,8 +38,8 @@
        <rect>
         <x>0</x>
         <y>10</y>
-        <width>1381</width>
-        <height>651</height>
+        <width>1501</width>
+        <height>661</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -53,7 +53,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1381</width>
+        <width>1501</width>
         <height>651</height>
        </rect>
       </property>
@@ -157,6 +157,11 @@
          <height>28</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Сохранить</string>
        </property>
@@ -170,6 +175,11 @@
          <height>28</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Отменить</string>
        </property>
@@ -179,9 +189,14 @@
         <rect>
          <x>1140</x>
          <y>30</y>
-         <width>191</width>
+         <width>211</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Код ВУЗа - название ВУЗа</string>
@@ -196,6 +211,11 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Номер НИР</string>
        </property>
@@ -208,6 +228,11 @@
          <width>191</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Характер НИР</string>
@@ -222,6 +247,11 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Руководитель НИР</string>
        </property>
@@ -234,6 +264,11 @@
          <width>191</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Коды ГРНТИ</string>
@@ -248,6 +283,11 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Название НИР</string>
        </property>
@@ -257,9 +297,14 @@
         <rect>
          <x>1140</x>
          <y>270</y>
-         <width>191</width>
+         <width>241</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Должность руководителя НИР</string>
@@ -270,9 +315,14 @@
         <rect>
          <x>1140</x>
          <y>310</y>
-         <width>191</width>
+         <width>261</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Плановое финансирование НИР</string>
@@ -299,7 +349,7 @@
        <rect>
         <x>0</x>
         <y>10</y>
-        <width>1381</width>
+        <width>1501</width>
         <height>601</height>
        </rect>
       </property>
@@ -312,6 +362,11 @@
          <height>28</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Отменить</string>
        </property>
@@ -321,9 +376,14 @@
         <rect>
          <x>1140</x>
          <y>310</y>
-         <width>191</width>
+         <width>261</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Должность руководителя НИР</string>
@@ -351,6 +411,11 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Коды ГРНТИ</string>
        </property>
@@ -363,6 +428,11 @@
          <width>191</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Номер НИР</string>
@@ -403,6 +473,11 @@
          <height>28</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Сохранить</string>
        </property>
@@ -416,6 +491,11 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Руководитель НИР</string>
        </property>
@@ -425,9 +505,14 @@
         <rect>
          <x>1140</x>
          <y>270</y>
-         <width>191</width>
+         <width>261</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Название НИР</string>
@@ -481,6 +566,11 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Код ВУЗа</string>
        </property>
@@ -507,6 +597,11 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Характер НИР</string>
        </property>
@@ -516,9 +611,14 @@
         <rect>
          <x>1140</x>
          <y>350</y>
-         <width>191</width>
+         <width>261</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Плановое финансирование НИР</string>
@@ -546,6 +646,11 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Название ВУЗа</string>
        </property>
@@ -566,123 +671,219 @@
      </widget>
     </widget>
     <widget class="QWidget" name="page_complex_filter_widget">
-     <widget class="QComboBox" name="Federal_District_comboBox">
+     <widget class="QTableView" name="tableView_2">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>1021</width>
-        <height>31</height>
+        <x>0</x>
+        <y>0</y>
+        <width>1161</width>
+        <height>671</height>
        </rect>
       </property>
      </widget>
-     <widget class="QComboBox" name="Federation_subject_comboBox">
+     <widget class="QWidget" name="widget" native="true">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>60</y>
-        <width>1021</width>
-        <height>31</height>
+        <x>1170</x>
+        <y>0</y>
+        <width>331</width>
+        <height>671</height>
        </rect>
       </property>
-     </widget>
-     <widget class="QComboBox" name="City_comboBox">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>110</y>
-        <width>1021</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="VUZ_comboBox">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>160</y>
-        <width>1021</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_3">
-      <property name="geometry">
-       <rect>
-        <x>1040</x>
-        <y>10</y>
-        <width>121</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Федеральный округ</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_4">
-      <property name="geometry">
-       <rect>
-        <x>1040</x>
-        <y>60</y>
-        <width>121</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Субъект федераци</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_5">
-      <property name="geometry">
-       <rect>
-        <x>1040</x>
-        <y>110</y>
-        <width>121</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Город</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_6">
-      <property name="geometry">
-       <rect>
-        <x>1040</x>
-        <y>160</y>
-        <width>121</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>ВУЗ</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>220</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>ОК</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_3">
-      <property name="geometry">
-       <rect>
-        <x>140</x>
-        <y>220</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Отменить</string>
-      </property>
+      <widget class="QLabel" name="label">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>20</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Код ГРНТИ</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_2">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>121</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Регион</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="region_cmb">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>121</y>
+         <width>221</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_3">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>200</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Город</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_4">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>160</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Область</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="city_cmb">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>200</y>
+         <width>221</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="obl_cmb">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>161</y>
+         <width>221</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="vuz_cmb">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>241</y>
+         <width>221</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_5">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>241</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>ВУЗ</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="grnticode_txt">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>221</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="Tp_nir_redact_filters_close_btn">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>300</y>
+         <width>93</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Отмена</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="cancel_filtration_btn">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>300</y>
+         <width>141</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Сброс фильтров</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="filter_by_grnticode_btn">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>70</y>
+         <width>191</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Фильтрация по Коду ГРНТИ</string>
+       </property>
+      </widget>
      </widget>
     </widget>
    </widget>
@@ -690,9 +891,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>620</y>
-      <width>1391</width>
-      <height>171</height>
+      <y>690</y>
+      <width>1511</width>
+      <height>101</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -700,6 +901,11 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="Tp_nir_redact_add_row_btn">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -710,6 +916,11 @@
        </item>
        <item>
         <widget class="QPushButton" name="Tp_nir_redact_edit_row_btn">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -726,6 +937,11 @@
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -736,6 +952,11 @@
        </item>
        <item>
         <widget class="QPushButton" name="Tp_nir_redact_filters_btn">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -756,8 +977,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1403</width>
-     <height>21</height>
+     <width>1539</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_1">
@@ -770,30 +991,18 @@
     <addaction name="action_show_VUZ"/>
     <addaction name="action_show_grntirub"/>
    </widget>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>Работа с бд</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
      <string>Анализ</string>
     </property>
-    <addaction name="action_9"/>
-    <addaction name="action_10"/>
-   </widget>
-   <widget class="QMenu" name="menu_3">
-    <property name="title">
-     <string>Тип выделения значений</string>
-    </property>
-    <addaction name="Select_rows_action"/>
-    <addaction name="Select_columns_action"/>
-    <addaction name="Select_items_action"/>
+    <addaction name="po_VUZ"/>
+    <addaction name="separator"/>
+    <addaction name="po_rubrikam"/>
+    <addaction name="separator"/>
+    <addaction name="po_character"/>
    </widget>
    <addaction name="menu_1"/>
    <addaction name="menu_2"/>
-   <addaction name="menu_3"/>
-   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_show_VUZ">
@@ -831,9 +1040,9 @@
     <string>Удаление запси</string>
    </property>
   </action>
-  <action name="action_9">
+  <action name="po_VUZ">
    <property name="text">
-    <string>Формирование документов</string>
+    <string>По ВУЗу</string>
    </property>
   </action>
   <action name="action_10">
@@ -874,6 +1083,16 @@
   <action name="action_show_Tp_fv">
    <property name="text">
     <string>Финансирование</string>
+   </property>
+  </action>
+  <action name="po_rubrikam">
+   <property name="text">
+    <string>По рубрикам ГРНТИ</string>
+   </property>
+  </action>
+  <action name="po_character">
+   <property name="text">
+    <string>По характеру НИР</string>
    </property>
   </action>
  </widget>

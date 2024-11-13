@@ -1,48 +1,83 @@
 import os
 import sys
+
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
                              QAbstractItemView, QComboBox, QTextEdit, QHeaderView)
 from PyQt6 import uic
-from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
-from PyQt6.QtGui import QKeyEvent, QTextCursor, QStandardItemModel, QStandardItem
-from PyQt6.QtCore import Qt
+from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery,QSqlQueryModel
+from PyQt6.QtGui import QKeyEvent, QTextCursor
+import sqlite3
+import re
 from db import *
 
 class CustomTextEdit(QTextEdit):
     def keyPressEvent(self, event: QKeyEvent):
-        # Обработка нажатий клавиш Backspace и Delete
-        if event.key() == Qt.Key.Key_Backspace or event.key() == Qt.Key.Key_Delete:
-            super().keyPressEvent(event)  # Вызываем стандартное поведение
-            self.auto_format()
+        current_text = self.toPlainText()
+        key = event.text()
+
+        # Обработка клавиш Backspace и Delete
+        if event.key() in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
+            super().keyPressEvent(event)
             return
 
-        # Обработка нажатий цифр и точки
-        if event.text().isdigit() or event.text() == '.':
-            current_text = self.toPlainText()
-            parts = current_text.split('.')
-            if event.text() == '.':
-                if len(parts) < 3:  # Максимум 2 точки
+        if key.isdigit() or key == '.' or key == ';':
+            parts = current_text.split(';')
+
+            # Обработка ввода точки с запятой
+            if key == ';':
+                if len(parts) < 2:  # Максимум 2 кода
                     super().keyPressEvent(event)
             else:
-                if len(parts) < 3:
-                    super().keyPressEvent(event)
-                else:
-                    if len(parts[-1]) < 2:  # Последняя часть должна быть не более 2 цифр
+                # Обработка ввода цифр и точек
+                if len(parts) == 1:  # Первый код
+                    first_part = parts[0].split('.')
+                    if key == '.':
+                        if len(first_part) < 3:  # Максимум 2 точки в первом коде
+                            super().keyPressEvent(event)
+                    else:  # Ввод цифр
                         super().keyPressEvent(event)
 
-        # Вызываем автоформатирование после нажатия клавиши
-        self.auto_format()
+                    # Автоматически добавляем точку с запятой после первого кода
+                    if len(parts[0]) >= 8:  # Если длина кода больше или равна 8, добавляем точку с запятой
+                        self.setPlainText(current_text + ';')
+                        cursor = self.textCursor()
+                        cursor.movePosition(QTextCursor.MoveOperation.End)
+                        self.setTextCursor(cursor)
+                        return
+
+                elif len(parts) == 2:  # Второй код
+                    second_part = parts[1].split('.')
+                    if key == '.':
+                        if len(second_part) < 3:  # Максимум 2 точки во втором коде
+                            super().keyPressEvent(event)
+                    else:  # Ввод цифр
+                        # Запрещаем ввод больше 8 символов во втором коде
+                        if len(parts[1]) < 9:
+                            super().keyPressEvent(event)
+            self.auto_format()
+
+        else:
+            return
 
     def auto_format(self):
         text = self.toPlainText().replace(" ", "")
         if len(text) > 0:
-            text = text.replace('.', '')
-            formatted_text = ''
-            for i in range(len(text)):
-                formatted_text += text[i]
-                if (i + 1) % 2 == 0 and (i + 1) < len(text):
-                    formatted_text += '.'
-            self.setPlainText(formatted_text)
+            parts = text.split(';')
+            formatted_parts = []
+
+            for part in parts:
+                part = part.replace('.', '')  # Убираем точки для форматирования
+                formatted_part = ''
+                for i in range(len(part)):
+                    formatted_part += part[i]
+                    if (i + 1) % 2 == 0 and (i + 1) < len(part):
+                        formatted_part += '.'
+                if len(formatted_part) > 8:
+                    formatted_part = formatted_part[:8]
+                formatted_parts.append(formatted_part)
+
+            self.setPlainText('; '.join(formatted_parts))  # Объединяем части с точкой с запятой
 
             cursor = self.textCursor()
             cursor.movePosition(QTextCursor.MoveOperation.End)
@@ -56,11 +91,25 @@ class MainWindow(QMainWindow):
         self.db_name = 'databases//database.db'
         self.connect_db()
         self.setup_models()
+
+        self.vuz_cmb.clear()
+        self.region_cmb.clear()
+        self.city_cmb.clear()
+        self.obl_cmb.clear()
+
+        self.vuz_cmb.setCurrentIndex(-1)
+        self.region_cmb.setCurrentIndex(-1)
+        self.city_cmb.setCurrentIndex(-1)
+        self.obl_cmb.setCurrentIndex(-1)
+
         self.setup_ui()
         self.show()
 
-        # Подключаем сигнал изменения данных в Tp_nir к слоту обновления Tp_fv
+
         self.models['Tp_nir'].dataChanged.connect(self.update_tp_fv)
+        self.models['Tp_nir'].dataChanged.connect(self.update_summary_tables)
+
+        self.updating_comboboxes = False
 
     def connect_db(self):
         """Подключение к базе данных."""
@@ -77,7 +126,11 @@ class MainWindow(QMainWindow):
             'VUZ': QSqlTableModel(self),
             'Tp_nir': QSqlTableModel(self),
             'grntirub': QSqlTableModel(self),
-            'Tp_fv': QSqlTableModel(self)
+            'Tp_fv': QSqlTableModel(self),
+            'VUZ_Summary': QSqlTableModel(self),
+            'GRNTI_Summary': QSqlTableModel(self),
+            'NIR_Character_Summary': QSqlTableModel(self)
+
         }
         for name, model in self.models.items():
             model.setTable(name)
@@ -89,6 +142,10 @@ class MainWindow(QMainWindow):
         self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableView_2.setSortingEnabled(True)  # New
+        self.tableView_2.horizontalHeader().setStretchLastSection(True)  # New
+        self.tableView_2.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)  # New
+        self.tableView_2.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)  # New
 
         self.stackedWidget.setCurrentIndex(0)
 
@@ -97,23 +154,17 @@ class MainWindow(QMainWindow):
         self.action_show_Tp_nir.triggered.connect(lambda: self.table_show('Tp_nir'))
         self.action_show_grntirub.triggered.connect(lambda: self.table_show('grntirub'))
         self.action_show_Tp_fv.triggered.connect(lambda: self.table_show('Tp_fv'))
+        self.tableView_2.setModel(self.models['Tp_nir'])  # New
+        self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
+        self.po_rubrikam.triggered.connect(lambda: self.table_show('GRNTI_Summary'))
+        self.po_character.triggered.connect(lambda: self.table_show('NIR_Character_Summary'))
 
         # Кнопки для добавления
         self.Tp_nir_redact_add_row_btn.clicked.connect(self.open_add_row_menu)
         self.Tp_nir_add_row_menu_save_btn.clicked.connect(self.save_new_row)
-        self.Tp_nir_add_row_menu_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_add_row_menu))
-
-        # Удалить запись
-        self.Tp_nir_redact_del_row_btn.clicked.connect(lambda: self.delete_string_in_table(self.tableView))
-
-        # Кнопки для редактирования
-        self.Tp_nir_redact_edit_row_btn.clicked.connect(self.tp_nir_redact_edit_row_btn_clicked)
-        self.Tp_nir_edit_row_menu_close_btn.clicked.connect(lambda : self.cancel(self.Tp_nir_edit_row_menu))
-        self.Tp_nir_edit_row_menu_save_btn.clicked.connect(self.save_edit_row)
+        self.Tp_nir_add_row_menu_close_btn .clicked.connect(lambda: self.cancel(self.Tp_nir_add_row_menu))
 
         self.Tp_nir_add_row_menu_grntiCode_txt = self.findChild(QTextEdit, 'Tp_nir_add_row_menu_grntiCode_txt')
-
-        # переопределение Qtextedit для форматного ввода/редактирования кода ГРНТИ
         self.Tp_nir_add_row_menu_grntiCode_txt.deleteLater()
         self.Tp_nir_add_row_menu_grntiCode_txt = CustomTextEdit()
         self.Tp_nir_add_row_menu_grntiCode_txt.setObjectName('Tp_nir_add_row_menu_grntiCode_txt')
@@ -121,42 +172,82 @@ class MainWindow(QMainWindow):
         self.Tp_nir_add_row_menu_grntiCode_txt.setGeometry(20, 190, 1101, 31)
         self.Tp_nir_add_row_menu_grntiCode_txt.show()
 
-        # Подключение сигналов для отчетов///////////пока не активно
-        self.action_show_reports.triggered.connect(self.show_reports_menu)
-        self.generate_report_by_vuz_btn.clicked.connect(self.generate_report_by_vuz)
-        self.generate_report_by_grnti_btn.clicked.connect(self.generate_report_by_grnti)
-        self.generate_report_by_character_btn.clicked.connect(self.generate_report_by_character)
+        # Удалить запись
+        self.Tp_nir_redact_del_row_btn.clicked.connect(lambda: self.delete_string_in_table(self.tableView))
 
-    def generate_report_by_vuz(self):
-        """Генерация отчета по вузам."""
-        report_data = get_report_by_vuz()
-        self.display_report(report_data)
+        # Кнопки для редактирования
+        self.Tp_nir_redact_edit_row_btn.clicked.connect(self.tp_nir_redact_edit_row_btn_clicked)
+        self.Tp_nir_edit_row_menu_close_btn.clicked.connect(lambda: self.cancel(self.Tp_nir_edit_row_menu))
+        self.Tp_nir_edit_row_menu_save_btn.clicked.connect(self.save_edit_row)
 
-    def generate_report_by_grnti(self):
-        """Генерация отчета по рубрикам ГРНТИ."""
-        report_data = get_report_by_grnti()
-        self.display_report(report_data)
+        # Фильтр
+        self.Tp_nir_redact_filters_btn.clicked.connect(self.filter)  # New
+        self.populate_comboboxes()
+        self.setup_combobox_signals()
 
-    def generate_report_by_character(self):
-        """Генерация отчета по характеру НИР."""
-        report_data = get_report_by_character()
-        self.display_report(report_data)
+        #анализ
 
-    def display_report(self, report_data):
-        """Отображение отчета в QTableView."""
-        model = QStandardItemModel()
-        model.setHorizontalHeaderLabels(["Наименование", "Количество НИР", "Объем финансирования"])
+    def update_summary_tables(self):
+        """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
+        try:
+            fill_vuz_summary()  # Обновление таблицы VUZ_Summary
+            fill_grnti_summary()  # Обновление таблицы GRNTI_Summary
+            fill_nir_character_summary()  # Обновление таблицы NIR_Character_Summary
+            print("Все сводные таблицы успешно обновлены.")
+        except Exception as e:
+            self.show_error_message(f"Ошибка при обновлении сводных таблиц: {e}")
 
-        for row in report_data:
-            items = [QStandardItem(str(item)) for item in row]
-            model.appendRow(items)
+    def fill_vuz_summary(self):
+        """Заполнение таблицы VUZ_Summary."""
+        try:
+            fill_vuz_summary()  # Вызов функции из db.py
+            QMessageBox.information(self, "Успех", "Таблица VUZ_Summary успешно заполнена.")
+        except Exception as e:
+            self.show_error_message(f"Ошибка при заполнении таблицы VUZ_Summary: {e}")
 
-        self.report_table_view.setModel(model)
+    def fill_grnti_summary(self):
+        """Заполнение таблицы GRNTI_Summary."""
+        try:
+            fill_grnti_summary()  # Вызов функции из db.py
+            QMessageBox.information(self, "Успех", "Таблица GRNTI_Summary успешно заполнена.")
+        except Exception as e:
+            self.show_error_message(f"Ошибка при заполнении таблицы GRNTI_Summary: {e}")
+
+    def fill_nir_character_summary(self):
+        """Заполнение таблицы NIR_Character_Summary."""
+        try:
+            fill_nir_character_summary()  # Вызов функции из db.py
+            QMessageBox.information(self, "Успех", "Таблица NIR_Character_Summary успешно заполнена.")
+        except Exception as e:
+            self.show_error_message(f"Ошибка при заполнении таблицы NIR_Character_Summary: {e}")
+
+    def hide_buttons(self):
+        self.Tp_nir_redact_add_row_btn.hide()
+        self.Tp_nir_redact_del_row_btn.hide()
+        self.Tp_nir_redact_edit_row_btn.hide()
+        self.Tp_nir_redact_filters_btn.hide()
+
+    def show_buttons(self):
+        self.Tp_nir_redact_add_row_btn.show()
+        self.Tp_nir_redact_del_row_btn.show()
+        self.Tp_nir_redact_edit_row_btn.show()
+        self.Tp_nir_redact_filters_btn.show()
+
+    def on_reset_filter(self):
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView_2.setModel(self.models['Tp_nir'])
+        self.tableView_2.reset()
+        self.tableView_2.show()
+        # Сброс значений в комбобоксах
+        self.populate_initial_comboboxes()
 
     def open_add_row_menu(self):
         """Сброс состояния и открытие меню добавления строки."""
         self.reset_add_row_menu()  # Сброс состояния меню
         self.fill_comboboxes_tp_nir_add_row_menu()  # Заполнение комбобоксов
+        self.Tp_nir_add_row_menu_VUZcode_name_cmb.setCurrentIndex(-1)
+        self.Tp_nir_add_row_menu_grntiNature_cmb.setCurrentIndex(-1)
         self.show_menu(self.Tp_nir_add_row_menu, 1)  # Показ меню
 
     def reset_add_row_menu(self):
@@ -168,7 +259,7 @@ class MainWindow(QMainWindow):
         self.Tp_nir_add_row_menu_grntiName_txt.clear()
         self.Tp_nir_add_row_menu_grntiHeadPost_txt.clear()
         self.Tp_nir_add_row_menu_plannedFinancing_txt.clear()
-        self.Tp_nir_add_row_menu_VUZcode_name_cmb.setCurrentIndex(0)
+        self.Tp_nir_add_row_menu_VUZcode_name_cmb.setCurrentIndex(-1)
 
     def show_menu(self, menu, index):
         """Отображение указанного меню."""
@@ -214,12 +305,10 @@ class MainWindow(QMainWindow):
         self.Tp_nir_edit_row_menu_grntiNature_cmb.clear()
 
         # Заполнение комбобокса для характера
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("П - Природное")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(0, "П")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Р - Развивающее")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(1, "Р")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Ф - Фундаментальное")
-        self.Tp_nir_edit_row_menu_grntiNature_cmb.setItemData(2, "Ф")
+        # Добавление элементов в комбобокс с пояснениями
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("П - Природное", "П")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Р - Развивающее", "Р")
+        self.Tp_nir_edit_row_menu_grntiNature_cmb.addItem("Ф - Фундаментальное", "Ф")
 
         print("Заполнен комбобокс характера для редактирования")  # Отладка
 
@@ -239,6 +328,9 @@ class MainWindow(QMainWindow):
         if not all([grnti_number, grnti_nature, grnti_head, grnti_code, grnti_name, grnti_head_post, planned_financing,
                     vuz_code]):
             self.show_error_message("Пожалуйста, заполните все поля.")
+            return
+        if int(planned_financing) <= 0:
+            self.show_error_message("Плановое финансирование не может быть меньше или равно 0")
             return
 
         # Проверка на существование записи
@@ -261,11 +353,6 @@ class MainWindow(QMainWindow):
             self.show_error_message("Запись с таким Кодом и Номером уже существует.")
             return
 
-        if int(planned_financing) <= 0:
-            self.show_error_message("Плановое финансирование не может быть равна нулю или меньше нуля")
-            return
-
-
         # Создаем новый словарь для записи
         new_record = {
             'Номер': grnti_number,
@@ -284,8 +371,8 @@ class MainWindow(QMainWindow):
         try:
             # Получаем модель и добавляем новую строку
             model = self.models['Tp_nir']
-            row_position = model.rowCount()
-            model.insertRow(row_position)
+            row_position = model.rowCount()  # Получаем текущую позицию для новой строки
+            model.insertRow(row_position)  # Вставляем новую строку
 
             # Заполняем новую строку данными
             for key, value in new_record.items():
@@ -297,10 +384,14 @@ class MainWindow(QMainWindow):
             if not model.submitAll():
                 raise Exception(f"Ошибка сохранения данных: {model.lastError().text()}")
 
-            # Устанавливаем выделение на новую строку и обновляем интерфейс
-            self.tableView.setCurrentIndex(model.index(row_position, 0))
-            self.stackedWidget.setCurrentIndex(0)
-            QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
+            # Обновляем модель
+            model.select()  # Обновляем модель, чтобы отобразить изменения
+
+            # Устанавливаем выделение на новую строку
+            self.tableView.setCurrentIndex(model.index(row_position, 0))  # Устанавливаем выделение на новую строку
+            self.stackedWidget.setCurrentIndex(0)  # Возвращаемся на основной экран
+            #QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
+
 
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
@@ -321,9 +412,6 @@ class MainWindow(QMainWindow):
         if not all([vuz_code, grnti_number, grnti_nature, grnti_head, grnti_code, grnti_name, grnti_head_post,
                     planned_financing]):
             self.show_error_message("Пожалуйста, заполните все поля.")
-            return
-        if int(planned_financing) <= 0:
-            self.show_error_message("Плановое финансирование не может быть равна нулю или меньше нуля")
             return
 
         new_record = {
@@ -363,44 +451,35 @@ class MainWindow(QMainWindow):
             self.stackedWidget.setCurrentIndex(0)
             QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
         except Exception as e:
-            self.show_error_message(f"Ошибка при сохранении данных:")
+            self.show_error_message(f"Ошибка при сохранении данных: {e}")
 
     def update_tp_fv(self):
         """Обновление данных в таблице Tp_fv на основе изменений в Tp_nir."""
         conn = QSqlDatabase.database()  # Используем подключение к базе данных
-        if not conn.isOpen():
+        if not conn.isOpen() and not conn.open():
             print("Ошибка: база данных не открыта.")
             return
 
-        # Выполняем SQL-запрос для обновления всех необходимых полей в Tp_fv
         query = '''
-            UPDATE Tp_fv
-            SET 
-                "Сокращенное_имя" = (
-                    SELECT VUZ."Сокращенное_имя"
-                    FROM VUZ
-                    WHERE VUZ."Код" = Tp_fv."Код"
-                ),
-                "Плановое_финансирование" = (
-                    SELECT SUM("Плановое_финансирование")
-                    FROM Tp_nir
-                    WHERE Tp_nir."Код" = Tp_fv."Код"
-                ),
-                "Количество_НИР" = (
-                    SELECT COUNT("Номер")
-                    FROM Tp_nir
-                    WHERE Tp_nir."Код" = Tp_fv."Код"
-                )
+                UPDATE Tp_fv
+                SET 
+                     "Плановое_финансирование" = (
+                     SELECT SUM(Tp_nir."Плановое_финансирование")
+                     FROM Tp_nir
+                     WHERE Tp_fv."Код" = Tp_nir."Код"
+                     GROUP BY Tp_nir."Код"
+    )
         '''
 
-        sql_query = QSqlQuery(conn)  # Создаем объект QSqlQuery
-        if not sql_query.exec(query):
-            print("Ошибка при выполнении запроса:", sql_query.lastError().text())
+        ql_query = QSqlQuery(conn)
+        if not ql_query.exec(query):
+            print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
             return
+        else:
+            print(f"Обновлено строк: {ql_query.numRowsAffected()}")
 
-        # После обновления, можно перезагрузить данные в Tp_fv
+        # Перезагрузка модели
         self.models['Tp_fv'].select()
-
         print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
 
     def fill_widgets_from_selected_row(self):
@@ -459,26 +538,55 @@ class MainWindow(QMainWindow):
         """Отображение таблицы."""
         self.tableView.setModel(self.models[table_name])
 
+        # Установка сортировки по имени вуза (например, по столбцу "Сокращенное_имя")
+        if table_name == 'Tp_nir':
+            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
+                                            Qt.SortOrder.AscendingOrder)
+
+        self.models[table_name].select()  # Обновление модели для применения сортировки
+
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
-        while True:
-            str_cod, ok = QInputDialog.getText(None, "Введите значение",
-                                               'Введите весь код ГРН ТИ или его часть без разделителей и пробелов')
-            if not ok:
-                return
-            if str_cod is None or not str_cod.isdigit():
-                self.show_error_message("Неправильное значение. Пожалуйста, введите численные значения.")
-                return
-            str_cod = str_cod.strip()
-            str_cod = self.add_delimiters_to_grnti_code(str_cod)
-            query = f' "Коды_ГРНТИ" LIKE "{str_cod}%" '
-            #query = f' "Коды_ГРНТИ" LIKE "{str_cod}%" OR "Коды_ГРНТИ" LIKE ";{str_cod}%" '
+        str_cod = self.grnticode_txt.toPlainText().strip()
+
+        # Регулярное выражение для проверки, что строка состоит из цифр и точек
+        if not str_cod or not re.match(r'^[\d.]+$', str_cod):
+            self.show_error_message(
+                "Неправильное значение. Пожалуйста, введите численные значения, разделенные точками.")
+            return
+
+        # Получаем количество строк в модели
+        row_count = self.models['Tp_nir'].rowCount()
+        conditions = []
+
+        for row in range(row_count):
+            # Получаем значение из столбца "Коды_ГРНТИ"
+            cods = self.models['Tp_nir'].data(self.models['Tp_nir'].index(row, 5))
+
+            if cods is not None:
+                cods = cods.split(';')  # Предполагаем, что коды разделены точкой с запятой
+                cods = [cod.strip() for cod in cods]  # Убираем пробелы
+
+                if len(cods) == 1:
+                    # Если один код, применяем фильтр для одного кода
+                    if cods[0].startswith(str_cod):
+                        conditions.append(f'"Коды_ГРНТИ" = "{cods[0]}%;"')
+                elif len(cods) == 2:
+                    # Если два кода, применяем фильтр для двух кодов
+                    if any(cod.startswith(str_cod) for cod in cods):
+                        conditions.append(f'"Коды_ГРНТИ" LIKE "{str_cod}%"')
+
+
+        if conditions:
+            query = ' AND '.join(conditions)
             self.models['Tp_nir'].setFilter(query)
-            self.models['Tp_nir'].select()
-            self.tableView.setModel(self.models['Tp_nir'])
-            self.tableView.reset()
-            self.tableView.show()
-            break
+        else:
+            self.models['Tp_nir'].setFilter("")  # Если нет условий, сбрасываем фильтр
+
+        self.models['Tp_nir'].select()
+        self.tableView.setModel(self.models['Tp_nir'])
+        self.tableView.reset()
+        self.tableView.show()
 
     def show_error_message(self, message):
         """Отображение ошибочного сообщения."""
@@ -504,13 +612,256 @@ class MainWindow(QMainWindow):
         confirmation_box.exec()
 
         if confirmation_box.clickedButton() == delete_button:
+            # Удаляем строку
             table_view.model().removeRow(selected_indexes[0].row())
+
+            # Обновляем таблицу и сортируем по "Сокращенное имя"
+            self.models['Tp_nir'].select()
+            self.models['Tp_nir'].setSort(self.models['Tp_nir'].fieldIndex("Сокращенное_имя"),
+                                          Qt.SortOrder.AscendingOrder)
+            self.models['Tp_nir'].select()  # Применяем сортировку
+            self.tableView.setModel(self.models['Tp_nir'])
 
     def save_data(self):
         """Сохранение данных."""
         for model in self.models.values():
             model.submitAll()
 
+
+    def on_Tp_nir_redact_filters_close_btn_clicked(self):
+        self.cancel(self.Tp_nir_add_row_menu)
+        self.show_buttons()
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView.setModel(self.models['Tp_nir'])
+        self.tableView.reset()
+        self.tableView.show()
+
+    def filter(self):
+        self.show_menu(self.Tp_nir_add_row_menu, 3)
+        self.hide_buttons()
+
+        # Очистка текущих значений комбобоксов
+        self.vuz_cmb.setCurrentIndex(-1)
+        self.region_cmb.setCurrentIndex(-1)
+        self.city_cmb.setCurrentIndex(-1)
+        self.obl_cmb.setCurrentIndex(-1)
+
+        # Заполнение комбобоксов значениями
+        self.populate_comboboxes()
+        self.on_reset_filter()
+
+        # Подключение сигналов для фильтрации
+        self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
+        self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
+        self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
+        self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
+
+    def populate_comboboxes(self):
+        """Заполнение комбобоксов значениями из столбцов VUZ."""
+
+
+        # Заполняем комбобоксы значениями
+        self.populate_combobox("Сокращенное_имя", self.vuz_cmb)
+        self.populate_combobox("Регион", self.region_cmb)
+        self.populate_combobox("Город", self.city_cmb)
+        self.populate_combobox("Область", self.obl_cmb)
+
+
+
+
+    def populate_combobox(self, column_name, combo_box, filters=None):
+        """Заполнение конкретного комбобокса с учетом фильтра."""
+        conn = sqlite3.connect(self.db_name)
+
+        query = f'''
+                SELECT DISTINCT VUZ."{column_name}"
+                FROM VUZ
+                JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+        '''
+
+        if filters:
+            query += ' WHERE ' + ' AND '.join(filters)  # Используем фильтры
+
+        df = conn.execute(query).fetchall()
+
+        # Отладка: выводим извлеченные данные
+        print(f"Данные для комбобокса {column_name}: {df}")
+
+        current_value = combo_box.currentText()
+        combo_box.clear()
+
+        for value in df:
+            if value:
+                combo_box.addItem(value[0])
+
+        # Убедитесь, что текущий текст не устанавливается после заполнения
+        # if current_value in [combo_box.itemText(i) for i in range(combo_box.count())]:
+        #     combo_box.setCurrentText(current_value)
+
+        conn.close()
+
+    def update_combobox(self, column_name):
+        """Обновление значений в комбобоксах на основе выбранных значений."""
+        if self.updating_comboboxes:
+            return  # Prevent recursion
+
+        self.updating_comboboxes = True  # Set flag to prevent recursion
+        try:
+            # Получаем текущее значение выбранного комбобокса
+            vuz_selected = self.vuz_cmb.currentText()
+            region_selected = self.region_cmb.currentText()
+            city_selected = self.city_cmb.currentText()
+            obl_selected = self.obl_cmb.currentText()
+
+            # Создаем фильтры на основе текущих выборов
+            filters = []
+            if column_name == "Сокращенное_имя":
+                filters.append(f'VUZ."Сокращенное_имя" = "{vuz_selected}"')
+            elif column_name == "Регион":
+                filters.append(f'VUZ."Регион" = "{region_selected}"')
+            elif column_name == "Город":
+                filters.append(f'VUZ."Город" = "{city_selected}"')
+            elif column_name == "Область":
+                filters.append(f'VUZ."Область" = "{obl_selected}"')
+
+            # Обновляем комбобоксы на основе фильтров
+            self.populate_combobox("Сокращенное_имя", self.vuz_cmb, filters)
+            self.populate_combobox("Регион", self.region_cmb, filters)
+            self.populate_combobox("Город", self.city_cmb, filters)
+            self.populate_combobox("Область", self.obl_cmb, filters)
+
+            # Обновление таблицы Tp_nir
+            self.update_table()
+        finally:
+            self.updating_comboboxes = False  # Сбрасываем флаг
+
+    def update_comboboxes(self):
+        """Обновление значений в комбобоксах на основе выбранных значений."""
+        if self.updating_comboboxes:
+            return  # Prevent recursion
+
+        self.updating_comboboxes = True  # Set flag to prevent recursion
+        try:
+            selected_values = {
+                "Сокращенное_имя": self.vuz_cmb.currentText(),
+                "Регион": self.region_cmb.currentText(),
+                "Город": self.city_cmb.currentText(),
+                "Область": self.obl_cmb.currentText(),
+            }
+
+            # Получаем уникальные значения для всех комбобоксов
+            for column_name, selected_value in selected_values.items():
+                if selected_value:  # Если значение выбрано
+                    self.update_combobox(column_name, selected_value)
+
+            # Обновление таблицы Tp_nir
+            self.update_table()
+        finally:
+            self.updating_comboboxes = False  # Reset flag
+
+    def update_table(self):
+        """Обновление таблицы Tp_nir на основе выбранных значений в комбобоксах."""
+        filters = []
+
+        # Добавляем фильтры на основе выбранных значений в комбобоксах
+        if self.vuz_cmb.currentText():
+            filters.append(f'VUZ."Сокращенное_имя" = "{self.vuz_cmb.currentText()}"')
+        if self.region_cmb.currentText():
+            filters.append(f'VUZ."Регион" = "{self.region_cmb.currentText()}"')
+        if self.city_cmb.currentText():
+            filters.append(f'VUZ."Город" = "{self.city_cmb.currentText()}"')
+        if self.obl_cmb.currentText():
+            filters.append(f'VUZ."Область" = "{self.obl_cmb.currentText()}"')
+
+        # Формируем SQL-запрос с JOIN
+        query = '''
+            SELECT Tp_nir.*
+            FROM Tp_nir
+            JOIN VUZ ON Tp_nir."Код" = VUZ."Код"
+        '''
+
+        # Если есть фильтры, добавляем их к запросу
+        if filters:
+            query += ' WHERE ' + ' AND '.join(filters)
+
+        print("Применяемые фильтры:", filters)
+        print("SQL-запрос:", query)
+
+        # Создаем объект QSqlQuery и выполняем запрос
+        ql_query = QSqlQuery()
+        if not ql_query.exec(query):
+            print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
+            return
+
+        # Устанавливаем модель с выполненным запросом
+        model = QSqlQueryModel()
+        model.setQuery(ql_query)
+
+        # Проверяем количество строк в модели
+        if model.rowCount() == 0:
+            print("Нет данных, соответствующих выбранным фильтрам.")
+            self.show_error_message("Нет данных, соответствующих выбранным фильтрам.")
+
+        self.tableView_2.setModel(model)
+
+    def setup_combobox_signals(self):
+        """Подключение сигналов для комбобоксов."""
+        self.vuz_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Сокращенное_имя"))
+        self.region_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Регион"))
+        self.city_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Город"))
+        self.obl_cmb.currentIndexChanged.connect(lambda: self.update_combobox("Область"))
+
+    def populate_initial_comboboxes(self):
+        """Заполнение комбобоксов существующими данными из связанных таблиц."""
+
+
+        # Создаем подключение к базе данных SQLite
+        conn = sqlite3.connect(self.db_name)
+
+        try:
+            # Заполнение комбобокса VUZ
+            query_vuz = '''
+                SELECT DISTINCT VUZ."Сокращенное_имя"
+                FROM VUZ
+                JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+            '''
+            df_vuz = conn.execute(query_vuz).fetchall()
+            for row in df_vuz:
+                self.vuz_cmb.addItem(row[0])  # row[0] содержит "Сокращенное_имя"
+
+            # Заполнение комбобокса Регион
+            query_region = '''
+                SELECT DISTINCT VUZ."Регион"
+                FROM VUZ
+                JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+            '''
+            df_region = conn.execute(query_region).fetchall()
+            for row in df_region:
+                self.region_cmb.addItem(row[0])  # row[0] содержит "Регион"
+
+            # Заполнение комбобокса Город
+            query_city = '''
+                SELECT DISTINCT VUZ."Город"
+                FROM VUZ
+                JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+            '''
+            df_city = conn.execute(query_city).fetchall()
+            for row in df_city:
+                self.city_cmb.addItem(row[0])  # row[0] содержит "Город"
+
+            # Заполнение комбобокса Область
+            query_obl = '''
+                SELECT DISTINCT VUZ."Область"
+                FROM VUZ
+                JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+            '''
+            df_obl = conn.execute(query_obl).fetchall()
+            for row in df_obl:
+                self.obl_cmb.addItem(row[0])  # row[0] содержит "Область"
+
+        finally:
+            conn.close()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
