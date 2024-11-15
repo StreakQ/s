@@ -95,22 +95,14 @@ class MainWindow(QMainWindow):
         self.show()
 
         # Инициализация атрибута
-        self.is_update_comboboxes = False  # Добавьте эту строку
 
-        # Очистка комбобоксов
-        self.vuz_cmb.clear()
-        self.region_cmb.clear()
-        self.city_cmb.clear()
-        self.obl_cmb.clear()
 
         self.models['Tp_nir'].dataChanged.connect(self.update_tp_fv)
         self.models['Tp_nir'].dataChanged.connect(self.update_summary_tables)
 
         # Заполнение комбобоксов значениями из базы данных
-        self.populate_initial_comboboxes()
+        #self.populate_initial_comboboxes()
 
-        # Подключение сигналов для обновления таблицы
-        self.setup_combobox_signals()
 
 
     def connect_db(self):
@@ -184,10 +176,9 @@ class MainWindow(QMainWindow):
 
         # Фильтр
         self.Tp_nir_redact_filters_btn.clicked.connect(self.filter)  # New
-        self.populate_comboboxes()
-        self.setup_combobox_signals()
 
-        #анализ
+
+
 
     def update_summary_tables(self):
         """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
@@ -199,29 +190,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.show_error_message(f"Ошибка при обновлении сводных таблиц: {e}")
 
-    def fill_vuz_summary(self):
-        """Заполнение таблицы VUZ_Summary."""
-        try:
-            fill_vuz_summary()  # Вызов функции из db.py
-            QMessageBox.information(self, "Успех", "Таблица VUZ_Summary успешно заполнена.")
-        except Exception as e:
-            self.show_error_message(f"Ошибка при заполнении таблицы VUZ_Summary: {e}")
 
-    def fill_grnti_summary(self):
-        """Заполнение таблицы GRNTI_Summary."""
-        try:
-            fill_grnti_summary()  # Вызов функции из db.py
-            QMessageBox.information(self, "Успех", "Таблица GRNTI_Summary успешно заполнена.")
-        except Exception as e:
-            self.show_error_message(f"Ошибка при заполнении таблицы GRNTI_Summary: {e}")
-
-    def fill_nir_character_summary(self):
-        """Заполнение таблицы NIR_Character_Summary."""
-        try:
-            fill_nir_character_summary()  # Вызов функции из db.py
-            QMessageBox.information(self, "Успех", "Таблица NIR_Character_Summary успешно заполнена.")
-        except Exception as e:
-            self.show_error_message(f"Ошибка при заполнении таблицы NIR_Character_Summary: {e}")
 
     def hide_buttons(self):
         self.Tp_nir_redact_add_row_btn.hide()
@@ -632,23 +601,30 @@ class MainWindow(QMainWindow):
         self.tableView.reset()
         self.tableView.show()
 
+
+
+
+
+
+
     def filter(self):
         self.show_menu(self.Tp_nir_add_row_menu, 3)
         self.hide_buttons()
+        self.is_update_comboboxes = False  # Добавьте эту строку
 
-        # Очистка текущих значений комбобоксов
-        self.vuz_cmb.clear()  # Очищаем комбобокс VUZ
-        self.region_cmb.clear()  # Очищаем комбобокс Регион
-        self.city_cmb.clear()  # Очищаем комбобокс Город
-        self.obl_cmb.clear()  # Очищаем комбобокс Область
-        # Заполнение комбобоксов значениями
-        self.populate_comboboxes()
-        #self.on_reset_filter()
+        # Очистка комбобоксов
+        self.vuz_cmb.clear()
+        self.region_cmb.clear()
+        self.city_cmb.clear()
+        self.obl_cmb.clear()
+        self.setup_combobox_signals()
         # Подключение сигналов для фильтрации
         self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
         self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
+
+        self.populate_initial_comboboxes()
 
     def on_reset_filter(self):
         self.models['Tp_nir'].setFilter("")
@@ -659,9 +635,9 @@ class MainWindow(QMainWindow):
         self.vuz_cmb.clear()  # Очищаем комбобокс VUZ
         self.region_cmb.clear()  # Очищаем комбобокс Регион
         self.city_cmb.clear()  # Очищаем комбобокс Город
-        self.obl_cmb.clear()  # Очищаем комбобокс Область5
+        self.obl_cmb.clear()  # Очищаем комбобокс Область
         # Сброс значений в комбобоксах
-        self.populate_comboboxes()
+        self.populate_initial_comboboxes()
 
     def populate_comboboxes(self):
         """Заполнение комбобоксов значениями из столбцов VUZ."""
