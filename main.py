@@ -745,22 +745,26 @@ class MainWindow(QMainWindow):
             obl_selected = self.obl_cmb.currentText()
 
             # Обновляем комбобоксы на основе текущих выборов
-            self.populate_combobox("Сокращенное_имя", self.vuz_cmb)
 
             if vuz_selected != "Выберите...":
-                self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
+                self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
+            else:
+                self.populate_combobox("Сокращенное_имя", self.vuz_cmb)
+
+            if region_selected != "Выберите...":
+                self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Регион" = "{vuz_selected}"'])
             else:
                 self.populate_combobox("Регион", self.region_cmb)
 
-            if region_selected != "Выберите...":
-                self.populate_combobox("Город", self.city_cmb, [f'VUZ."Регион" = "{region_selected}"'])
+            if obl_selected != "Выберите...":
+                self.populate_combobox("Область", self.city_cmb, [f'VUZ."Область" = "{region_selected}"'])
             else:
-                self.populate_combobox("Город", self.city_cmb)
+                self.populate_combobox("Область", self.city_cmb)
 
             if city_selected != "Выберите...":
-                self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Город" = "{city_selected}"'])
+                self.populate_combobox("Город", self.obl_cmb, [f'VUZ."Город" = "{city_selected}"'])
             else:
-                self.populate_combobox("Область", self.obl_cmb)
+                self.populate_combobox("Город", self.obl_cmb)
 
             # Обновление таблицы Tp_nir
             self.update_table()
