@@ -3,7 +3,8 @@ import sys
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
-                             QAbstractItemView, QComboBox, QTextEdit, QHeaderView)
+                             QAbstractItemView, QComboBox, QTextEdit, QHeaderView, QPushButton, QVBoxLayout,
+                             QHBoxLayout)
 from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery,QSqlQueryModel
 from PyQt6.QtGui import QKeyEvent, QTextCursor
@@ -94,14 +95,25 @@ class MainWindow(QMainWindow):
         self.setup_ui()
         self.show()
 
-        # Инициализация атрибута
+        # Инициализация атрибутов для отслеживания изменений в комбобоксах
+        self.vuz_selected = False
+        self.region_selected = False
+        self.city_selected = False
+        self.obl_selected = False
 
+        # Инициализация флагов для отслеживания изменений
+        self.vuz_changed = False
+        self.region_changed = False
+        self.city_changed = False
+        self.obl_changed = False
 
         self.models['Tp_nir'].dataChanged.connect(self.update_tp_fv)
         self.models['Tp_nir'].dataChanged.connect(self.update_summary_tables)
 
-        # Заполнение комбобоксов значениями из базы данных
-        #self.populate_initial_comboboxes()
+        self.saved_filter_conditions = []  # Список для хранения условий фильтрации
+
+
+
 
 
 
@@ -143,13 +155,15 @@ class MainWindow(QMainWindow):
 
         self.stackedWidget.setCurrentIndex(0)
 
+
         # Подключение действий для отображения таблиц
         self.action_show_VUZ.triggered.connect(lambda: self.table_show('VUZ'))
         self.action_show_Tp_nir.triggered.connect(lambda: self.table_show('Tp_nir'))
         self.action_show_grntirub.triggered.connect(lambda: self.table_show('grntirub'))
         self.action_show_Tp_fv.triggered.connect(lambda: self.table_show('Tp_fv'))
         self.tableView_2.setModel(self.models['Tp_nir'])  # New
-        self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
+
+
         self.po_rubrikam.triggered.connect(lambda: self.table_show('GRNTI_Summary'))
         self.po_character.triggered.connect(lambda: self.table_show('NIR_Character_Summary'))
 
@@ -157,6 +171,7 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact_add_row_btn.clicked.connect(self.open_add_row_menu)
         self.Tp_nir_add_row_menu_save_btn.clicked.connect(self.save_new_row)
         self.Tp_nir_add_row_menu_close_btn .clicked.connect(lambda: self.cancel(self.Tp_nir_add_row_menu))
+
 
         self.Tp_nir_add_row_menu_grntiCode_txt = self.findChild(QTextEdit, 'Tp_nir_add_row_menu_grntiCode_txt')
         self.Tp_nir_add_row_menu_grntiCode_txt.deleteLater()
@@ -177,8 +192,52 @@ class MainWindow(QMainWindow):
         # Фильтр
         self.Tp_nir_redact_filters_btn.clicked.connect(self.filter)  # New
 
+        #Анализ
+        self.save_filter_btn.clicked.connect(self.save_filter_conditions)  # Подключаем кнопку сохранения фильтров
+        self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
+        self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
+
+    def table_show(self, table_name):
+        """Отображение таблицы и управление видимостью кнопки."""
+        if table_name == 'VUZ_Summary':
+            self.tableView.setModel(self.models['VUZ_Summary'])
+            self.apply_filter_btn.show()  # Показываем кнопку при открытии VUZ_Summary
+            self.apply_filter_btn.raise_()  # Поднимаем кнопку на передний план
+            self.models['VUZ_Summary'].select()
+        else:
+            self.show_other_table(table_name)
+
+    def show_other_table(self, table_name):
+        """Метод для отображения других таблиц (например, VUZ, Tp_nir и т.д.)."""
+        self.apply_filter_btn.hide()  # Скрываем кнопку, если открывается другая таблица
+        self.tableView.setModel(self.models[table_name])
+        self.models[table_name].select()  # Обновляем модель
 
 
+    def save_filter_conditions(self):
+        """Сохранение условий фильтрации по коду ГРНТИ."""
+        str_cod = self.grnticode_txt.toPlainText().strip()
+        if str_cod:
+            self.saved_filter_conditions.append(str_cod)
+            print(f"Сохранено условие фильтрации: {str_cod}")
+        else:
+            self.show_error_message("Введите код ГРНТИ для сохранения условия фильтрации.")
+
+    def apply_saved_filters(self):
+        """Применение сохраненных условий фильтрации к таблице VUZ_Summary."""
+        if not self.saved_filter_conditions:
+            self.show_error_message("Нет сохраненных условий фильтрации.")
+            return
+
+        # Формируем фильтр на основе сохраненных условий
+        filter_conditions = [f'"Коды_ГРНТИ" LIKE "{cod}%"' for cod in self.saved_filter_conditions]
+        query = ' AND '.join(filter_conditions)
+
+        # Применяем фильтр к модели VUZ_Summary
+        self.models['VUZ_Summary'].setFilter(query)
+        self.models['VUZ_Summary'].select()  # Обновляем модель
+        self.tableView.setModel(self.models['VUZ_Summary'])  # Устанавливаем модель в таблицу
+        print("Применены сохраненные условия фильтрации к VUZ_Summary.")
 
     def update_summary_tables(self):
         """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
@@ -619,20 +678,35 @@ class MainWindow(QMainWindow):
         self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
 
-
     def on_reset_filter(self):
         self.models['Tp_nir'].setFilter("")
         self.models['Tp_nir'].select()
         self.tableView_2.setModel(self.models['Tp_nir'])
         self.tableView_2.reset()
         self.tableView_2.show()
-        self.vuz_cmb.clear()  # Очищаем комбобокс VUZ
-        self.region_cmb.clear()  # Очищаем комбобокс Регион
-        self.city_cmb.clear()  # Очищаем комбобокс Город
-        self.obl_cmb.clear()  # Очищаем комбобокс Область
+
+        # Очищаем комбобоксы
+        self.vuz_cmb.clear()
+        self.region_cmb.clear()
+        self.city_cmb.clear()
+        self.obl_cmb.clear()
+
         # Сброс значений в комбобоксах
         self.populate_initial_comboboxes()
         self.setup_combobox_signals()
+
+        # Сброс флагов
+        self.vuz_selected = False
+        self.region_selected = False
+        self.city_selected = False
+        self.obl_selected = False
+
+        # Сброс флагов для отслеживания изменений
+        self.vuz_changed = False
+        self.region_changed = False
+        self.city_changed = False
+        self.obl_changed = False
+
 
     def populate_comboboxes(self):
         """Заполнение комбобоксов значениями из столбцов VUZ."""
@@ -677,49 +751,37 @@ class MainWindow(QMainWindow):
 
     def update_comboboxes(self):
         """Обновление значений в комбобоксах на основе выбранных значений."""
-        # Отключаем сигналы, чтобы избежать рекурсии
-        self.vuz_cmb.currentIndexChanged.disconnect()
-        self.region_cmb.currentIndexChanged.disconnect()
-        self.city_cmb.currentIndexChanged.disconnect()
-        self.obl_cmb.currentIndexChanged.disconnect()
+        # Получаем текущее значение выбранных комбобоксов
+        vuz_selected = self.vuz_cmb.currentText()
+        region_selected = self.region_cmb.currentText()
+        city_selected = self.city_cmb.currentText()
+        obl_selected = self.obl_cmb.currentText()
 
-        try:
-            # Получаем текущее значение выбранных комбобоксов
-            vuz_selected = self.vuz_cmb.currentText()
-            region_selected = self.region_cmb.currentText()
-            city_selected = self.city_cmb.currentText()
-            obl_selected = self.obl_cmb.currentText()
+        print(
+            f"Выбранные значения: VUZ={vuz_selected}, Регион={region_selected}, Город={city_selected}, Область={obl_selected}")
 
-            print(
-                f"Выбранные значения: VUZ={vuz_selected}, Регион={region_selected}, Город={city_selected}, Область={obl_selected}")
+        # Обновляем комбобоксы в зависимости от текущего выбора
+        if vuz_selected != "Выберите..." and not self.vuz_changed:
+            self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
+            self.populate_combobox("Город", self.city_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
+            self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
 
-            # Обновляем комбобоксы в зависимости от текущего выбора
-            if vuz_selected != "Выберите...":
-                self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
-                self.populate_combobox("Город", self.city_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
-                self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
+        if region_selected != "Выберите..." and not self.region_changed:
+            self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Регион" = "{region_selected}"'])
+            self.populate_combobox("Город", self.city_cmb, [f'VUZ."Регион" = "{region_selected}"'])
+            self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Регион" = "{region_selected}"'])
 
-            if region_selected != "Выберите...":
-                self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Регион" = "{region_selected}"'])
-                self.populate_combobox("Город", self.city_cmb, [f'VUZ."Регион" = "{region_selected}"'])
-                self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Регион" = "{region_selected}"'])
+        if city_selected != "Выберите..." and not self.city_changed:
+            self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Город" = "{city_selected}"'])
+            self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Город" = "{city_selected}"'])
+            self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Город" = "{city_selected}"'])
 
-            if city_selected != "Выберите...":
-                self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Город" = "{city_selected}"'])
-                self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Город" = "{city_selected}"'])
-                self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Город" = "{city_selected}"'])
+        if obl_selected != "Выберите..." and not self.obl_changed:
+            self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Область" = "{obl_selected}"'])
+            self.populate_combobox("Город", self.city_cmb, [f'VUZ."Область" = "{obl_selected}"'])
+            self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Область" = "{obl_selected}"'])
 
-            if obl_selected != "Выберите...":
-                self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Область" = "{obl_selected}"'])
-                self.populate_combobox("Город", self.city_cmb, [f'VUZ."Область" = "{obl_selected}"'])
-                self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Область" = "{obl_selected}"'])
 
-                # # Обновление таблицы Tp_nir
-                self.update_table()
-
-        finally:
-            # Включаем сигналы обратно
-            self.setup_combobox_signals()
 
     def update_table(self):
         """Обновление таблицы Tp_nir на основе выбранных значений в комбобоксах."""
@@ -762,10 +824,42 @@ class MainWindow(QMainWindow):
 
     def setup_combobox_signals(self):
         """Подключение сигналов для комбобоксов."""
-        self.vuz_cmb.currentIndexChanged.connect(self.update_comboboxes)
-        self.region_cmb.currentIndexChanged.connect(self.update_comboboxes)
-        self.city_cmb.currentIndexChanged.connect(self.update_comboboxes)
-        self.obl_cmb.currentIndexChanged.connect(self.update_comboboxes)
+        self.vuz_cmb.currentIndexChanged.connect(self.on_vuz_changed)
+        self.region_cmb.currentIndexChanged.connect(self.on_region_changed)
+        self.city_cmb.currentIndexChanged.connect(self.on_city_changed)
+        self.obl_cmb.currentIndexChanged.connect(self.on_obl_changed)
+
+    def on_vuz_changed(self):
+        """Обработчик изменения VUZ."""
+        if self.vuz_cmb.currentIndex() == 0:  # Если выбрано "Выберите..."
+            return
+        if not self.vuz_selected:
+            self.vuz_selected = True
+            self.update_comboboxes()
+
+    def on_region_changed(self):
+        """Обработчик изменения региона."""
+        if self.region_cmb.currentIndex() == 0:  # Если выбрано "Выберите..."
+            return
+        if not self.region_selected:
+            self.region_selected = True
+            self.update_comboboxes()
+
+    def on_city_changed(self):
+        """Обработчик изменения города."""
+        if self.city_cmb.currentIndex() == 0:  # Если выбрано "Выберите..."
+            return
+        if not self.city_selected:
+            self.city_selected = True
+            self.update_comboboxes()
+
+    def on_obl_changed(self):
+        """Обработчик изменения области."""
+        if self.obl_cmb.currentIndex() == 0:  # Если выбрано "Выберите..."
+            return
+        if not self.obl_selected:
+            self.obl_selected = True
+            self.update_comboboxes()
 
 
 
