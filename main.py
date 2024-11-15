@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
         self.show()
 
         # Инициализация атрибута
-        self.update_comboboxes = False  # Добавьте эту строку
+        self.is_update_comboboxes = False  # Добавьте эту строку
 
         # Очистка комбобоксов
         self.vuz_cmb.clear()
@@ -698,10 +698,10 @@ class MainWindow(QMainWindow):
 
     def update_combobox(self, column_name):
         """Обновление значений в комбобоксах на основе выбранных значений."""
-        if self.update_comboboxes:
+        if self.is_update_comboboxes:
             return  # Prevent recursion
 
-        self.update_comboboxes = True  # Set flag to prevent recursion
+        self.is_update_comboboxes = True  # Set flag to prevent recursion
         try:
             # Получаем текущее значение выбранного комбобокса
             vuz_selected = self.vuz_cmb.currentText()
@@ -729,14 +729,14 @@ class MainWindow(QMainWindow):
             # Обновление таблицы Tp_nir
             self.update_table()
         finally:
-            self.update_comboboxes = False  # Сбрасываем флаг
+            self.is_update_comboboxes = False  # Сбрасываем флаг
 
     def update_comboboxes(self):
         """Обновление значений в комбобоксах на основе выбранных значений."""
-        if self.update_comboboxes:
+        if self.is_update_comboboxes:
             return  # Предотвращаем рекурсию
 
-        self.update_comboboxes = True  # Устанавливаем флаг, чтобы предотвратить рекурсию
+        self.is_update_comboboxes = True  # Устанавливаем флаг, чтобы предотвратить рекурсию
         try:
             # Получаем текущее значение выбранного комбобокса
             vuz_selected = self.vuz_cmb.currentText()
@@ -769,7 +769,7 @@ class MainWindow(QMainWindow):
             # Обновление таблицы Tp_nir
             self.update_table()
         finally:
-            self.update_comboboxes = False  # Сбрасываем флаг
+            self.is_update_comboboxes = False  # Сбрасываем флаг
 
 
 
