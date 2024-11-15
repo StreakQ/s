@@ -94,6 +94,9 @@ class MainWindow(QMainWindow):
         self.setup_ui()
         self.show()
 
+        # Инициализация атрибута
+        self.update_comboboxes = False  # Добавьте эту строку
+
         # Очистка комбобоксов
         self.vuz_cmb.clear()
         self.region_cmb.clear()
@@ -102,8 +105,6 @@ class MainWindow(QMainWindow):
 
         self.models['Tp_nir'].dataChanged.connect(self.update_tp_fv)
         self.models['Tp_nir'].dataChanged.connect(self.update_summary_tables)
-
-        self.updating_comboboxes = False
 
         # Заполнение комбобоксов значениями из базы данных
         self.populate_initial_comboboxes()
@@ -664,37 +665,34 @@ class MainWindow(QMainWindow):
         self.populate_combobox("Город", self.city_cmb)
         self.populate_combobox("Область", self.obl_cmb)
 
-
-
-
     def populate_combobox(self, column_name, combo_box, filters=None):
         """Заполнение конкретного комбобокса с учетом фильтра."""
         conn = sqlite3.connect(self.db_name)
 
         query = f'''
-                SELECT DISTINCT VUZ."{column_name}"
-                FROM VUZ
-                JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+            SELECT DISTINCT VUZ."{column_name}"
+            FROM VUZ
+            JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
         '''
 
         if filters:
-            query += ' WHERE ' + ' AND '.join(filters)  # Используем фильтры
+            filters = list(filter(lambda x: x, filters))  # Убираем пустые фильтры
+            if filters:
+                query += ' WHERE ' + ' AND '.join(filters)  # Добавляем фильтры
+
+        print("SQL-запрос для комбобокса:", query)  # Отладка
 
         df = conn.execute(query).fetchall()
 
         # Отладка: выводим извлеченные данные
         print(f"Данные для комбобокса {column_name}: {df}")
 
-        current_value = combo_box.currentText()
-        combo_box.clear()
+        combo_box.clear()  # Очищаем комбобокс перед заполнением
+        combo_box.addItem("Выберите...", None)  # Добавляем пустое значение
 
         for value in df:
             if value:
                 combo_box.addItem(value[0])
-
-        # Убедитесь, что текущий текст не устанавливается после заполнения
-        # if current_value in [combo_box.itemText(i) for i in range(combo_box.count())]:
-        #     combo_box.setCurrentText(current_value)
 
         conn.close()
 
@@ -736,26 +734,40 @@ class MainWindow(QMainWindow):
     def update_comboboxes(self):
         """Обновление значений в комбобоксах на основе выбранных значений."""
         if self.update_comboboxes:
-            return  # Prevent recursion
+            return  # Предотвращаем рекурсию
 
-        self.update_comboboxes = True  # Set flag to prevent recursion
+        self.update_comboboxes = True  # Устанавливаем флаг, чтобы предотвратить рекурсию
         try:
-            selected_values = {
-                "Сокращенное_имя": self.vuz_cmb.currentText(),
-                "Регион": self.region_cmb.currentText(),
-                "Город": self.city_cmb.currentText(),
-                "Область": self.obl_cmb.currentText(),
-            }
+            # Получаем текущее значение выбранного комбобокса
+            vuz_selected = self.vuz_cmb.currentText()
+            region_selected = self.region_cmb.currentText()
+            city_selected = self.city_cmb.currentText()
+            obl_selected = self.obl_cmb.currentText()
 
-            # Получаем уникальные значения для всех комбобоксов
-            for column_name, selected_value in selected_values.items():
-                if selected_value:  # Если значение выбрано
-                    self.update_combobox(column_name, selected_value)
+            # Обновляем комбобоксы на основе текущих выборов
+            self.populate_combobox("Сокращенное_имя", self.vuz_cmb)
+
+            if vuz_selected != "Выберите...":
+                self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
+            else:
+                self.populate_combobox("Регион", self.region_cmb)
+
+            if region_selected != "Выберите...":
+                self.populate_combobox("Город", self.city_cmb, [f'VUZ."Регион" = "{region_selected}"'])
+            else:
+                self.populate_combobox("Город", self.city_cmb)
+
+            if city_selected != "Выберите...":
+                self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Город" = "{city_selected}"'])
+            else:
+                self.populate_combobox("Область", self.obl_cmb)
 
             # Обновление таблицы Tp_nir
             self.update_table()
         finally:
-            self.update_comboboxes = False  # Reset flag
+            self.update_comboboxes = False  # Сбрасываем флаг
+
+
 
     def update_table(self):
         """Обновление таблицы Tp_nir на основе выбранных значений в комбобоксах."""
@@ -795,17 +807,14 @@ class MainWindow(QMainWindow):
         model = QSqlQueryModel()
         model.setQuery(ql_query)
 
-        # Проверяем количество строк в модели
-
-
         self.tableView_2.setModel(model)
 
     def setup_combobox_signals(self):
         """Подключение сигналов для комбобоксов."""
-        self.vuz_cmb.currentIndexChanged.connect(self.update_table)
-        self.region_cmb.currentIndexChanged.connect(self.update_table)
-        self.city_cmb.currentIndexChanged.connect(self.update_table)
-        self.obl_cmb.currentIndexChanged.connect(self.update_table)
+        self.vuz_cmb.currentIndexChanged.connect(self.update_comboboxes)
+        self.region_cmb.currentIndexChanged.connect(self.update_comboboxes)
+        self.city_cmb.currentIndexChanged.connect(self.update_comboboxes)
+        self.obl_cmb.currentIndexChanged.connect(self.update_comboboxes)
 
     def populate_initial_comboboxes(self):
         """Заполнение комбобоксов существующими данными из связанных таблиц."""
