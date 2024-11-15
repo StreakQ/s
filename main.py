@@ -235,14 +235,7 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact_edit_row_btn.show()
         self.Tp_nir_redact_filters_btn.show()
 
-    def on_reset_filter(self):
-        self.models['Tp_nir'].setFilter("")
-        self.models['Tp_nir'].select()
-        self.tableView_2.setModel(self.models['Tp_nir'])
-        self.tableView_2.reset()
-        self.tableView_2.show()
-        # Сброс значений в комбобоксах
-        self.populate_initial_comboboxes()
+
 
     def open_add_row_menu(self):
         """Сброс состояния и открытие меню добавления строки."""
@@ -649,13 +642,26 @@ class MainWindow(QMainWindow):
         self.city_cmb.clear()  # Очищаем комбобокс Город
         self.obl_cmb.clear()  # Очищаем комбобокс Область
         # Заполнение комбобоксов значениями
-        #self.populate_comboboxes()
-        self.on_reset_filter()
+        self.populate_comboboxes()
+        #self.on_reset_filter()
         # Подключение сигналов для фильтрации
         self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
         self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
+
+    def on_reset_filter(self):
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView_2.setModel(self.models['Tp_nir'])
+        self.tableView_2.reset()
+        self.tableView_2.show()
+        self.vuz_cmb.clear()  # Очищаем комбобокс VUZ
+        self.region_cmb.clear()  # Очищаем комбобокс Регион
+        self.city_cmb.clear()  # Очищаем комбобокс Город
+        self.obl_cmb.clear()  # Очищаем комбобокс Область5
+        # Сброс значений в комбобоксах
+        self.populate_comboboxes()
 
     def populate_comboboxes(self):
         """Заполнение комбобоксов значениями из столбцов VUZ."""
