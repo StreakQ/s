@@ -978,7 +978,7 @@
      <x>0</x>
      <y>0</y>
      <width>1539</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_1">
@@ -995,7 +995,11 @@
     <property name="title">
      <string>Анализ</string>
     </property>
-    <addaction name="action_9"/>
+    <addaction name="po_VUZ"/>
+    <addaction name="separator"/>
+    <addaction name="po_rubrikam"/>
+    <addaction name="separator"/>
+    <addaction name="po_character"/>
    </widget>
    <addaction name="menu_1"/>
    <addaction name="menu_2"/>
@@ -1036,9 +1040,9 @@
     <string>Удаление запси</string>
    </property>
   </action>
-  <action name="action_9">
+  <action name="po_VUZ">
    <property name="text">
-    <string>Формирование документов</string>
+    <string>По ВУЗу</string>
    </property>
   </action>
   <action name="action_10">
@@ -1079,6 +1083,16 @@
   <action name="action_show_Tp_fv">
    <property name="text">
     <string>Финансирование</string>
+   </property>
+  </action>
+  <action name="po_rubrikam">
+   <property name="text">
+    <string>По рубрикам ГРНТИ</string>
+   </property>
+  </action>
+  <action name="po_character">
+   <property name="text">
+    <string>По характеру НИР</string>
    </property>
   </action>
  </widget>

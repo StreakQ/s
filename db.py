@@ -516,72 +516,72 @@ def delete_string_in_table(table_view, table_model):
     return False
 
 
-def print_vuz_summary():
-    """Вывод данных из таблицы VUZ_Summary в консоль."""
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-
-    query = "SELECT * FROM VUZ_Summary"
-    c.execute(query)
-
-    rows = c.fetchall()
-
-    # Вывод заголовков
-    print(f"{'Сокращенное имя':<30} {'Сумма планового финансирования':<30} {'Сумма количества НИР':<30} {'Сумма фактического финансирования':<30}")
-    print("=" * 120)
-
-    # Вывод данных
-    for row in rows:
-        # Заменяем None на пустую строку
-        row_display = [str(value) if value is not None else '' for value in row]
-        print(f"{row_display[0]:<30} {row_display[1]:<30} {row_display[2]:<30} {row_display[3]:<30}")
-
-    conn.close()
-
-def print_grnti_summary():
-    """Вывод данных из таблицы GRNTI_Summary в консоль."""
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-
-    query = "SELECT * FROM GRNTI_Summary"
-    c.execute(query)
-
-    rows = c.fetchall()
-
-    # Вывод заголовков
-    print(f"{'Код рубрики':<15} {'Название рубрики':<30} {'Количество НИР':<20} {'Сумма планового финансирования':<30}")
-    print("=" * 120)
-
-    # Вывод данных
-    for row in rows:
-        # Заменяем None на пустую строку
-        row_display = [str(value) if value is not None else '' for value in row]
-        print(f"{row_display[0]:<15} {row_display[1]:<30} {row_display[2]:<20} {row_display[3]:<30}")
-
-    conn.close()
-
-
-def print_nir_character_summary():
-    """Вывод данных из таблицы NIR_Character_Summary в консоль."""
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-
-    query = "SELECT * FROM NIR_Character_Summary"
-    c.execute(query)
-
-    rows = c.fetchall()
-
-    # Вывод заголовков
-    print(f"{'Характер':<30} {'Количество НИР':<20} {'Сумма планового финансирования':<30}")
-    print("=" * 80)
-
-    # Вывод данных
-    for row in rows:
-        # Заменяем None на пустую строку
-        row_display = [str(value) if value is not None else '' for value in row]
-        print(f"{row_display[0]:<30} {row_display[1]:<20} {row_display[2]:<30}")
-
-    conn.close()
+# def print_vuz_summary():
+#     """Вывод данных из таблицы VUZ_Summary в консоль."""
+#     conn = sqlite3.connect(db_name)
+#     c = conn.cursor()
+#
+#     query = "SELECT * FROM VUZ_Summary"
+#     c.execute(query)
+#
+#     rows = c.fetchall()
+#
+#     # Вывод заголовков
+#     print(f"{'Сокращенное имя':<30} {'Сумма планового финансирования':<30} {'Сумма количества НИР':<30} {'Сумма фактического финансирования':<30}")
+#     print("=" * 120)
+#
+#     # Вывод данных
+#     for row in rows:
+#         # Заменяем None на пустую строку
+#         row_display = [str(value) if value is not None else '' for value in row]
+#         print(f"{row_display[0]:<30} {row_display[1]:<30} {row_display[2]:<30} {row_display[3]:<30}")
+#
+#     conn.close()
+#
+# def print_grnti_summary():
+#     """Вывод данных из таблицы GRNTI_Summary в консоль."""
+#     conn = sqlite3.connect(db_name)
+#     c = conn.cursor()
+#
+#     query = "SELECT * FROM GRNTI_Summary"
+#     c.execute(query)
+#
+#     rows = c.fetchall()
+#
+#     # Вывод заголовков
+#     print(f"{'Код рубрики':<15} {'Название рубрики':<30} {'Количество НИР':<20} {'Сумма планового финансирования':<30}")
+#     print("=" * 120)
+#
+#     # Вывод данных
+#     for row in rows:
+#         # Заменяем None на пустую строку
+#         row_display = [str(value) if value is not None else '' for value in row]
+#         print(f"{row_display[0]:<15} {row_display[1]:<30} {row_display[2]:<20} {row_display[3]:<30}")
+#
+#     conn.close()
+#
+#
+# def print_nir_character_summary():
+#     """Вывод данных из таблицы NIR_Character_Summary в консоль."""
+#     conn = sqlite3.connect(db_name)
+#     c = conn.cursor()
+#
+#     query = "SELECT * FROM NIR_Character_Summary"
+#     c.execute(query)
+#
+#     rows = c.fetchall()
+#
+#     # Вывод заголовков
+#     print(f"{'Характер':<30} {'Количество НИР':<20} {'Сумма планового финансирования':<30}")
+#     print("=" * 80)
+#
+#     # Вывод данных
+#     for row in rows:
+#         # Заменяем None на пустую строку
+#         row_display = [str(value) if value is not None else '' for value in row]
+#         print(f"{row_display[0]:<30} {row_display[1]:<20} {row_display[2]:<30}")
+#
+#     conn.close()
 
 def prepare_tables():
     """Подготовка таблиц."""
@@ -606,8 +606,7 @@ def prepare_tables():
 
     fill_vuz_summary()
     fill_grnti_summary()
-
     fill_nir_character_summary()
-    print_nir_character_summary()
+
 
 prepare_tables()
