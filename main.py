@@ -734,13 +734,13 @@ class MainWindow(QMainWindow):
         # Проверяем, нужно ли добавлять "Выберите..."
         current_data = combo_box.currentText()
         # Добавляем "Выберите..." только если текущее значение - "Выберите..."
-        if current_data is None:
+        if current_data == "Выберите...":
             combo_box.clear()
             combo_box.addItem("Выберите...", None)  # Добавляем пустое значение
+            for value in df:
+                if value:
+                    combo_box.addItem(value[0])
 
-        for value in df:
-            if value:
-                combo_box.addItem(value[0])
 
         conn.close()
 
