@@ -194,7 +194,7 @@ class MainWindow(QMainWindow):
 
         #Анализ
         self.save_filter_btn.clicked.connect(self.save_filter_conditions)  # Подключаем кнопку сохранения фильтров
-        self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
+       # self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
         self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
 
     def table_show(self, table_name):
@@ -708,14 +708,6 @@ class MainWindow(QMainWindow):
         self.obl_changed = False
 
 
-    def populate_comboboxes(self):
-        """Заполнение комбобоксов значениями из столбцов VUZ."""
-        # Заполняем комбобоксы значениями
-        self.populate_combobox("Сокращенное_имя", self.vuz_cmb)
-        self.populate_combobox("Регион", self.region_cmb)
-        self.populate_combobox("Город", self.city_cmb)
-        self.populate_combobox("Область", self.obl_cmb)
-
     def populate_combobox(self, column_name, combo_box, filters=None):
         """Заполнение конкретного комбобокса с учетом фильтра."""
         conn = sqlite3.connect(self.db_name)
@@ -760,41 +752,74 @@ class MainWindow(QMainWindow):
         print(
             f"Выбранные значения: VUZ={vuz_selected}, Регион={region_selected}, Город={city_selected}, Область={obl_selected}")
 
+        if vuz_selected != "Выберите...":
+            self.vuz_cmb.removeItem(0)  # Удаляем "Выберите..."
+        else:
+            self.vuz_cmb.addItem("Выберите...", None)  # Добавляем обратно, если выбрано "Выберите..."
+
+        if region_selected != "Выберите...":
+            self.region_cmb.removeItem(0)  # Удаляем "Выберите..."
+        else:
+            self.region_cmb.addItem("Выберите...", None)  # Добавляем обратно, если выбрано "Выберите..."
+
+        if city_selected != "Выберите...":
+            self.city_cmb.removeItem(0)  # Удаляем "Выберите..."
+        else:
+            self.city_cmb.addItem("Выберите...", None)  # Добавляем обратно, если выбрано "Выберите..."
+
+        if obl_selected != "Выберите...":
+            self.obl_cmb.removeItem(0)  # Удаляем "Выберите..."
+        else:
+            self.obl_cmb.addItem("Выберите...", None)  # Добавляем обратно, если выбрано "Выберите..."
+
         # Обновляем комбобоксы в зависимости от текущего выбора
         if vuz_selected != "Выберите..." and not self.vuz_changed:
+            #self.vuz_cmb.removeItem(0)
             self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
             self.populate_combobox("Город", self.city_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
             self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Сокращенное_имя" = "{vuz_selected}"'])
 
         if region_selected != "Выберите..." and not self.region_changed:
+            #self.region_cmb.removeItem(0)
             self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Регион" = "{region_selected}"'])
             self.populate_combobox("Город", self.city_cmb, [f'VUZ."Регион" = "{region_selected}"'])
             self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Регион" = "{region_selected}"'])
 
         if city_selected != "Выберите..." and not self.city_changed:
+            #self.city_cmb.removeItem(0)
             self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Город" = "{city_selected}"'])
             self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Город" = "{city_selected}"'])
             self.populate_combobox("Область", self.obl_cmb, [f'VUZ."Город" = "{city_selected}"'])
 
         if obl_selected != "Выберите..." and not self.obl_changed:
+            #self.obl_cmb.removeItem(0)
             self.populate_combobox("Регион", self.region_cmb, [f'VUZ."Область" = "{obl_selected}"'])
             self.populate_combobox("Город", self.city_cmb, [f'VUZ."Область" = "{obl_selected}"'])
             self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Область" = "{obl_selected}"'])
-
-
 
     def update_table(self):
         """Обновление таблицы Tp_nir на основе выбранных значений в комбобоксах."""
         filters = []
 
+        # Проверяем, если выбран регион
         if self.region_cmb.currentText() != "Выберите...":
             filters.append(f'VUZ."Регион" = "{self.region_cmb.currentText()}"')
+
+
+        # Проверяем, если выбран город
         if self.city_cmb.currentText() != "Выберите...":
             filters.append(f'VUZ."Город" = "{self.city_cmb.currentText()}"')
+
+
+        # Проверяем, если выбрана область
         if self.obl_cmb.currentText() != "Выберите...":
             filters.append(f'VUZ."Область" = "{self.obl_cmb.currentText()}"')
+
+
+        # Проверяем, если выбран ВУЗ
         if self.vuz_cmb.currentText() != "Выберите...":
             filters.append(f'VUZ."Сокращенное_имя" = "{self.vuz_cmb.currentText()}"')
+
 
         # Формируем SQL-запрос с JOIN
         query = '''
@@ -807,6 +832,7 @@ class MainWindow(QMainWindow):
         if filters:
             query += ' WHERE ' + ' AND '.join(filters)
 
+        print()
         print("Применяемые фильтры:", filters)
         print("SQL-запрос:", query)
 
@@ -836,6 +862,7 @@ class MainWindow(QMainWindow):
         if not self.vuz_selected:
             self.vuz_selected = True
             self.update_comboboxes()
+            self.update_table()
 
     def on_region_changed(self):
         """Обработчик изменения региона."""
@@ -844,6 +871,7 @@ class MainWindow(QMainWindow):
         if not self.region_selected:
             self.region_selected = True
             self.update_comboboxes()
+            self.update_table()
 
     def on_city_changed(self):
         """Обработчик изменения города."""
@@ -852,6 +880,7 @@ class MainWindow(QMainWindow):
         if not self.city_selected:
             self.city_selected = True
             self.update_comboboxes()
+            self.update_table()
 
     def on_obl_changed(self):
         """Обработчик изменения области."""
@@ -860,6 +889,7 @@ class MainWindow(QMainWindow):
         if not self.obl_selected:
             self.obl_selected = True
             self.update_comboboxes()
+            self.update_table()
 
 
 
@@ -919,6 +949,7 @@ class MainWindow(QMainWindow):
 
         finally:
             conn.close()
+
 
         # Устанавливаем "Выберите..." как выбранное значение
         self.vuz_cmb.setCurrentIndex(0)  # Устанавливаем "Выберите..." как выбранное значение
