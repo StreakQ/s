@@ -107,13 +107,19 @@ class MainWindow(QMainWindow):
         self.city_changed = False
         self.obl_changed = False
 
-        self.models['Tp_nir'].dataChanged.connect(self.update_tp_fv)
-        self.models['Tp_nir'].dataChanged.connect(self.update_summary_tables)
+        self.is_updating = False  # Флаг для отслеживания обновления
+
+        self.models['Tp_nir'].dataChanged.connect(self.on_tp_nir_data_changed)
 
         self.saved_filter_conditions = []  # Список для хранения условий фильтрации
 
-
-
+    def on_tp_nir_data_changed(self):
+        """Обработчик изменения данных в Tp_nir."""
+        if not self.is_updating:
+            self.is_updating = True  # Устанавливаем флаг обновления
+            self.update_tp_fv()  # Обновляем первую модель
+            self.update_summary_tables()  # Обновляем вторую модель
+            self.is_updating = False  # Сбрасываем флаг обновления
 
 
 
@@ -198,20 +204,8 @@ class MainWindow(QMainWindow):
         self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
 
     def table_show(self, table_name):
-        """Отображение таблицы и управление видимостью кнопки."""
-        if table_name == 'VUZ_Summary':
-            self.tableView.setModel(self.models['VUZ_Summary'])
-            self.apply_filter_btn.show()  # Показываем кнопку при открытии VUZ_Summary
-            self.apply_filter_btn.raise_()  # Поднимаем кнопку на передний план
-            self.models['VUZ_Summary'].select()
-        else:
-            self.show_other_table(table_name)
-
-    def show_other_table(self, table_name):
-        """Метод для отображения других таблиц (например, VUZ, Tp_nir и т.д.)."""
-        self.apply_filter_btn.hide()  # Скрываем кнопку, если открывается другая таблица
+        """Отображение таблицы."""
         self.tableView.setModel(self.models[table_name])
-        self.models[table_name].select()  # Обновляем модель
 
 
     def save_filter_conditions(self):
@@ -241,13 +235,19 @@ class MainWindow(QMainWindow):
 
     def update_summary_tables(self):
         """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
+        if self.is_updating:
+            return  # Если уже происходит обновление, выходим
+
         try:
+            self.is_updating = True  # Устанавливаем флаг обновления
             fill_vuz_summary()  # Обновление таблицы VUZ_Summary
             fill_grnti_summary()  # Обновление таблицы GRNTI_Summary
             fill_nir_character_summary()  # Обновление таблицы NIR_Character_Summary
             print("Все сводные таблицы успешно обновлены.")
         except Exception as e:
             self.show_error_message(f"Ошибка при обновлении сводных таблиц: {e}")
+        finally:
+            self.is_updating = False  # Сбрасываем флаг обновления
 
 
 
@@ -413,8 +413,6 @@ class MainWindow(QMainWindow):
             # Устанавливаем выделение на новую строку
             self.tableView.setCurrentIndex(model.index(row_position, 0))  # Устанавливаем выделение на новую строку
             self.stackedWidget.setCurrentIndex(0)  # Возвращаемся на основной экран
-            #QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
-
 
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
