@@ -707,7 +707,6 @@ class MainWindow(QMainWindow):
         self.city_changed = False
         self.obl_changed = False
 
-
     def populate_combobox(self, column_name, combo_box, filters=None):
         """Заполнение конкретного комбобокса с учетом фильтра."""
         conn = sqlite3.connect(self.db_name)
@@ -732,8 +731,12 @@ class MainWindow(QMainWindow):
         # Отладка: выводим извлеченные данные
         print(f"Данные для комбобокса {column_name}: {df}")
 
-        combo_box.clear()  # Очищаем комбобокс перед заполнением
-        combo_box.addItem("Выберите...", None)  # Добавляем пустое значение
+        # Проверяем, нужно ли добавлять "Выберите..."
+        current_data = combo_box.currentText()
+        # Добавляем "Выберите..." только если текущее значение - "Выберите..."
+        if current_data is None:
+            combo_box.clear()
+            combo_box.addItem("Выберите...", None)  # Добавляем пустое значение
 
         for value in df:
             if value:
