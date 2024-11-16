@@ -752,28 +752,7 @@ class MainWindow(QMainWindow):
         city_selected = self.city_cmb.currentText()
         obl_selected = self.obl_cmb.currentText()
 
-        # if self.region_cmb.currentText() == "Выберите...":
-        #     self.region_cmb.clear()
-        #     self.region_cmb.addItem("Выберите...", None)
-        #     self.region_cmb.setCurrentIndex(0)
-        #
-        # if self.city_cmb.currentText() == "Выберите...":
-        #     self.city_cmb.clear()
-        #     self.city_cmb.addItem("Выберите...", None)
-        #     self.city_cmb.setCurrentIndex(0)
-        #
-        # if self.obl_cmb.currentText() == "Выберите...":
-        #     self.obl_cmb.clear()
-        #     self.obl_cmb.addItem("Выберите...", None)
-        #     self.obl_cmb.setCurrentIndex(0)
-        #
-        # if self.vuz_cmb.currentText() == "Выберите...":
-        #     self.vuz_cmb.clear()
-        #     self.vuz_cmb.addItem("Выберите...", None)
-        #     self.vuz_cmb.setCurrentIndex(0)
-
-        print(
-            f"Выбранные значения: VUZ={vuz_selected}, Регион={region_selected}, Город={city_selected}, Область={obl_selected}")
+        print(f"Выбранные значения: VUZ={vuz_selected}, Регион={region_selected}, Город={city_selected}, Область={obl_selected}")
 
         # Обновляем комбобоксы в зависимости от текущего выбора
         if vuz_selected != "Выберите...":
@@ -796,12 +775,12 @@ class MainWindow(QMainWindow):
             self.populate_combobox("Город", self.city_cmb, [f'VUZ."Область" = "{obl_selected}"'])
             self.populate_combobox("Сокращенное_имя", self.vuz_cmb, [f'VUZ."Область" = "{obl_selected}"'])
 
-
-
-
-
         self.update_table()
 
+        self.vuz_selected = False
+        self.region_selected = False
+        self.city_selected = False
+        self.obl_selected = False
 
     def update_table(self):
         """Обновление таблицы Tp_nir на основе выбранных значений в комбобоксах."""
