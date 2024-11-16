@@ -409,8 +409,9 @@ class MainWindow(QMainWindow):
 
             # Обновляем модель
             model.select()  # Обновляем модель, чтобы отобразить изменения
-
+            print(f"row_pos{ row_position}")
             # Устанавливаем выделение на новую строку
+            self.tableView.setModel(model)  # Устанавливаем модель в представление
             self.tableView.setCurrentIndex(model.index(row_position, 0))  # Устанавливаем выделение на новую строку
             self.stackedWidget.setCurrentIndex(0)  # Возвращаемся на основной экран
 
