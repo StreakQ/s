@@ -4,7 +4,7 @@ import sys
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
                              QAbstractItemView, QComboBox, QTextEdit, QHeaderView, QPushButton, QVBoxLayout,
-                             QHBoxLayout)
+                             QHBoxLayout, QLineEdit, QLabel)
 from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery,QSqlQueryModel
 from PyQt6.QtGui import QKeyEvent, QTextCursor
@@ -141,7 +141,8 @@ class MainWindow(QMainWindow):
             'Tp_fv': QSqlTableModel(self),
             'VUZ_Summary': QSqlTableModel(self),
             'GRNTI_Summary': QSqlTableModel(self),
-            'NIR_Character_Summary': QSqlTableModel(self)
+            'NIR_Character_Summary': QSqlTableModel(self),
+            'Order_table': QSqlTableModel(self)
 
         }
         for name, model in self.models.items():
@@ -158,6 +159,10 @@ class MainWindow(QMainWindow):
         self.tableView_2.horizontalHeader().setStretchLastSection(True)  # New
         self.tableView_2.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)  # New
         self.tableView_2.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)  # New
+        self.tableView_3.setSortingEnabled(True)
+        self.tableView_3.horizontalHeader().setStretchLastSection(True)
+        self.tableView_3.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.tableView_3.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
         self.stackedWidget.setCurrentIndex(0)
 
@@ -199,25 +204,58 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact_filters_btn.clicked.connect(self.filter)  # New
 
         #Анализ
-        self.save_filter_btn.clicked.connect(self.save_filter_conditions)  # Подключаем кнопку сохранения фильтров
-       # self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
+        self.save_filter_btn.clicked.connect(self.save_filter_conditions)
+       #self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
         self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
+
+        #Выпуск распоряжений
+        self.current_order.triggered.connect(self.on_current_order_clicked)
+
+        self.calculate_btn.clicked.connect(self.on_calculate_btn_clicked)
+        self.save_project_btn.clicked.connect(self.on_save_project_btn_clicked)
+        self.accept_order_btn.clicked.connect(self.on_accept_order_btn_clicked)
+        self.cancel_order_btn.clicked.connect(self.on_cancel_order_btn_clicked)
+
+        self.sum_first_lineedit = self.findChild(QLineEdit, 'sum_first_lineedit')
+        self.sum_second_lineedit = self.findChild(QLineEdit, 'sum_second_lineedit')
+        self.ordered_percent_first_lineedit = self.findChild(QLineEdit, 'ordered_percent_first_lineedit')
+        self.ordered_percent_second_lineedit = self.findChild(QLineEdit, 'ordered_percent_second_lineedit')
+
+        self.plan_fin_lbl = self.findChild(QLabel, 'plan_fin_lbl')
+        self.fact_fin_lbl = self.findChild(QLabel, 'fact_fin_lbl')
+        self.ordered_fin_percent_lbl = self.findChild(QLabel, 'ordered_ordered_percent_lbl')
+
+    def on_current_order_clicked(self):
+        self.hide_buttons()
+        self.stackedWidget.setCurrentIndex(4)
+
+    def on_calculate_btn_clicked(self):
+        pass
+
+    def on_save_project_btn_clicked(self):
+        pass
+
+    def on_accept_order_btn_clicked(self):
+        pass
+
+    def on_cancel_order_btn_clicked(self):
+        self.show_buttons()
+        self.stackedWidget.setCurrentIndex(0)
+        #добавить отмену уже рассчитанных факт. фин.
 
     def table_show(self, table_name):
         """Отображение таблицы."""
+        if table_name == 'Order_table':
+            self.tableView_3.setModel(self.models[table_name])
         if table_name.endswith('Summary'):
-            self.tableView_2.setModel(self.models[table_name])  # Устанавливаем модель для tableView_2
-            #self.resize(600, 400)  # Уменьшаем размер окна для таблиц Summary
+            self.tableView_2.setModel(self.models[table_name])
         else:
-            self.tableView.setModel(self.models[table_name])  # Устанавливаем модель для tableView
-            #self.resize(800, 600)  # Устанавливаем размер для других таблиц
-
-        # Установка сортировки по имени вуза (например, по столбцу "Сокращенное_имя")
+            self.tableView.setModel(self.models[table_name])
         if table_name == 'Tp_nir':
             self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
                                             Qt.SortOrder.AscendingOrder)
 
-        self.models[table_name].select()  # Обновление модели для применения сортировки
+        self.models[table_name].select()
 
 
     def save_filter_conditions(self):
