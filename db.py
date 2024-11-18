@@ -31,6 +31,16 @@ def connect_db(db_name_name):
         return False
     return db
 
+def create_order_table():
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS Order_table')
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS Order_table (
+    "Сокращенное_имя" TEXT DEFAULT NULL,
+    "Сумма_фактического_финансирования" INTEGER DEFAULT NULL
+    )
+    ''')
 
 def create_table_tp_nir():
     """Создание таблицы Tp_nir."""
@@ -529,6 +539,7 @@ def prepare_tables():
     create_table_vuz_summary()
     create_table_grnti_summary()
     create_table_nir_character_summary()
+    create_order_table()
 
     import_table_tp_nir_from_csv()
     import_table_vuz_from_csv()
