@@ -176,11 +176,11 @@ def import_table_tp_nir_from_csv():
                                     ) 
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', row)
             except sqlite3.IntegrityError as e:
-                print(f"Error on row {row_num}: {e}")
+                #print(f"Error on row {row_num}: {e}")
                 count += 1
             row_num += 1
 
-    print(f"Total errors: {count}")
+    #print(f"Total errors: {count}")
     conn.commit()
     conn.close()
 
@@ -202,11 +202,11 @@ def import_table_vuz_from_csv():
                                                         "Тип_уч.заведения","Проф")
                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', row)
             except sqlite3.IntegrityError as e:
-                print(f"Error on row {row_num}: {e}")
+                #print(f"Error on row {row_num}: {e}")
                 count += 1
             row_num += 1
 
-    print(f"Total errors: {count}")
+    #print(f"Total errors: {count}")
     conn.commit()
     conn.close()
 
@@ -230,7 +230,7 @@ def import_table_grntirub_from_csv():
                 count += 1
             row_num += 1
 
-    print(f"Total errors: {count}")
+    #print(f"Total errors: {count}")
     conn.commit()
     conn.close()
 
@@ -250,12 +250,13 @@ def import_table_tp_fv_from_csv():
                 c.execute('''INSERT  INTO Tp_fv ("Код", "Сокращенное_имя", "Плановое_финансирование",
                                                         "Фактическое_финансирование", "Количество_НИР")
                                             VALUES (?, ?, ?, ?, ?)''', row)
+
             except sqlite3.IntegrityError as e:
-                print(f"Error on row {row_num}: {e}")
+                #print(f"Error on row {row_num}: {e}")
                 count += 1
             row_num += 1
 
-    print(f"Total errors: {count}")
+    #print(f"Total errors: {count}")
     conn.commit()
     conn.close()
 
@@ -303,11 +304,12 @@ def fill_tp_fv():
     """Заполнение таблицы Tp_fv."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
-    c.execute('''INSERT INTO Tp_fv ("Код", "Сокращенное_имя", "Плановое_финансирование", "Количество_НИР")
+    c.execute('''INSERT INTO Tp_fv ("Код", "Сокращенное_имя", "Плановое_финансирование", "Фактическое_финансирование", "Количество_НИР")
                 SELECT 
                     VUZ."Код",
                     VUZ."Сокращенное_имя",
                     SUM(Tp_nir."Плановое_финансирование"),
+                    0, 
                     COUNT(Tp_nir."Номер")
                 FROM VUZ
                 INNER JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
@@ -542,4 +544,4 @@ def prepare_tables():
     fill_nir_character_summary()
 
 
-#prepare_tables()
+prepare_tables()

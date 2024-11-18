@@ -445,7 +445,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
             print(
-                f"Ошибка: {e}")  # Логируем ошибку для отладки To help you with the error when adding a new row to your table, let's consider several potential causes and solutions. I don't see a specific error message in your code, but let's check some common issues that might arise when inserting data into the database.
+                f"Ошибка: {e}")
 
     def save_edit_row(self):
         """Сохранение отредактированной строки в таблице."""
