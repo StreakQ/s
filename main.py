@@ -110,7 +110,6 @@ class MainWindow(QMainWindow):
         self.is_updating = False  # Флаг для отслеживания обновления
 
         self.models['Tp_nir'].dataChanged.connect(self.on_tp_nir_data_changed)
-
         self.saved_filter_conditions = []  # Список для хранения условий фильтрации
 
     def on_tp_nir_data_changed(self):
@@ -215,22 +214,84 @@ class MainWindow(QMainWindow):
         self.save_project_btn.clicked.connect(self.on_save_project_btn_clicked)
         self.accept_order_btn.clicked.connect(self.on_accept_order_btn_clicked)
         self.cancel_order_btn.clicked.connect(self.on_cancel_order_btn_clicked)
+        self.clean_btn.clicked.connect(self.on_clean_btn_clicked)
+
 
         self.sum_first_lineedit = self.findChild(QLineEdit, 'sum_first_lineedit')
-        self.sum_second_lineedit = self.findChild(QLineEdit, 'sum_second_lineedit')
-        self.ordered_percent_first_lineedit = self.findChild(QLineEdit, 'ordered_percent_first_lineedit')
+        self.sum_second_lbl = self.findChild(QLabel, 'sum_second_lbl')
+        self.ordered_percent_first_lbl = self.findChild(QLabel, 'ordered_percent_first_lbl')
         self.ordered_percent_second_lineedit = self.findChild(QLineEdit, 'ordered_percent_second_lineedit')
 
         self.plan_fin_lbl = self.findChild(QLabel, 'plan_fin_lbl')
         self.fact_fin_lbl = self.findChild(QLabel, 'fact_fin_lbl')
-        self.ordered_fin_percent_lbl = self.findChild(QLabel, 'ordered_ordered_percent_lbl')
+        self.ordered_fin_percent_lbl = self.findChild(QLabel, 'ordered_fin_percent_lbl')
 
     def on_current_order_clicked(self):
         self.hide_buttons()
         self.stackedWidget.setCurrentIndex(4)
+        value = self.get_sum_value_by_column("Плановое_финансирование")
+        self.table_show('Order_table')
+        self.plan_fin_lbl.setText(str(value))
+        self.fact_fin_lbl.setText('0')
+        self.ordered_fin_percent_lbl.setText('0')
 
     def on_calculate_btn_clicked(self):
-        pass
+        # Проверяем, что только одно из полей заполнено
+        if self.sum_first_lineedit.text() and self.ordered_percent_second_lineedit.text():
+            self.show_error_message("Заполните только одно из полей: 'Сумма' или 'Процент'.")
+            return
+
+        # Проверяем первое поле
+        if self.sum_first_lineedit.text():
+            if not self.validate_lineedit(self.sum_first_lineedit):
+                return
+
+            value = int(self.sum_first_lineedit.text())
+            sum_value = int(self.plan_fin_lbl.text())
+
+            if value > sum_value:
+                self.show_error_message("Введенное значение не может быть больше планового финансирования")
+                self.reset_first_lineedit()
+                return
+
+            res = round(value * 100 / sum_value, 1)
+            self.ordered_percent_first_lbl.setText(str(res))
+
+        # Проверяем второе поле
+        elif self.ordered_percent_second_lineedit.text():
+            if not self.validate_lineedit(self.ordered_percent_second_lineedit):
+                return  # Если валидация не прошла, выходим из метода
+
+            percent_val = int(self.ordered_percent_second_lineedit.text())
+            if percent_val > 100:
+                self.show_error_message("Нельзя вводить значение больше 100%")
+                self.reset_second_lineedit()
+                return
+
+            sum_value = int(self.plan_fin_lbl.text())
+            res = round(percent_val * sum_value / 100, 1)
+            self.sum_second_lbl.setText(str(res))
+
+
+
+    def validate_lineedit(self, lineedit):
+        """Проверяет, что значение в lineedit является числом и не пустое."""
+        text = lineedit.text()
+        if text == '' or not text.isdigit():
+            self.show_error_message("В ячейках должны быть только численные значения")
+            return False
+        return True
+
+    def reset_first_lineedit(self):
+        self.sum_first_lineedit.clear()
+        self.ordered_percent_first_lbl.clear()
+
+    def reset_second_lineedit(self):
+        self.ordered_percent_second_lineedit.clear()
+        self.sum_second_lbl.clear()
+
+
+
 
     def on_save_project_btn_clicked(self):
         pass
@@ -243,19 +304,40 @@ class MainWindow(QMainWindow):
         self.stackedWidget.setCurrentIndex(0)
         #добавить отмену уже рассчитанных факт. фин.
 
+    def on_clean_btn_clicked(self):
+        self.reset_first_lineedit()
+        self.reset_second_lineedit()
+
+    def get_sum_value_by_column(self,column_name):
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+        c.execute(f'''SELECT SUM({column_name}) FROM Tp_fv''')
+        res = c.fetchone()
+        sum_value = res[0] if res[0] is not None else 0
+        conn.commit()
+        conn.close()
+        return sum_value
+
+
+
     def table_show(self, table_name):
         """Отображение таблицы."""
+        #self.hide_buttons()
+        if table_name == 'Tp_nir':
+            self.show_buttons()
+            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
+                                            Qt.SortOrder.AscendingOrder)
         if table_name == 'Order_table':
             self.tableView_3.setModel(self.models[table_name])
+            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
+                                            Qt.SortOrder.AscendingOrder)
         if table_name.endswith('Summary'):
             self.tableView_2.setModel(self.models[table_name])
         else:
             self.tableView.setModel(self.models[table_name])
-        if table_name == 'Tp_nir':
-            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
-                                            Qt.SortOrder.AscendingOrder)
 
         self.models[table_name].select()
+
 
 
     def save_filter_conditions(self):
@@ -433,16 +515,13 @@ class MainWindow(QMainWindow):
             'Руководитель': grnti_head,
             'Коды_ГРНТИ': grnti_code,
             'НИР': grnti_name,
-            'Руководитель': grnti_head,
-            'Коды_ГРНТИ': grnti_code,
-            'НИР': grnti_name,
             'Должность': grnti_head_post,
             'Плановое_финансирование': planned_financing,
             'Код': vuz_code,
             'Сокращенное_имя': self.Tp_nir_add_row_menu_VUZcode_name_cmb.currentText().split(" - ")[1]
         }
 
-        print("Данные для сохранения:", new_record)
+        #print("Данные для сохранения:", new_record)
 
         try:
             # Получаем модель и добавляем новую строку
@@ -454,20 +533,24 @@ class MainWindow(QMainWindow):
             for key, value in new_record.items():
                 if value:  # Проверяем, что значение не пустое
                     model.setData(model.index(row_position, model.fieldIndex(key)), value)
-                    print(f"Установлено: {key} = {value}")  # Отладка
+                    #print(f"Установлено: {key} = {value}")  # Отладка
 
             # Сохраняем изменения в базе данных
             if not model.submitAll():
                 raise Exception(f"Ошибка сохранения данных: {model.lastError().text()}")
 
             # Обновляем модель
+            # Обновляем модель
             model.select()  # Обновляем модель, чтобы отобразить изменения
 
-            # Находим индекс строки с совпадением vuz_code и grnti_number
+            # Находим новый индекс строки с совпадением vuz_code и grnti_number
             row_to_scroll = None
+            #print(f"Ищем запись с Код = {vuz_code} и Номер = {grnti_number}")  # Отладка
             for row in range(model.rowCount()):
-                if (model.data(model.index(row, model.fieldIndex('Код'))) == vuz_code and
-                        model.data(model.index(row, model.fieldIndex('Номер'))) == grnti_number):
+                current_code = model.data(model.index(row, model.fieldIndex('Код')))
+                current_number = model.data(model.index(row, model.fieldIndex('Номер')))
+                #print(f"Проверяем строку {row}: Код = {current_code}, Номер = {current_number}")  # Отладка
+                if (str(current_code).strip() == str(vuz_code).strip() and str(current_number).strip() == str(grnti_number).strip()):
                     row_to_scroll = row
                     break
 
@@ -477,13 +560,11 @@ class MainWindow(QMainWindow):
                 self.tableView.setCurrentIndex(model.index(row_to_scroll, 0))  # Устанавливаем выделение на строку
             else:
                 self.show_error_message("Не удалось найти добавленную запись.")
-
             self.stackedWidget.setCurrentIndex(0)  # Возвращаемся на основной экран
 
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
-            print(
-                f"Ошибка: {e}")
+            print(f"Ошибка: {e}")
 
     def save_edit_row(self):
         """Сохранение отредактированной строки в таблице."""
@@ -549,20 +630,49 @@ class MainWindow(QMainWindow):
             print("Ошибка: база данных не открыта.")
             return
 
-        query = '''
+        # Обновление планового финансирования
+        query_plan = '''
                 UPDATE Tp_fv
                 SET 
-                     "Плановое_финансирование" = (
-                     SELECT SUM(Tp_nir."Плановое_финансирование")
-                     FROM Tp_nir
-                     WHERE Tp_fv."Код" = Tp_nir."Код"
-                     GROUP BY Tp_nir."Код"
-    )
+                    "Плановое_финансирование" = (
+                        SELECT SUM(Tp_nir."Плановое_финансирование")
+                        FROM Tp_nir
+                        WHERE Tp_fv."Код" = Tp_nir."Код"
+                        GROUP BY Tp_nir."Код"
+                    )
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM Tp_nir
+                    WHERE Tp_fv."Код" = Tp_nir."Код"
+                )
         '''
 
         ql_query = QSqlQuery(conn)
-        if not ql_query.exec(query):
-            print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
+        if not ql_query.exec(query_plan):
+            print(
+                f"Ошибка при выполнении запроса на обновление планового финансирования: {ql_query.lastError().text()}")
+            return
+        else:
+            print(f"Обновлено строк: {ql_query.numRowsAffected()}")
+
+        query_count = '''
+                UPDATE Tp_fv
+                SET 
+                    "Количество_НИР" = (
+                        SELECT COUNT(Tp_nir."Номер")
+                        FROM Tp_nir
+                        WHERE Tp_fv."Код" = Tp_nir."Код"
+                        GROUP BY Tp_nir."Код"
+                    )
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM Tp_nir
+                    WHERE Tp_fv."Код" = Tp_nir."Код"
+                )
+        '''
+
+        if not ql_query.exec(query_count):
+            print(f"Ошибка при выполнении запроса на обновление количества НИР: {ql_query.lastError().text()}")
             return
         else:
             print(f"Обновлено строк: {ql_query.numRowsAffected()}")
