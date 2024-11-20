@@ -1118,9 +1118,9 @@
      <widget class="QPushButton" name="calculate_btn">
       <property name="geometry">
        <rect>
-        <x>610</x>
+        <x>880</x>
         <y>220</y>
-        <width>521</width>
+        <width>251</width>
         <height>28</height>
        </rect>
       </property>
@@ -1137,42 +1137,6 @@
       <property name="geometry">
        <rect>
         <x>610</x>
-        <y>125</y>
-        <width>250</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="ordered_percent_first_lineedit">
-      <property name="geometry">
-       <rect>
-        <x>610</x>
-        <y>175</y>
-        <width>250</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="sum_second_lineedit">
-      <property name="geometry">
-       <rect>
-        <x>880</x>
         <y>125</y>
         <width>250</width>
         <height>22</height>
@@ -1262,11 +1226,77 @@
      <widget class="QTableView" name="tableView_3">
       <property name="geometry">
        <rect>
-        <x>140</x>
+        <x>189</x>
         <y>270</y>
-        <width>1200</width>
+        <width>1151</width>
         <height>311</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="ordered_percent_first_lbl">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>175</y>
+        <width>250</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:white</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="sum_second_lbl">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>125</y>
+        <width>250</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:white</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="clean_btn">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>220</y>
+        <width>251</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Рассчитать</string>
       </property>
      </widget>
     </widget>
