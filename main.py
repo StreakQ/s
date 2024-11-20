@@ -203,7 +203,7 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact_filters_btn.clicked.connect(self.filter)  # New
 
         #Анализ
-        self.save_filter_btn.clicked.connect(self.save_filter_conditions)
+
        #self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
         self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
 
@@ -850,9 +850,24 @@ class MainWindow(QMainWindow):
         self.setup_combobox_signals()
         # Подключение сигналов для фильтрации
         self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
+
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
-        self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
+        self.save_filter_cod_btn.clicked.connect(self.save_filter_grnti)
+        self.cancel_filter_cod_btn.clicked.connect(self.on_reset_filter_by_grnti_code)
+
+        self.cancel_filter_complex_btn.clicked.connect(self.on_reset_filter)
+        self.save_filter_complex_btn.clicked.connect(self.save_filter_complex)
+
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
+
+    def on_reset_filter_by_grnti_code(self):
+        pass
+
+    def save_filter_grnti(self):
+        pass
+
+    def save_filter_complex(self):
+        pass
 
     def on_reset_filter(self):
         self.models['Tp_nir'].setFilter("")
