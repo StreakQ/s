@@ -548,6 +548,54 @@ def grnti_to_cmb():
     return grnti_to_cmb
 
 
+def fill_vuz_summary_with_filters(grnti_conditions, complex_conditions):
+    """Заполнение таблицы VUZ_Summary с учетом условий фильтрации."""
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+
+    c.execute('DELETE FROM VUZ_Summary')
+
+    # Формируем условия фильтрации
+    filter_conditions = []
+    if grnti_conditions:
+        filter_conditions.extend([f'Tp_nir."Коды_ГРНТИ" LIKE "{cod}%"' for cod in grnti_conditions])
+    if complex_conditions:
+        filter_conditions.extend(complex_conditions)
+
+    # Создаем строку условий для SQL-запроса
+    where_clause = ''
+    if filter_conditions:
+        where_clause = 'WHERE ' + ' AND '.join(filter_conditions)
+
+    query = f'''
+        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+        SELECT 
+            VUZ."Сокращенное_имя",
+            SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования",
+            COUNT(Tp_nir."Номер") AS "Сумма_количества_НИР",
+            SUM(Tp_fv."Фактическое_финансирование") AS "Сумма_фактического_финансирования"
+        FROM VUZ
+        LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+        LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
+        {where_clause}  -- Добавляем условия фильтрации
+        GROUP BY VUZ."Сокращенное_имя"
+    '''
+    c.execute(query)
+
+    # Добавляем итоговую строку
+    c.execute('''
+        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+        SELECT 
+            'ИТОГО',
+            SUM("Сумма_планового_финансирования"),
+            SUM("Сумма_количества_НИР"),
+            SUM("Сумма_фактического_финансирования")
+        FROM VUZ_Summary
+    ''')
+
+    conn.commit()
+    conn.close()
+
 def prepare_tables():
     """Подготовка таблиц."""
     create_database()
