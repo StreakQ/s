@@ -527,6 +527,35 @@ def delete_string_in_table(table_view, table_model):
         print(f"An error occurred: {e}")
     return False
 
+def grnti_to_cmb():
+    # Создаем или открываем базу данных
+    connection = sqlite3.connect('databases//database.db')
+
+    # Создаем курсор
+    cursor = connection.cursor()
+
+    # Извлекаем данные из столбца 'name'
+    cursor.execute("SELECT Код_рубрики, Рубрика FROM grntirub")
+    codes = cursor.fetchall()  # Получаем все записи в виде списка кортежей
+
+    # Записываем имена в переменную
+    codes = [code[0] for code in codes]  # Извлекаем первый элемент каждого кортежа
+   # codes=list(grnti_cod_list)
+
+    # Извлекаем данные из столбца 'name'
+    cursor.execute("SELECT Рубрика FROM grntirub")
+    names = cursor.fetchall()  # Получаем все записи в виде списка кортежей
+
+    # Записываем имена в переменную
+    cod_names = [name[0] for name in names]  # Извлекаем первый элемент каждого кортежа
+   # cod_names=list(grnti_name_list)
+    # Закрываем соединение
+    connection.close()
+
+    grnti_to_cmb=[f'{cod} - {name}' for cod, name in zip(codes,cod_names)]
+  #  print(grnti_to_cmb)
+    return(grnti_to_cmb)
+
 
 def prepare_tables():
     """Подготовка таблиц."""
