@@ -4,7 +4,7 @@ import sys
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
                              QAbstractItemView, QComboBox, QTextEdit, QHeaderView, QPushButton, QVBoxLayout,
-                             QHBoxLayout, QLineEdit, QLabel)
+                             QHBoxLayout, QLineEdit, QLabel, QWidget)
 from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery,QSqlQueryModel
 from PyQt6.QtGui import QKeyEvent, QTextCursor
@@ -165,17 +165,30 @@ class MainWindow(QMainWindow):
 
         self.stackedWidget.setCurrentIndex(0)
 
+        self.Tp_nir_redact.setVisible(False)
+
 
         # Подключение действий для отображения таблиц
-        self.action_show_VUZ.triggered.connect(lambda: self.table_show('VUZ'))
-        self.action_show_Tp_nir.triggered.connect(lambda: self.table_show('Tp_nir'))
-        self.action_show_grntirub.triggered.connect(lambda: self.table_show('grntirub'))
-        self.action_show_Tp_fv.triggered.connect(lambda: self.table_show('Tp_fv'))
+        self.action_show_VUZ.triggered.connect(self.open_VUZ)
+        self.action_show_Tp_nir.triggered.connect(self.open_Tp_nir)
+        self.action_show_grntirub.triggered.connect(self.open_grntirub)
+        self.action_show_Tp_fv.triggered.connect(self.open_Tp_fv)
         self.tableView_2.setModel(self.models['Tp_nir'])  # New
 
+        # # Подключение действий для отображения таблиц
+        # self.action_show_VUZ.triggered.connect(lambda: self.table_show('VUZ'))
+        # self.action_show_Tp_nir.triggered.connect(lambda: self.table_show('Tp_nir'))
+        # self.action_show_grntirub.triggered.connect(lambda: self.table_show('grntirub'))
+        # self.action_show_Tp_fv.triggered.connect(lambda: self.table_show('Tp_fv'))
+        # self.tableView_2.setModel(self.models['Tp_nir'])  # New
 
-        self.po_rubrikam.triggered.connect(lambda: self.table_show('GRNTI_Summary'))
-        self.po_character.triggered.connect(lambda: self.table_show('NIR_Character_Summary'))
+        self.po_VUZ.triggered.connect(self.open_analysis_menu_po_VUZ)
+        self.po_rubrikam.triggered.connect(self.open_analysis_menu_po_rubrikam)
+        self.po_character.triggered.connect(self.open_analysis_menu_po_character)
+        #
+        # self.po_rubrikam.triggered.connect(lambda: self.table_show('GRNTI_Summary'))
+        # self.po_character.triggered.connect(lambda: self.table_show('NIR_Character_Summary'))
+        # self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
 
         # Кнопки для добавления
         self.Tp_nir_redact_add_row_btn.clicked.connect(self.open_add_row_menu)
@@ -205,7 +218,7 @@ class MainWindow(QMainWindow):
         #Анализ
 
        #self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
-        self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
+        self.wid = self.findChild(QWidget, "widget")
 
         #Выпуск распоряжений
         self.current_order.triggered.connect(self.on_current_order_clicked)
@@ -300,7 +313,7 @@ class MainWindow(QMainWindow):
         pass
 
     def on_cancel_order_btn_clicked(self):
-        self.show_buttons()
+        #self.show_buttons()
         self.stackedWidget.setCurrentIndex(0)
         #добавить отмену уже рассчитанных факт. фин.
 
@@ -319,25 +332,75 @@ class MainWindow(QMainWindow):
         return sum_value
 
 
+    #
+    # def table_show(self, table_name):
+    #     """Отображение таблицы."""
+    #     #self.hide_buttons()
+    #     if table_name == 'Tp_nir':
+    #         self.show_buttons()
+    #         self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
+    #                                         Qt.SortOrder.AscendingOrder)
+    #     if table_name == 'Order_table':
+    #         self.tableView_3.setModel(self.models[table_name])
+    #         self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
+    #                                         Qt.SortOrder.AscendingOrder)
+    #     if table_name.endswith('Summary'):
+    #         self.tableView_2.setModel(self.models[table_name])
+    #     else:
+    #         self.tableView.setModel(self.models[table_name])
+    #     self.models[table_name].select()
+
 
     def table_show(self, table_name):
         """Отображение таблицы."""
-        #self.hide_buttons()
-        if table_name == 'Tp_nir':
-            self.show_buttons()
-            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
-                                            Qt.SortOrder.AscendingOrder)
-        if table_name == 'Order_table':
-            self.tableView_3.setModel(self.models[table_name])
-            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
-                                            Qt.SortOrder.AscendingOrder)
-        if table_name.endswith('Summary'):
-            self.tableView_2.setModel(self.models[table_name])
-        else:
-            self.tableView.setModel(self.models[table_name])
+        self.tableView.setModel(self.models[table_name])
 
-        self.models[table_name].select()
+    def open_VUZ(self):
+        self.stackedWidget.setCurrentIndex(0)
+        self.Tp_nir_redact.setVisible(False)
+        self.table_show('VUZ')
 
+    def open_Tp_nir(self):
+        self.stackedWidget.setCurrentIndex(0)
+        self.Tp_nir_redact.setVisible(True)
+        self.table_show('Tp_nir')
+
+    def open_Tp_fv(self):
+        self.stackedWidget.setCurrentIndex(0)
+        self.Tp_nir_redact.setVisible(False)
+        self.table_show('Tp_fv')
+
+    def open_grntirub(self):
+        self.stackedWidget.setCurrentIndex(0)
+        self.Tp_nir_redact.setVisible(False)
+        self.table_show('grntirub')
+
+    def table_show_3(self, table_name):
+        """Отображение таблицы."""
+        self.tableView_3.setModel(self.models[table_name])
+
+    def table_show_2(self, table_name):
+        """Отображение таблицы."""
+        self.tableView_2.setModel(self.models[table_name])
+
+    def open_analysis_menu_po_VUZ(self):
+        self.stackedWidget.setCurrentIndex(3)
+        self.Tp_nir_redact.setVisible(False)
+        self.wid.setVisible(False)
+        self.table_show_2('VUZ_Summary')
+
+    def open_analysis_menu_po_rubrikam(self):
+        self.stackedWidget.setCurrentIndex(3)
+        self.Tp_nir_redact.setVisible(False)
+        self.wid.setVisible(False)
+        self.table_show_2('GRNTI_Summary')
+
+    def open_analysis_menu_po_character(self):
+        self.stackedWidget.setCurrentIndex(3)
+        self.Tp_nir_redact.setVisible(False)
+        self.wid.setVisible(False)
+
+        self.table_show_2('NIR_Character_Summary')
 
 
     def save_filter_conditions(self):
@@ -733,16 +796,16 @@ class MainWindow(QMainWindow):
             elif isinstance(field, QComboBox):
                 field.setCurrentIndex(0)  # Сбрасываем QComboBox
 
-    def table_show(self, table_name):
-        """Отображение таблицы."""
-        self.tableView.setModel(self.models[table_name])
-
-        # Установка сортировки по имени вуза (например, по столбцу "Сокращенное_имя")
-        if table_name == 'Tp_nir':
-            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
-                                            Qt.SortOrder.AscendingOrder)
-
-        self.models[table_name].select()  # Обновление модели для применения сортировки
+    # def table_show(self, table_name):
+    #     """Отображение таблицы."""
+    #     self.tableView.setModel(self.models[table_name])
+    #
+    #     # Установка сортировки по имени вуза (например, по столбцу "Сокращенное_имя")
+    #     if table_name == 'Tp_nir':
+    #         self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
+    #                                         Qt.SortOrder.AscendingOrder)
+    #
+    #     self.models[table_name].select()  # Обновление модели для применения сортировки
 
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
@@ -772,9 +835,8 @@ class MainWindow(QMainWindow):
                         conditions.append(f'"Коды_ГРНТИ" = "{cods[0]}%;"')
                 elif len(cods) == 2:
                     # Если два кода, применяем фильтр для двух кодов
-                    if any(cod.startswith(str_cod) for cod in cods):
+                    if all(cod.startswith(str_cod) for cod in cods):
                         conditions.append(f'"Коды_ГРНТИ" LIKE "{str_cod}%"')
-
 
         if conditions:
             query = ' AND '.join(conditions)
@@ -840,17 +902,16 @@ class MainWindow(QMainWindow):
 
 
 
-
-
     def filter(self):
         self.show_menu(self.Tp_nir_add_row_menu, 3)
         self.hide_buttons()
-
+        self.grnticode_cmb.addItems(grnti_to_cmb())
         self.populate_initial_comboboxes()
         self.setup_combobox_signals()
-        # Подключение сигналов для фильтрации
-        self.grnticode_txt = self.findChild(QTextEdit, 'grnticode_txt')
+        self.wid.setVisible(True)
 
+        # Подключение сигналов для фильтрации
+        self.grnticode_cmb = self.findChild(QComboBox, 'grnticode_cmb')
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
         self.save_filter_cod_btn.clicked.connect(self.save_filter_grnti)
         self.cancel_filter_cod_btn.clicked.connect(self.on_reset_filter_by_grnti_code)
@@ -859,6 +920,8 @@ class MainWindow(QMainWindow):
         self.save_filter_complex_btn.clicked.connect(self.save_filter_complex)
 
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
+
+
 
     def on_reset_filter_by_grnti_code(self):
         pass
