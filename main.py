@@ -823,22 +823,35 @@ class MainWindow(QMainWindow):
 
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
-        self.filter_by_grnticode_btn.setEnabled(False)
         str_cod = str(self.grnticode_cmb.currentData())
         print("Выбранный код ГРНТИ:", str_cod)
 
         initial_row_count = self.models['Tp_nir'].rowCount()
         print("Количество строк до фильтрации:", initial_row_count)
         conditions = []
+        first_two_digits_set = set()  # Множество для хранения первых двух цифр кодов
 
+        # Сначала собираем все первые две цифры кодов
         for row in range(initial_row_count):
             cods = self.models['Tp_nir'].data(self.models['Tp_nir'].index(row, 5))
-            #print(f"Обрабатываемая строка {row}: {cods}")  # Отладочное сообщение
-
             if cods is not None:
                 cods = cods.split(';')
                 cods = [cod.strip() for cod in cods if cod.strip()]
-                #print(f"Коды после обработки: {cods}")  # Отладочное сообщение
+                for cod in cods:
+                    if len(cod) >= 2:  # Проверяем, что код достаточно длинный
+                        first_two_digits_set.add(cod[:2])  # Добавляем первые две цифры в множество
+
+        # Проверяем, содержится ли str_cod в множестве первых двух цифр
+        if str_cod not in first_two_digits_set:
+            self.show_error_message("Код ГРНТИ не найден в таблице.")
+            return  # Выходим из функции, если код не найден
+
+        # Если код найден, продолжаем фильтрацию
+        for row in range(initial_row_count):
+            cods = self.models['Tp_nir'].data(self.models['Tp_nir'].index(row, 5))
+            if cods is not None:
+                cods = cods.split(';')
+                cods = [cod.strip() for cod in cods if cod.strip()]
 
                 if len(cods) == 1:
                     if cods[0].startswith(str_cod):
@@ -867,6 +880,9 @@ class MainWindow(QMainWindow):
         self.tableView.setModel(self.models['Tp_nir'])
         self.tableView.reset()
         self.tableView.show()
+
+        self.filter_by_grnticode_btn.setEnabled(False)
+        self.grnticode_cmb.setEnabled(False)
 
 
 
@@ -969,6 +985,8 @@ class MainWindow(QMainWindow):
         self.tableView_2.reset()
         self.tableView_2.show()
         self.filter_by_grnticode_btn.setEnabled(True)
+        self.grnticode_cmb.setEnabled(True)
+
 
 
     def save_filter_grnti(self):
