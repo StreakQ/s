@@ -539,7 +539,7 @@ def grnti_to_cmb():
     records = cursor.fetchall()  # Получаем все записи в виде списка кортежей
 
     # Формируем список строк в формате "код - название" и возвращаем кортежи
-    grnti_to_cmb = [(code, f'{code} - {name}') for code, name in records]
+    grnti_to_cmb = [(f'{code:02}', f'{code:02} - {name}') for code, name in records]
 
     # Закрываем соединение
     connection.close()
