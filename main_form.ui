@@ -693,9 +693,9 @@
       <widget class="QLabel" name="label">
        <property name="geometry">
         <rect>
-         <x>240</x>
-         <y>20</y>
-         <width>91</width>
+         <x>10</x>
+         <y>10</y>
+         <width>241</width>
          <height>31</height>
         </rect>
        </property>
@@ -705,14 +705,17 @@
         </font>
        </property>
        <property name="text">
-        <string>Код ГРНТИ</string>
+        <string>Фильтр по коду ГРНТИ</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
       <widget class="QLabel" name="label_2">
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>220</y>
+         <y>250</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -730,7 +733,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>220</y>
+         <y>250</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -740,7 +743,7 @@
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>299</y>
+         <y>329</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -758,7 +761,7 @@
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>259</y>
+         <y>289</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -776,7 +779,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>299</y>
+         <y>329</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -786,7 +789,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>260</y>
+         <y>290</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -796,7 +799,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>340</y>
+         <y>370</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -806,7 +809,7 @@
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>340</y>
+         <y>370</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -824,7 +827,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>500</y>
+         <y>530</y>
          <width>301</width>
          <height>28</height>
         </rect>
@@ -842,7 +845,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>440</y>
+         <y>470</y>
          <width>301</width>
          <height>21</height>
         </rect>
@@ -860,7 +863,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>70</y>
+         <y>100</y>
          <width>241</width>
          <height>23</height>
         </rect>
@@ -878,7 +881,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>410</y>
+         <y>440</y>
          <width>301</width>
          <height>28</height>
         </rect>
@@ -896,7 +899,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>100</y>
+         <y>130</y>
          <width>241</width>
          <height>28</height>
         </rect>
@@ -914,7 +917,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>140</y>
+         <y>170</y>
          <width>241</width>
          <height>21</height>
         </rect>
@@ -927,10 +930,31 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>20</y>
+         <y>50</y>
+         <width>241</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_11">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>210</y>
          <width>221</width>
          <height>31</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Комплексный фильтр</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </widget>
