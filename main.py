@@ -516,7 +516,7 @@ class MainWindow(QMainWindow):
             name = model.record(row).value("Сокращенное_имя")
             self.Tp_nir_add_row_menu_VUZcode_name_cmb.addItem(f"{cod} - {name}", cod)
 
-        print("Заполнен комбобокс VUZ")  # Отладка
+        #print("Заполнен комбобокс VUZ")  # Отладка
 
         # Заполнение комбобокса для характера
         self.Tp_nir_add_row_menu_grntiNature_cmb.addItem("П - Природное")
@@ -526,7 +526,7 @@ class MainWindow(QMainWindow):
         self.Tp_nir_add_row_menu_grntiNature_cmb.addItem("Ф - Фундаментальное")
         self.Tp_nir_add_row_menu_grntiNature_cmb.setItemData(2, "Ф")
 
-        print("Заполнен комбобокс характера")  # Отладка
+        #print("Заполнен комбобокс характера")  # Отладка
 
     def fill_comboboxes_tp_nir_edit_row_menu(self):
         """Заполнение комбобоксов в меню редактирования строки."""
@@ -615,7 +615,8 @@ class MainWindow(QMainWindow):
             # Обновляем модель
             # Обновляем модель
             model.select()  # Обновляем модель, чтобы отобразить изменения
-
+            self.update_table()
+            self.update_summary_tables()
             # Находим новый индекс строки с совпадением vuz_code и grnti_number
             row_to_scroll = None
             #print(f"Ищем запись с Код = {vuz_code} и Номер = {grnti_number}")  # Отладка
@@ -638,6 +639,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
             print(f"Ошибка: {e}")
+
 
     def save_edit_row(self):
         """Сохранение отредактированной строки в таблице."""
@@ -693,6 +695,8 @@ class MainWindow(QMainWindow):
             self.tableView.setCurrentIndex(model.index(selected_row, 0))
             self.stackedWidget.setCurrentIndex(0)
             QMessageBox.information(self, "Успех", "Данные успешно сохранены.")
+            self.update_table()
+            self.update_summary_tables()
         except Exception as e:
             self.show_error_message(f"Ошибка при сохранении данных: {e}")
 
@@ -894,6 +898,8 @@ class MainWindow(QMainWindow):
                                           Qt.SortOrder.AscendingOrder)
             self.models['Tp_nir'].select()  # Применяем сортировку
             self.tableView.setModel(self.models['Tp_nir'])
+            self.update_table()
+            self.update_summary_tables()
 
     def save_data(self):
         """Сохранение данных."""
