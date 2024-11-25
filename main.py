@@ -823,47 +823,52 @@ class MainWindow(QMainWindow):
 
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
-        if self.grnticode_cmb.currentIndex() == -1:
-            self.show_error_message("Пожалуйста, выберите код ГРНТИ из комбобокса.")
-            return
-
+        self.filter_by_grnticode_btn.setEnabled(False)
         str_cod = str(self.grnticode_cmb.currentData())
-        print(str_cod)
+        print("Выбранный код ГРНТИ:", str_cod)
 
-        if not str_cod:
-            self.show_error_message("Пожалуйста, выберите код ГРНТИ из комбобокса.")
-            return
-
-        row_count = self.models['Tp_nir'].rowCount()
+        initial_row_count = self.models['Tp_nir'].rowCount()
+        print("Количество строк до фильтрации:", initial_row_count)
         conditions = []
 
-        for row in range(row_count):
-            # Получаем значение из столбца "Коды_ГРНТИ"
+        for row in range(initial_row_count):
             cods = self.models['Tp_nir'].data(self.models['Tp_nir'].index(row, 5))
+            #print(f"Обрабатываемая строка {row}: {cods}")  # Отладочное сообщение
 
             if cods is not None:
-                cods = cods.split(';')  # Предполагаем, что коды разделены точкой с запятой
-                cods = [cod.strip() for cod in cods]  # Убираем пробелы
+                cods = cods.split(';')
+                cods = [cod.strip() for cod in cods if cod.strip()]
+                #print(f"Коды после обработки: {cods}")  # Отладочное сообщение
 
                 if len(cods) == 1:
-                    # Если один код, применяем фильтр для одного кода
                     if cods[0].startswith(str_cod):
-                        conditions.append(f'"Коды_ГРНТИ" = "{cods[0]}%;"')
+                        conditions.append(f'"Коды_ГРНТИ" LIKE "{str_cod}%"')
                 elif len(cods) == 2:
-                    # Если два кода, применяем фильтр для двух кодов
                     if all(cod.startswith(str_cod) for cod in cods):
                         conditions.append(f'"Коды_ГРНТИ" LIKE "{str_cod}%"')
 
         if conditions:
             query = ' AND '.join(conditions)
+            print("Формируемый запрос:", query)
             self.models['Tp_nir'].setFilter(query)
-        else:
-            self.models['Tp_nir'].setFilter("")  # Если нет условий, сбрасываем фильтр
+            self.models['Tp_nir'].select()
 
-        self.models['Tp_nir'].select()
+            filtered_row_count = self.models['Tp_nir'].rowCount()
+            print("Количество строк после фильтрации:", filtered_row_count)
+
+            if filtered_row_count == initial_row_count:
+                self.show_error_message("Нет записей с таким кодом ГРНТИ в таблице.")
+                self.models['Tp_nir'].setFilter("")
+                self.models['Tp_nir'].select()
+        else:
+            self.models['Tp_nir'].setFilter("")
+            self.models['Tp_nir'].select()
+
         self.tableView.setModel(self.models['Tp_nir'])
         self.tableView.reset()
         self.tableView.show()
+
+
 
     def show_error_message(self, message):
         """Отображение ошибочного сообщения."""
@@ -916,9 +921,13 @@ class MainWindow(QMainWindow):
         self.tableView.reset()
         self.tableView.show()
 
-
-
-
+    def clear_and_fill_grnticmb(self):
+        self.grnticode_cmb.clear()
+        self.grnticode_cmb.addItem("Выберите...", None)
+        grnti_items = grnti_to_cmb()
+        # Заполняем комбобокс
+        for code, display_text in grnti_items:
+            self.grnticode_cmb.addItem(display_text, code)
 
 
 
@@ -937,11 +946,7 @@ class MainWindow(QMainWindow):
 
         # Подключение сигналов для фильтрации
 
-        self.grnticode_cmb.addItem("Выберите...", None)
-        grnti_items = grnti_to_cmb()
-        # Заполняем комбобокс
-        for code, display_text in grnti_items:
-            self.grnticode_cmb.addItem(display_text, code)
+        self.clear_and_fill_grnticmb()
 
 
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
@@ -957,7 +962,14 @@ class MainWindow(QMainWindow):
 
 
     def on_reset_filter_by_grnti_code(self):
-        pass
+        self.clear_and_fill_grnticmb()
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView_2.setModel(self.models['Tp_nir'])
+        self.tableView_2.reset()
+        self.tableView_2.show()
+        self.filter_by_grnticode_btn.setEnabled(True)
+
 
     def save_filter_grnti(self):
         pass
@@ -992,6 +1004,8 @@ class MainWindow(QMainWindow):
         self.region_changed = False
         self.city_changed = False
         self.obl_changed = False
+
+        self.clear_and_fill_grnticmb()
 
     def populate_combobox(self, column_name, combo_box, filters=None):
         """Заполнение конкретного комбобокса с учетом фильтра."""
@@ -1119,6 +1133,18 @@ class MainWindow(QMainWindow):
         self.region_cmb.currentIndexChanged.connect(self.on_region_changed)
         self.city_cmb.currentIndexChanged.connect(self.on_city_changed)
         self.obl_cmb.currentIndexChanged.connect(self.on_obl_changed)
+        self.grnticode_cmb.currentIndexChanged.connect(self.on_grnti_code_changed)  # Добавляем обработчик для кода ГРНТИ
+
+    def on_grnti_code_changed(self):
+        """Обработчик изменения кода ГРНТИ."""
+        if self.grnticode_cmb.currentIndex() != 0:  # Если выбрано значение, отличное от "Выберите..."
+            # Сбрасываем комплексные фильтры
+            self.region_cmb.setCurrentIndex(0)
+            self.city_cmb.setCurrentIndex(0)
+            self.obl_cmb.setCurrentIndex(0)
+            self.vuz_cmb.setCurrentIndex(0)
+
+            # Выводим сообщение о сбросе фильтров
 
     def on_vuz_changed(self):
         """Обработчик изменения VUZ."""
@@ -1128,6 +1154,8 @@ class MainWindow(QMainWindow):
             self.vuz_selected = True
             self.update_comboboxes()
             self.update_table()
+            # Сбрасываем фильтр по коду ГРНТИ
+            self.grnticode_cmb.setCurrentIndex(0)
 
     def on_region_changed(self):
         """Обработчик изменения региона."""
@@ -1137,6 +1165,8 @@ class MainWindow(QMainWindow):
             self.region_selected = True
             self.update_comboboxes()
             self.update_table()
+            # Сбрасываем фильтр по коду ГРНТИ
+            self.grnticode_cmb.setCurrentIndex(0)
 
     def on_city_changed(self):
         """Обработчик изменения города."""
@@ -1146,6 +1176,8 @@ class MainWindow(QMainWindow):
             self.city_selected = True
             self.update_comboboxes()
             self.update_table()
+            # Сбрасываем фильтр по коду ГРНТИ
+            self.grnticode_cmb.setCurrentIndex(0)
 
     def on_obl_changed(self):
         """Обработчик изменения области."""
@@ -1155,7 +1187,8 @@ class MainWindow(QMainWindow):
             self.obl_selected = True
             self.update_comboboxes()
             self.update_table()
-
+            # Сбрасываем фильтр по коду ГРНТИ
+            self.grnticode_cmb.setCurrentIndex(0)
 
 
     def populate_initial_comboboxes(self):
