@@ -214,6 +214,16 @@ class MainWindow(QMainWindow):
 
         # Фильтр
         self.Tp_nir_redact_filters_btn.clicked.connect(self.filter)  # New
+        self.grnticode_cmb = self.findChild(QComboBox, 'grnticode_cmb')
+        self.filter_by_grnticode_btn = self.findChild(QPushButton, 'filter_by_grnticode_btn')
+
+        self.save_filter_cod_btn = self.findChild(QPushButton, 'save_filter_cod_btn')
+        self.cancel_filter_cod_btn = self.findChild(QPushButton, 'cancel_filter_cod_btn')
+
+        self.cancel_filter_complex_btn = self.findChild(QPushButton, 'cancel_filter_complex_btn')
+        self.save_filter_complex_btn = self.findChild(QPushButton, 'save_filter_complex_btn')
+
+        self.Tp_nir_redact_filters_close_btn = self.findChild(QPushButton, 'Tp_nir_redact_filters_close_btn')
 
         #Анализ
 
@@ -809,15 +819,17 @@ class MainWindow(QMainWindow):
 
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
-        str_cod = self.grnticode_txt.toPlainText().strip()
-
-        # Регулярное выражение для проверки, что строка состоит из цифр и точек
-        if not str_cod or not re.match(r'^[\d.]+$', str_cod):
-            self.show_error_message(
-                "Неправильное значение. Пожалуйста, введите численные значения, разделенные точками.")
+        if self.grnticode_cmb.currentIndex() == -1:
+            self.show_error_message("Пожалуйста, выберите код ГРНТИ из комбобокса.")
             return
 
-        # Получаем количество строк в модели
+        str_cod = str(self.grnticode_cmb.currentData())
+        print(str_cod)
+
+        if not str_cod:
+            self.show_error_message("Пожалуйста, выберите код ГРНТИ из комбобокса.")
+            return
+
         row_count = self.models['Tp_nir'].rowCount()
         conditions = []
 
@@ -902,17 +914,32 @@ class MainWindow(QMainWindow):
 
 
 
+
+
+
+
+
+
+
+
     def filter(self):
         self.show_menu(self.Tp_nir_add_row_menu, 3)
         self.hide_buttons()
-        self.grnticode_cmb.addItems(grnti_to_cmb())
         self.populate_initial_comboboxes()
         self.setup_combobox_signals()
         self.wid.setVisible(True)
 
         # Подключение сигналов для фильтрации
-        self.grnticode_cmb = self.findChild(QComboBox, 'grnticode_cmb')
+
+        self.grnticode_cmb.addItem("Выберите...", None)
+        grnti_items = grnti_to_cmb()
+        # Заполняем комбобокс
+        for code, display_text in grnti_items:
+            self.grnticode_cmb.addItem(display_text, code)
+
+
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
+
         self.save_filter_cod_btn.clicked.connect(self.save_filter_grnti)
         self.cancel_filter_cod_btn.clicked.connect(self.on_reset_filter_by_grnti_code)
 

@@ -534,27 +534,18 @@ def grnti_to_cmb():
     # Создаем курсор
     cursor = connection.cursor()
 
-    # Извлекаем данные из столбца 'name'
+    # Извлекаем данные из столбцов 'Код_рубрики' и 'Рубрика' за один запрос
     cursor.execute("SELECT Код_рубрики, Рубрика FROM grntirub")
-    codes = cursor.fetchall()  # Получаем все записи в виде списка кортежей
+    records = cursor.fetchall()  # Получаем все записи в виде списка кортежей
 
-    # Записываем имена в переменную
-    codes = [code[0] for code in codes]  # Извлекаем первый элемент каждого кортежа
-   # codes=list(grnti_cod_list)
+    # Формируем список строк в формате "код - название" и возвращаем кортежи
+    grnti_to_cmb = [(code, f'{code} - {name}') for code, name in records]
 
-    # Извлекаем данные из столбца 'name'
-    cursor.execute("SELECT Рубрика FROM grntirub")
-    names = cursor.fetchall()  # Получаем все записи в виде списка кортежей
-
-    # Записываем имена в переменную
-    cod_names = [name[0] for name in names]  # Извлекаем первый элемент каждого кортежа
-   # cod_names=list(grnti_name_list)
     # Закрываем соединение
     connection.close()
 
-    grnti_to_cmb=[f'{cod} - {name}' for cod, name in zip(codes,cod_names)]
-  #  print(grnti_to_cmb)
-    return(grnti_to_cmb)
+    print("grnti_to_cmb:", grnti_to_cmb)  # Отладочное сообщение
+    return grnti_to_cmb
 
 
 def prepare_tables():
