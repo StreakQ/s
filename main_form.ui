@@ -820,16 +820,6 @@
         <string>ВУЗ</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="grnticode_txt">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>221</width>
-         <height>31</height>
-        </rect>
-       </property>
-      </widget>
       <widget class="QPushButton" name="Tp_nir_redact_filters_close_btn">
        <property name="geometry">
         <rect>
@@ -931,6 +921,16 @@
        </property>
        <property name="text">
         <string>Сброс фильтра по коду ГРНТИ</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="grnticode_cmb">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>221</width>
+         <height>31</height>
+        </rect>
        </property>
       </widget>
      </widget>
