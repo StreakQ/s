@@ -110,7 +110,8 @@ class MainWindow(QMainWindow):
         self.is_updating = False  # Флаг для отслеживания обновления
 
         self.models['Tp_nir'].dataChanged.connect(self.on_tp_nir_data_changed)
-        self.saved_filter_conditions = []  # Список для хранения условий фильтрации
+        self.saved_filter_grnti_conditions = []  # Условия фильтрации по коду ГРНТИ
+        self.saved_filter_complex_conditions = []
 
     def on_tp_nir_data_changed(self):
         """Обработчик изменения данных в Tp_nir."""
@@ -162,6 +163,10 @@ class MainWindow(QMainWindow):
         self.tableView_3.horizontalHeader().setStretchLastSection(True)
         self.tableView_3.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.tableView_3.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableView_4.setSortingEnabled(True)
+        self.tableView_4.horizontalHeader().setStretchLastSection(True)
+        self.tableView_4.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.tableView_4.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
         self.stackedWidget.setCurrentIndex(0)
 
@@ -175,20 +180,11 @@ class MainWindow(QMainWindow):
         self.action_show_Tp_fv.triggered.connect(self.open_Tp_fv)
         self.tableView_2.setModel(self.models['Tp_nir'])  # New
 
-        # # Подключение действий для отображения таблиц
-        # self.action_show_VUZ.triggered.connect(lambda: self.table_show('VUZ'))
-        # self.action_show_Tp_nir.triggered.connect(lambda: self.table_show('Tp_nir'))
-        # self.action_show_grntirub.triggered.connect(lambda: self.table_show('grntirub'))
-        # self.action_show_Tp_fv.triggered.connect(lambda: self.table_show('Tp_fv'))
-        # self.tableView_2.setModel(self.models['Tp_nir'])  # New
+
 
         self.po_VUZ.triggered.connect(self.open_analysis_menu_po_VUZ)
         self.po_rubrikam.triggered.connect(self.open_analysis_menu_po_rubrikam)
         self.po_character.triggered.connect(self.open_analysis_menu_po_character)
-        #
-        # self.po_rubrikam.triggered.connect(lambda: self.table_show('GRNTI_Summary'))
-        # self.po_character.triggered.connect(lambda: self.table_show('NIR_Character_Summary'))
-        # self.po_VUZ.triggered.connect(lambda: self.table_show('VUZ_Summary'))
 
         # Кнопки для добавления
         self.Tp_nir_redact_add_row_btn.clicked.connect(self.open_add_row_menu)
@@ -226,8 +222,8 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact_filters_close_btn = self.findChild(QPushButton, 'Tp_nir_redact_filters_close_btn')
 
         #Анализ
-
-       #self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
+        self.apply_filter_btn = self.findChild(QPushButton,'apply_filter_btn')
+        self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
         self.wid = self.findChild(QWidget, "widget")
 
         #Выпуск распоряжений
@@ -368,49 +364,57 @@ class MainWindow(QMainWindow):
     def open_VUZ(self):
         self.stackedWidget.setCurrentIndex(0)
         self.Tp_nir_redact.setVisible(False)
+        self.apply_filter_btn.setVisible(False)
+
         self.table_show('VUZ')
 
     def open_Tp_nir(self):
         self.stackedWidget.setCurrentIndex(0)
+        self.apply_filter_btn.setVisible(False)
         self.Tp_nir_redact.setVisible(True)
         self.table_show('Tp_nir')
 
     def open_Tp_fv(self):
         self.stackedWidget.setCurrentIndex(0)
         self.Tp_nir_redact.setVisible(False)
+        self.apply_filter_btn.setVisible(False)
+
         self.table_show('Tp_fv')
 
     def open_grntirub(self):
         self.stackedWidget.setCurrentIndex(0)
         self.Tp_nir_redact.setVisible(False)
+        self.apply_filter_btn.setVisible(False)
         self.table_show('grntirub')
 
-    def table_show_3(self, table_name):
+    def table_show_4(self, table_name):
         """Отображение таблицы."""
-        self.tableView_3.setModel(self.models[table_name])
+        self.tableView_4.setModel(self.models[table_name])
 
     def table_show_2(self, table_name):
         """Отображение таблицы."""
         self.tableView_2.setModel(self.models[table_name])
 
     def open_analysis_menu_po_VUZ(self):
-        self.stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(5)
         self.Tp_nir_redact.setVisible(False)
         self.wid.setVisible(False)
-        self.table_show_2('VUZ_Summary')
+        self.apply_filter_btn.setVisible(True)
+        self.table_show_4('VUZ_Summary')
 
     def open_analysis_menu_po_rubrikam(self):
-        self.stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(5)
         self.Tp_nir_redact.setVisible(False)
         self.wid.setVisible(False)
-        self.table_show_2('GRNTI_Summary')
+        self.apply_filter_btn.setVisible(False)
+        self.table_show_4('GRNTI_Summary')
 
     def open_analysis_menu_po_character(self):
-        self.stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(5)
         self.Tp_nir_redact.setVisible(False)
         self.wid.setVisible(False)
-
-        self.table_show_2('NIR_Character_Summary')
+        self.apply_filter_btn.setVisible(False)
+        self.table_show_4('NIR_Character_Summary')
 
 
     def save_filter_conditions(self):
@@ -445,7 +449,8 @@ class MainWindow(QMainWindow):
 
         try:
             self.is_updating = True  # Устанавливаем флаг обновления
-            fill_vuz_summary()  # Обновление таблицы VUZ_Summary
+            fill_vuz_summary_with_filters(self.saved_filter_grnti_conditions,
+                                          self.saved_filter_complex_conditions)  # Передаем условия
             fill_grnti_summary()  # Обновление таблицы GRNTI_Summary
             fill_nir_character_summary()  # Обновление таблицы NIR_Character_Summary
             print("Все сводные таблицы успешно обновлены.")
@@ -987,13 +992,64 @@ class MainWindow(QMainWindow):
         self.filter_by_grnticode_btn.setEnabled(True)
         self.grnticode_cmb.setEnabled(True)
 
-
-
     def save_filter_grnti(self):
-        pass
+        """Сохранение условий фильтрации по коду ГРНТИ."""
+        str_cod = self.grnticode_cmb.currentData()
+        if str_cod:
+            self.saved_filter_grnti_conditions.append(str_cod)
+            print(f"Сохранено условие фильтрации по ГРНТИ: {str_cod}")
+            # Отключаем кнопку фильтрации по ГРНТИ
+            self.filter_by_grnticode_btn.setEnabled(False)
+        else:
+            self.show_error_message("Выберите код ГРНТИ для сохранения условия фильтрации.")
 
     def save_filter_complex(self):
-        pass
+        """Сохранение комплексных условий фильтрации."""
+        # Здесь вы можете добавить логику для сбора комплексных условий фильтрации
+        # Например, вы можете собрать условия из других комбобоксов
+        complex_condition = self.collect_complex_filter_conditions()  # Метод для сбора условий
+        if complex_condition:
+            self.saved_filter_complex_conditions.append(complex_condition)
+            print(f"Сохранено комплексное условие фильтрации: {complex_condition}")
+            # Отключаем кнопку комплексной фильтрации
+            self.save_filter_complex_btn.setEnabled(False)
+        else:
+            self.show_error_message("Заполните условия для сохранения комплексного фильтра.")
+
+    def apply_saved_filters(self):
+        """Применение сохраненных условий фильтрации."""
+        if self.saved_filter_grnti_conditions:
+            # Применяем фильтр по коду ГРНТИ
+            filter_conditions = [f'"Коды_ГРНТИ" LIKE "{cod}%"' for cod in self.saved_filter_grnti_conditions]
+            query = ' AND '.join(filter_conditions)
+            self.models['Tp_nir'].setFilter(query)
+            self.models['Tp_nir'].select()
+            self.tableView.setModel(self.models['Tp_nir'])
+            print("Применены сохраненные условия фильтрации по ГРНТИ.")
+        elif self.saved_filter_complex_conditions:
+            # Применяем комплексный фильтр
+            complex_query = ' AND '.join(self.saved_filter_complex_conditions)
+            self.models['Tp_nir'].setFilter(complex_query)
+            self.models['Tp_nir'].select()
+            self.tableView.setModel(self.models['Tp_nir'])
+            print("Применены сохраненные комплексные условия фильтрации.")
+        else:
+            self.show_error_message("Нет сохраненных условий фильтрации.")
+
+    def collect_complex_filter_conditions(self):
+        """Сбор комплексных условий фильтрации из комбобоксов."""
+        conditions = []
+        # Пример сбора условий из комбобоксов
+        if self.vuz_cmb.currentIndex() != 0:
+            conditions.append(f'VUZ."Сокращенное_имя" = "{self.vuz_cmb.currentText()}"')
+        if self.region_cmb.currentIndex() != 0:
+            conditions.append(f'VUZ."Регион" = "{self.region_cmb.currentText()}"')
+        if self.city_cmb.currentIndex() != 0:
+            conditions.append(f'VUZ."Город" = "{self.city_cmb.currentText()}"')
+        if self.obl_cmb.currentIndex() != 0:
+            conditions.append(f'VUZ."Область" = "{self.obl_cmb.currentText()}"')
+
+        return ' AND '.join(conditions) if conditions else None
 
     def on_reset_filter(self):
         self.models['Tp_nir'].setFilter("")
