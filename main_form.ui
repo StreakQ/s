@@ -30,7 +30,7 @@
      <string notr="true">background-color: rgb(240, 240, 240);</string>
     </property>
     <property name="currentIndex">
-     <number>5</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView">
@@ -1472,7 +1472,7 @@
      <x>0</x>
      <y>0</y>
      <width>1539</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_1">

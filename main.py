@@ -873,8 +873,7 @@ class MainWindow(QMainWindow):
 
         self.filter_by_grnticode_btn.setEnabled(False)
         self.grnticode_cmb.setEnabled(False)
-
-
+        self.menu_1.setEnabled(False)
 
     def show_error_message(self, message):
         """Отображение ошибочного сообщения."""
@@ -976,6 +975,7 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact.setVisible(True)
         self.filter_by_grnticode_btn.setEnabled(True)
         self.grnticode_cmb.setEnabled(True)
+        self.menu_1.setEnabled(True)
         self.Tp_nir_redact.raise_()
 
     def save_filter_grnti(self):
