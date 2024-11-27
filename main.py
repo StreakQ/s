@@ -916,15 +916,14 @@ class MainWindow(QMainWindow):
         for model in self.models.values():
             model.submitAll()
 
-
     def on_Tp_nir_redact_filters_close_btn_clicked(self):
         self.cancel(self.Tp_nir_add_row_menu)
         self.show_buttons()
-        self.models['Tp_nir'].setFilter("")
-        self.models['Tp_nir'].select()
-        self.tableView.setModel(self.models['Tp_nir'])
-        self.tableView.reset()
-        self.tableView.show()
+        self.models['Tp_nir'].setFilter("")  # Сброс фильтров
+        self.models['Tp_nir'].select()  # Обновление модели
+        self.tableView_2.setModel(self.models['Tp_nir'])  # Убедитесь, что модель установлена
+        self.tableView_2.reset()  # Сброс таблицы
+        self.tableView_2.show()  # Показать таблицу
 
     def clear_and_fill_grnticmb(self):
         self.grnticode_cmb.clear()
@@ -934,35 +933,52 @@ class MainWindow(QMainWindow):
         for code, display_text in grnti_items:
             self.grnticode_cmb.addItem(display_text, code)
 
+    def reset_filter_state(self):
+        """Сброс состояния фильтров."""
+        # Сбрасываем значения комбобоксов
+        self.clear_and_fill_grnticmb()
+        self.vuz_cmb.setCurrentIndex(0)
+        self.region_cmb.setCurrentIndex(0)
+        self.city_cmb.setCurrentIndex(0)
+        self.obl_cmb.setCurrentIndex(0) # Отключаем кнопки фильтрации
+        self.filter_by_grnticode_btn.setEnabled(True)
+        self.save_filter_cod_btn.setEnabled(True)
+        self.cancel_filter_cod_btn.setEnabled(True)
+        self.cancel_filter_complex_btn.setEnabled(True)
+        self.save_filter_complex_btn.setEnabled(True)
 
+        self.is_updating = False  # Флаг для отслеживания обновления
 
+        # Сбрасываем фильтры в модели
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView_2.setModel(self.models['Tp_nir'])
 
-
-
-
-
+        # Разблокируем комбобокс по коду ГРНТИ и кнопки
+        self.unblock_grnti_filter()
 
     def filter(self):
+        """Открытие меню фильтров."""
+        self.reset_filter_state()  # Сброс состояния фильтров перед открытием меню
         self.show_menu(self.Tp_nir_add_row_menu, 3)
         self.hide_buttons()
         self.populate_initial_comboboxes()
         self.setup_combobox_signals()
         self.wid.setVisible(True)
+        self.grnticode_cmb.setEnabled(True)
 
         # Подключение сигналов для фильтрации
-
-        self.clear_and_fill_grnticmb()
-
-
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
-
         self.save_filter_cod_btn.clicked.connect(self.save_filter_grnti)
         self.cancel_filter_cod_btn.clicked.connect(self.on_reset_filter_by_grnti_code)
-
         self.cancel_filter_complex_btn.clicked.connect(self.on_reset_filter)
         self.save_filter_complex_btn.clicked.connect(self.save_filter_complex)
-
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
+
+        # Обновление модели таблицы для отображения всех записей
+        self.models['Tp_nir'].setFilter("")  # Убедитесь, что фильтры сброшены
+        self.models['Tp_nir'].select()  # Перезагрузите данные модели
+        self.tableView_2.setModel(self.models['Tp_nir'])  # Убедитесь, что модель установлена
 
     def on_reset_filter_by_grnti_code(self):
         self.clear_and_fill_grnticmb()
@@ -1000,6 +1016,11 @@ class MainWindow(QMainWindow):
             print(f"Сохранено комплексное условие фильтрации: {complex_condition}")
             # Отключаем кнопку комплексной фильтрации
             self.save_filter_complex_btn.setEnabled(False)
+            self.vuz_cmb.setEnabled(False)
+            self.region_cmb.setEnabled(False)
+            self.city_cmb.setEnabled(False)
+            self.obl_cmb.setEnabled(False)
+
         else:
             self.show_error_message("Заполните условия для сохранения комплексного фильтра.")
 
@@ -1055,6 +1076,13 @@ class MainWindow(QMainWindow):
 
         # Дополнительные действия, если необходимо
         self.clear_and_fill_grnticmb()  # Очистка и заполнение комбобокса для ГРНТИ
+        self.save_filter_complex_btn.setEnabled(True)
+        self.vuz_cmb.setEnabled(True)
+        self.region_cmb.setEnabled(True)
+        self.city_cmb.setEnabled(True)
+        self.obl_cmb.setEnabled(True)
+
+
 
     def reset_comboboxes(self):
         """Сброс значений комбобоксов к начальному состоянию."""
@@ -1253,8 +1281,22 @@ class MainWindow(QMainWindow):
             self.update_comboboxes()
             self.update_table()
             # Сбрасываем фильтр по коду ГРНТИ
+
             self.grnticode_cmb.setCurrentIndex(0)
 
+    def block_grnti_filter(self):
+        """Блокировка комбобокса по коду ГРНТИ и связанных кнопок."""
+        self.grnticode_cmb.setEnabled(False)
+        self.filter_by_grnticode_btn.setEnabled(False)
+        self.save_filter_cod_btn.setEnabled(False)
+        self.cancel_filter_cod_btn.setEnabled(False)
+
+    def unblock_grnti_filter(self):
+        """Разблокировка комбобокса по коду ГРНТИ и связанных кнопок."""
+        self.grnticode_cmb.setEnabled(True)
+        self.filter_by_grnticode_btn.setEnabled(True)
+        self.save_filter_cod_btn.setEnabled(True)
+        self.cancel_filter_cod_btn.setEnabled(True)
 
     def populate_initial_comboboxes(self):
         """Заполнение комбобоксов существующими данными из связанных таблиц."""
