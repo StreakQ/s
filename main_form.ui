@@ -20,8 +20,8 @@
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>11</x>
-      <y>11</y>
+      <x>30</x>
+      <y>20</y>
       <width>1511</width>
       <height>671</height>
      </rect>
@@ -30,7 +30,7 @@
      <string notr="true">background-color: rgb(240, 240, 240);</string>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView">
@@ -693,9 +693,9 @@
       <widget class="QLabel" name="label">
        <property name="geometry">
         <rect>
-         <x>240</x>
-         <y>20</y>
-         <width>91</width>
+         <x>10</x>
+         <y>10</y>
+         <width>241</width>
          <height>31</height>
         </rect>
        </property>
@@ -705,14 +705,17 @@
         </font>
        </property>
        <property name="text">
-        <string>Код ГРНТИ</string>
+        <string>Фильтр по коду ГРНТИ</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
       <widget class="QLabel" name="label_2">
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>121</y>
+         <y>250</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -730,7 +733,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>121</y>
+         <y>250</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -740,7 +743,7 @@
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>200</y>
+         <y>329</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -758,7 +761,7 @@
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>160</y>
+         <y>289</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -776,7 +779,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>200</y>
+         <y>329</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -786,7 +789,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>161</y>
+         <y>290</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -796,7 +799,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>241</y>
+         <y>370</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -806,7 +809,7 @@
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>241</y>
+         <y>370</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -820,77 +823,126 @@
         <string>ВУЗ</string>
        </property>
       </widget>
-      <widget class="QTextEdit" name="grnticode_txt">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>221</width>
-         <height>31</height>
-        </rect>
-       </property>
-      </widget>
       <widget class="QPushButton" name="Tp_nir_redact_filters_close_btn">
        <property name="geometry">
         <rect>
-         <x>160</x>
-         <y>300</y>
-         <width>93</width>
+         <x>10</x>
+         <y>530</y>
+         <width>301</width>
          <height>28</height>
         </rect>
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Отмена</string>
+        <string>Закрытие меню фильтры</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="cancel_filtration_btn">
+      <widget class="QPushButton" name="cancel_filter_complex_btn">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>300</y>
-         <width>141</width>
-         <height>28</height>
+         <x>10</x>
+         <y>470</y>
+         <width>301</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Сброс фильтров</string>
+        <string>Сброс комплексного фильтра</string>
        </property>
       </widget>
       <widget class="QPushButton" name="filter_by_grnticode_btn">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>70</y>
-         <width>191</width>
+         <x>10</x>
+         <y>100</y>
+         <width>241</width>
          <height>23</height>
         </rect>
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
         <string>Фильтрация по Коду ГРНТИ</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="save_filter_btn">
+      <widget class="QPushButton" name="save_filter_complex_btn">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>350</y>
-         <width>251</width>
+         <x>10</x>
+         <y>440</y>
+         <width>301</width>
          <height>28</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Сохранение условий комплексной фильтрации</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="save_filter_cod_btn">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>130</y>
+         <width>241</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Сохранение фильтрации по коду ГРНТИ</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="cancel_filter_cod_btn">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>170</y>
+         <width>241</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Сброс фильтра по коду ГРНТИ</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="grnticode_cmb">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>241</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_11">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>210</y>
+         <width>221</width>
+         <height>31</height>
         </rect>
        </property>
        <property name="font">
@@ -899,9 +951,433 @@
         </font>
        </property>
        <property name="text">
-        <string>Сохранение условий фильтрации</string>
+        <string>Комплексный фильтр</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="current_order_widget">
+     <widget class="QLabel" name="label_6">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>30</y>
+        <width>350</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="text">
+       <string>Сумма планового финансирования</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>580</x>
+        <y>30</y>
+        <width>350</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="text">
+       <string>Сумма фактического финасирования</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>940</x>
+        <y>30</y>
+        <width>350</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="text">
+       <string>Значение распределенных средств, %</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="plan_fin_lbl">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>60</y>
+        <width>350</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:white</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="fact_fin_lbl">
+      <property name="geometry">
+       <rect>
+        <x>580</x>
+        <y>60</y>
+        <width>350</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:white</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="ordered_fin_percent_lbl">
+      <property name="geometry">
+       <rect>
+        <x>940</x>
+        <y>60</y>
+        <width>350</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:white</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>120</y>
+        <width>291</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Сумма к распределению</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>160</y>
+        <width>291</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>% распределенной суммы от плана</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="calculate_btn">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>220</y>
+        <width>251</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Рассчитать</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="sum_first_lineedit">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>125</y>
+        <width>250</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="ordered_percent_second_lineedit">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>175</y>
+        <width>250</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="save_project_btn">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>610</y>
+        <width>211</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Сохранить проект</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="accept_order_btn">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>610</y>
+        <width>221</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Утвердить распределение</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="cancel_order_btn">
+      <property name="geometry">
+       <rect>
+        <x>890</x>
+        <y>610</y>
+        <width>211</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Отмена</string>
+      </property>
+     </widget>
+     <widget class="QTableView" name="tableView_3">
+      <property name="geometry">
+       <rect>
+        <x>189</x>
+        <y>270</y>
+        <width>1151</width>
+        <height>311</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="ordered_percent_first_lbl">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>175</y>
+        <width>250</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:white</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="sum_second_lbl">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>125</y>
+        <width>250</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:white</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="clean_btn">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>220</y>
+        <width>251</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Рассчитать</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="analysis_widget">
+     <widget class="QPushButton" name="apply_filter_btn">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>620</y>
+        <width>771</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Применение условий фильтрации</string>
+      </property>
+     </widget>
+     <widget class="QTableView" name="tableView_4">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>1411</width>
+        <height>561</height>
+       </rect>
+      </property>
      </widget>
     </widget>
    </widget>
@@ -996,7 +1472,7 @@
      <x>0</x>
      <y>0</y>
      <width>1539</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_1">
@@ -1019,8 +1495,16 @@
     <addaction name="separator"/>
     <addaction name="po_character"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>Выпуск распоряжений</string>
+    </property>
+    <addaction name="current_order"/>
+    <addaction name="separator"/>
+   </widget>
    <addaction name="menu_1"/>
    <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_show_VUZ">
@@ -1060,7 +1544,7 @@
   </action>
   <action name="po_VUZ">
    <property name="text">
-    <string>По ВУЗу</string>
+    <string>По ВУЗам</string>
    </property>
   </action>
   <action name="action_10">
@@ -1110,7 +1594,17 @@
   </action>
   <action name="po_character">
    <property name="text">
-    <string>По характеру НИР</string>
+    <string>По характерам НИР</string>
+   </property>
+  </action>
+  <action name="current_order">
+   <property name="text">
+    <string>Текущее распределение финансирования</string>
+   </property>
+  </action>
+  <action name="order">
+   <property name="text">
+    <string>Распределение</string>
    </property>
   </action>
  </widget>
