@@ -973,11 +973,10 @@ class MainWindow(QMainWindow):
         self.tableView_2.reset()
         self.tableView_2.show()
 
-        # Убедитесь, что Tp_nir_redact видим после сброса фильтра
-        self.Tp_nir_redact.setVisible(True)  # Убедитесь, что это установлено на True
+        self.Tp_nir_redact.setVisible(True)
         self.filter_by_grnticode_btn.setEnabled(True)
         self.grnticode_cmb.setEnabled(True)
-        self.Tp_nir_redact.raise_()  # Поднимите его на передний план
+        self.Tp_nir_redact.raise_()
 
     def save_filter_grnti(self):
         """Сохранение условий фильтрации по коду ГРНТИ."""
@@ -1044,33 +1043,34 @@ class MainWindow(QMainWindow):
         return ' AND '.join(conditions) if conditions else None
 
     def on_reset_filter(self):
-        # Очищаем комбобоксы
+        """Сброс комплексного фильтра и возврат к начальному состоянию."""
+        # Сброс значений комбобоксов
+        self.reset_comboboxes()
+
+        # Сброс фильтров в модели
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView_2.setModel(self.models['Tp_nir'])
+        self.table_show_2('Tp_nir')
+
+        # Дополнительные действия, если необходимо
+        self.clear_and_fill_grnticmb()  # Очистка и заполнение комбобокса для ГРНТИ
+
+    def reset_comboboxes(self):
+        """Сброс значений комбобоксов к начальному состоянию."""
         self.vuz_cmb.clear()
         self.region_cmb.clear()
         self.city_cmb.clear()
         self.obl_cmb.clear()
 
-        # Сброс значений в комбобоксах
+        # Заполнение комбобоксов начальными значениями
         self.populate_initial_comboboxes()
-        self.setup_combobox_signals()
 
-        self.vuz_selected = False
-        self.region_selected = False
-        self.city_selected = False
-        self.obl_selected = False
-
-        # Инициализация флагов для отслеживания изменений
-        self.vuz_changed = False
-        self.region_changed = False
-        self.city_changed = False
-        self.obl_changed = False
-
-        self.is_updating = False  # Флаг для отслеживания обновления
-        self.models['Tp_nir'].setFilter("")
-        self.models['Tp_nir'].select()
-        self.tableView_2.setModel(self.models['Tp_nir'])
-        self.table_show_2('Tp_nir')
-        self.clear_and_fill_grnticmb()
+        # Устанавливаем "Выберите..." как выбранное значение
+        self.vuz_cmb.setCurrentIndex(0)
+        self.region_cmb.setCurrentIndex(0)
+        self.city_cmb.setCurrentIndex(0)
+        self.obl_cmb.setCurrentIndex(0)
 
     def populate_combobox(self, column_name, combo_box, filters=None):
         """Заполнение конкретного комбобокса с учетом фильтра."""
