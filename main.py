@@ -372,6 +372,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget.setCurrentIndex(0)
         self.apply_filter_btn.setVisible(False)
         self.Tp_nir_redact.setVisible(True)
+        self.show_buttons()
         self.table_show('Tp_nir')
 
     def open_Tp_fv(self):
@@ -426,21 +427,7 @@ class MainWindow(QMainWindow):
         else:
             self.show_error_message("Нет кода ГРНТИ для сохранения условия фильтрации.")
 
-    def apply_saved_filters(self):
-        """Применение сохраненных условий фильтрации к таблице VUZ_Summary."""
-        if not self.saved_filter_conditions:
-            self.show_error_message("Нет сохраненных условий фильтрации.")
-            return
 
-        # Формируем фильтр на основе сохраненных условий
-        filter_conditions = [f'"Коды_ГРНТИ" LIKE "{cod}%"' for cod in self.saved_filter_conditions]
-        query = ' AND '.join(filter_conditions)
-
-        # Применяем фильтр к модели VUZ_Summary
-        self.models['VUZ_Summary'].setFilter(query)
-        self.models['VUZ_Summary'].select()  # Обновляем модель
-        self.tableView_2.setModel(self.models['VUZ_Summary'])  # Устанавливаем модель в таблицу
-        print("Применены сохраненные условия фильтрации к VUZ_Summary.")
 
     def update_summary_tables(self):
         """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
@@ -449,8 +436,6 @@ class MainWindow(QMainWindow):
 
         try:
             self.is_updating = True  # Устанавливаем флаг обновления
-            fill_vuz_summary_with_filters(self.saved_filter_grnti_conditions,
-                                          self.saved_filter_complex_conditions)  # Передаем условия
             fill_grnti_summary()  # Обновление таблицы GRNTI_Summary
             fill_nir_character_summary()  # Обновление таблицы NIR_Character_Summary
             print("Все сводные таблицы успешно обновлены.")
@@ -980,8 +965,6 @@ class MainWindow(QMainWindow):
 
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
 
-
-
     def on_reset_filter_by_grnti_code(self):
         self.clear_and_fill_grnticmb()
         self.models['Tp_nir'].setFilter("")
@@ -989,8 +972,12 @@ class MainWindow(QMainWindow):
         self.tableView_2.setModel(self.models['Tp_nir'])
         self.tableView_2.reset()
         self.tableView_2.show()
+
+        # Убедитесь, что Tp_nir_redact видим после сброса фильтра
+        self.Tp_nir_redact.setVisible(True)  # Убедитесь, что это установлено на True
         self.filter_by_grnticode_btn.setEnabled(True)
         self.grnticode_cmb.setEnabled(True)
+        self.Tp_nir_redact.raise_()  # Поднимите его на передний план
 
     def save_filter_grnti(self):
         """Сохранение условий фильтрации по коду ГРНТИ."""
@@ -998,8 +985,9 @@ class MainWindow(QMainWindow):
         if str_cod:
             self.saved_filter_grnti_conditions.append(str_cod)
             print(f"Сохранено условие фильтрации по ГРНТИ: {str_cod}")
-            # Отключаем кнопку фильтрации по ГРНТИ
             self.filter_by_grnticode_btn.setEnabled(False)
+            #self.action_show_Tp_nir.setVisible(False)
+
         else:
             self.show_error_message("Выберите код ГРНТИ для сохранения условия фильтрации.")
 
@@ -1018,21 +1006,25 @@ class MainWindow(QMainWindow):
 
     def apply_saved_filters(self):
         """Применение сохраненных условий фильтрации."""
-        if self.saved_filter_grnti_conditions:
-            # Применяем фильтр по коду ГРНТИ
-            filter_conditions = [f'"Коды_ГРНТИ" LIKE "{cod}%"' for cod in self.saved_filter_grnti_conditions]
-            query = ' AND '.join(filter_conditions)
-            self.models['Tp_nir'].setFilter(query)
-            self.models['Tp_nir'].select()
-            self.tableView.setModel(self.models['Tp_nir'])
-            print("Применены сохраненные условия фильтрации по ГРНТИ.")
-        elif self.saved_filter_complex_conditions:
-            # Применяем комплексный фильтр
-            complex_query = ' AND '.join(self.saved_filter_complex_conditions)
-            self.models['Tp_nir'].setFilter(complex_query)
-            self.models['Tp_nir'].select()
-            self.tableView.setModel(self.models['Tp_nir'])
-            print("Применены сохраненные комплексные условия фильтрации.")
+        if self.saved_filter_grnti_conditions or self.saved_filter_complex_conditions:
+            # Открываем соединение с базой данных
+            conn = sqlite3.connect(db_name)
+            c = conn.cursor()
+            try:
+                # Применяем фильтр по коду ГРНТИ и комплексные фильтры
+                fill_vuz_summary_with_filters(conn, c, self.saved_filter_grnti_conditions,
+                                              self.saved_filter_complex_conditions)
+
+                # Обновляем модели для отображения изменений
+                self.models['VUZ_Summary'].select()  # Обновляем модель VUZ_Summary
+                self.tableView_3.setModel(self.models['VUZ_Summary'])  # Устанавливаем модель для отображения
+
+                print("Применены сохраненные условия фильтрации по ГРНТИ и комплексные условия.")
+            except Exception as e:
+                self.show_error_message(f"Ошибка при применении фильтров: {e}")
+            finally:
+                # Закрываем соединение с базой данных
+                conn.close()
         else:
             self.show_error_message("Нет сохраненных условий фильтрации.")
 
@@ -1052,12 +1044,6 @@ class MainWindow(QMainWindow):
         return ' AND '.join(conditions) if conditions else None
 
     def on_reset_filter(self):
-        self.models['Tp_nir'].setFilter("")
-        self.models['Tp_nir'].select()
-        self.tableView_2.setModel(self.models['Tp_nir'])
-        self.tableView_2.reset()
-        self.tableView_2.show()
-
         # Очищаем комбобоксы
         self.vuz_cmb.clear()
         self.region_cmb.clear()
@@ -1079,6 +1065,11 @@ class MainWindow(QMainWindow):
         self.city_changed = False
         self.obl_changed = False
 
+        self.is_updating = False  # Флаг для отслеживания обновления
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView_2.setModel(self.models['Tp_nir'])
+        self.table_show_2('Tp_nir')
         self.clear_and_fill_grnticmb()
 
     def populate_combobox(self, column_name, combo_box, filters=None):

@@ -548,11 +548,8 @@ def grnti_to_cmb():
     return grnti_to_cmb
 
 
-def fill_vuz_summary_with_filters(grnti_conditions, complex_conditions):
+def fill_vuz_summary_with_filters(conn, c, grnti_conditions, complex_conditions):
     """Заполнение таблицы VUZ_Summary с учетом условий фильтрации."""
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-
     c.execute('DELETE FROM VUZ_Summary')
 
     # Формируем условия фильтрации
@@ -566,6 +563,7 @@ def fill_vuz_summary_with_filters(grnti_conditions, complex_conditions):
     where_clause = ''
     if filter_conditions:
         where_clause = 'WHERE ' + ' AND '.join(filter_conditions)
+    print(where_clause)
 
     query = f'''
         INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
@@ -577,7 +575,7 @@ def fill_vuz_summary_with_filters(grnti_conditions, complex_conditions):
         FROM VUZ
         LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
         LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
-        {where_clause}  -- Добавляем условия фильтрации
+        {where_clause} 
         GROUP BY VUZ."Сокращенное_имя"
     '''
     c.execute(query)
@@ -594,7 +592,6 @@ def fill_vuz_summary_with_filters(grnti_conditions, complex_conditions):
     ''')
 
     conn.commit()
-    conn.close()
 
 def prepare_tables():
     """Подготовка таблиц."""
