@@ -988,11 +988,11 @@ class MainWindow(QMainWindow):
         self.tableView_2.reset()
         self.tableView_2.show()
 
-        self.Tp_nir_redact.setVisible(True)
+        #self.Tp_nir_redact.setVisible(True)
         self.filter_by_grnticode_btn.setEnabled(True)
         self.grnticode_cmb.setEnabled(True)
         self.menu_1.setEnabled(True)
-        self.Tp_nir_redact.raise_()
+        #self.Tp_nir_redact.raise_()
 
     def save_filter_grnti(self):
         """Сохранение условий фильтрации по коду ГРНТИ."""
@@ -1074,14 +1074,14 @@ class MainWindow(QMainWindow):
         self.tableView_2.setModel(self.models['Tp_nir'])
         self.table_show_2('Tp_nir')
 
-        # Дополнительные действия, если необходимо
-        self.clear_and_fill_grnticmb()  # Очистка и заполнение комбобокса для ГРНТИ
+
+        #self.clear_and_fill_grnticmb()
         self.save_filter_complex_btn.setEnabled(True)
         self.vuz_cmb.setEnabled(True)
         self.region_cmb.setEnabled(True)
         self.city_cmb.setEnabled(True)
         self.obl_cmb.setEnabled(True)
-
+        self.unblock_grnti_filter()
 
 
     def reset_comboboxes(self):
@@ -1281,7 +1281,7 @@ class MainWindow(QMainWindow):
             self.update_comboboxes()
             self.update_table()
             # Сбрасываем фильтр по коду ГРНТИ
-
+            self.block_grnti_filter()
             self.grnticode_cmb.setCurrentIndex(0)
 
     def block_grnti_filter(self):
