@@ -424,7 +424,7 @@ class MainWindow(QMainWindow):
             self.saved_filter_conditions.append(str_cod)
             print(f"Сохранено условие фильтрации: {str_cod}")
         else:
-            self.show_error_message("Введите код ГРНТИ для сохранения условия фильтрации.")
+            self.show_error_message("Нет кода ГРНТИ для сохранения условия фильтрации.")
 
     def apply_saved_filters(self):
         """Применение сохраненных условий фильтрации к таблице VUZ_Summary."""
