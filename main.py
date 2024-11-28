@@ -1027,13 +1027,10 @@ class MainWindow(QMainWindow):
     def apply_saved_filters(self):
         """Применение сохраненных условий фильтрации."""
         if self.saved_filter_grnti_conditions or self.saved_filter_complex_conditions:
-            # Открываем соединение с базой данных
-            conn = sqlite3.connect(db_name)
-            c = conn.cursor()
+
             try:
-                # Применяем фильтр по коду ГРНТИ и комплексные фильтры
-                fill_vuz_summary_with_filters(conn, c, self.saved_filter_grnti_conditions,
-                                              self.saved_filter_complex_conditions)
+                # Применяем фильтр по коду ГРНТИ или комплексные фильтры
+                fill_vuz_summary_with_filters( self.saved_filter_grnti_conditions,self.saved_filter_complex_conditions)
 
                 # Обновляем модели для отображения изменений
                 self.models['VUZ_Summary'].select()  # Обновляем модель VUZ_Summary
@@ -1042,9 +1039,7 @@ class MainWindow(QMainWindow):
                 print("Применены сохраненные условия фильтрации по ГРНТИ и комплексные условия.")
             except Exception as e:
                 self.show_error_message(f"Ошибка при применении фильтров: {e}")
-            finally:
-                # Закрываем соединение с базой данных
-                conn.close()
+
         else:
             self.show_error_message("Нет сохраненных условий фильтрации.")
 

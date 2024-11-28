@@ -541,57 +541,103 @@ def grnti_to_cmb():
     # Формируем список строк в формате "код - название" и возвращаем кортежи
     grnti_to_cmb = [(f'{code:02}', f'{code:02} - {name}') for code, name in records]
 
-    # Закрываем соединение
+    connection.commit()
     connection.close()
 
-    print("grnti_to_cmb:", grnti_to_cmb)  # Отладочное сообщение
+    #print("grnti_to_cmb:", grnti_to_cmb)  # Отладочное сообщение
     return grnti_to_cmb
 
 
-def fill_vuz_summary_with_filters(conn, c, grnti_conditions, complex_conditions):
+
+
+
+def log_lock_status(cursor):
+    """Функция для логирования состояния блокировок."""
+    cursor.execute('PRAGMA lock_status;')
+    lock_status = cursor.fetchall()
+    print("Состояние блокировок:")
+    for status in lock_status:
+        print(status)
+
+
+def log_database_list(cursor):
+    """Функция для логирования списка баз данных."""
+    cursor.execute('PRAGMA database_list;')
+    databases = cursor.fetchall()
+    print("Список баз данных:")
+    for db in databases:
+        print(db)
+
+
+def fill_vuz_summary_with_filters(grnti_conditions, complex_conditions):
     """Заполнение таблицы VUZ_Summary с учетом условий фильтрации."""
-    c.execute('DELETE FROM VUZ_Summary')
+    with sqlite3.connect(db_name, timeout=10) as conn:
+        c = conn.cursor()
+        c.execute('PRAGMA busy_timeout = 3000')  # Установить таймаут ожидания в 3000 мс
 
-    # Формируем условия фильтрации
-    filter_conditions = []
-    if grnti_conditions:
-        filter_conditions.extend([f'Tp_nir."Коды_ГРНТИ" LIKE "{cod}%"' for cod in grnti_conditions])
-    if complex_conditions:
-        filter_conditions.extend(complex_conditions)
+        # Логируем состояние блокировок перед началом операций
+        log_lock_status(c)
+        log_database_list(c)
 
-    # Создаем строку условий для SQL-запроса
-    where_clause = ''
-    if filter_conditions:
-        where_clause = 'WHERE ' + ' AND '.join(filter_conditions)
-    print(where_clause)
+        try:
+            # Начинаем транзакцию
+            c.execute('BEGIN IMMEDIATE;')
+            c.execute('DELETE FROM VUZ_Summary')
 
-    query = f'''
-        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
-        SELECT 
-            VUZ."Сокращенное_имя",
-            SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования",
-            COUNT(Tp_nir."Номер") AS "Сумма_количества_НИР",
-            SUM(Tp_fv."Фактическое_финансирование") AS "Сумма_фактического_финансирования"
-        FROM VUZ
-        LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
-        LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
-        {where_clause} 
-        GROUP BY VUZ."Сокращенное_имя"
-    '''
-    c.execute(query)
+            # Формируем условия фильтрации
+            filter_conditions = []
+            if grnti_conditions:
+                filter_conditions.extend([f'Tp_nir."Коды_ГРНТИ" LIKE "{cod}%"' for cod in grnti_conditions])
+            if complex_conditions:
+                filter_conditions.extend(complex_conditions)
 
-    # Добавляем итоговую строку
-    c.execute('''
-        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
-        SELECT 
-            'ИТОГО',
-            SUM("Сумма_планового_финансирования"),
-            SUM("Сумма_количества_НИР"),
-            SUM("Сумма_фактического_финансирования")
-        FROM VUZ_Summary
-    ''')
+            # Создаем строку условий для SQL-запроса
+            where_clause = ''
+            if filter_conditions:
+                where_clause = 'WHERE ' + ' AND '.join(filter_conditions)
+            print(where_clause)
 
-    conn.commit()
+            query = f'''
+                INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+                SELECT 
+                    VUZ."Сокращенное_имя",
+                    SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования",
+                    COUNT(Tp_nir."Номер") AS "Сумма_количества_НИР",
+                    SUM(Tp_fv."Фактическое_финансирование") AS "Сумма_фактического_финансирования"
+                FROM VUZ
+                LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+                LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
+                {where_clause} 
+                GROUP BY VUZ."Сокращенное_имя"
+            '''
+            c.execute(query)
+
+            # Добавляем итоговую строку
+            c.execute('''
+                INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+                SELECT 
+                    'ИТОГО',
+                    SUM("Сумма_планового_финансирования"),
+                    SUM("Сумма_количества_НИР"),
+                    SUM("Сумма_фактического_финансирования")
+                FROM VUZ_Summary
+            ''')
+            print("перед концом fill_vuz_summary_with_filters ")
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Ошибка при работе с базой данных: {e}")
+        finally:
+            # Логируем состояние блокировок после завершения операций
+            log_lock_status(c)
+            log_database_list(c)
+            print("конец fill_vuz_summary_with_filters ")
+
+
+# Пример вызова функции
+
+
+
+
 
 def prepare_tables():
     """Подготовка таблиц."""
