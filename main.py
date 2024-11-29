@@ -4,7 +4,7 @@ import sys
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
                              QAbstractItemView, QComboBox, QTextEdit, QHeaderView, QPushButton, QVBoxLayout,
-                             QHBoxLayout, QWidget)
+                             QHBoxLayout, QWidget, QLabel, QLineEdit)
 from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery,QSqlQueryModel
 from PyQt6.QtGui import QKeyEvent, QTextCursor
@@ -142,7 +142,8 @@ class MainWindow(QMainWindow):
             'Tp_fv': QSqlTableModel(self),
             'VUZ_Summary': QSqlTableModel(self),
             'GRNTI_Summary': QSqlTableModel(self),
-            'NIR_Character_Summary': QSqlTableModel(self)
+            'NIR_Character_Summary': QSqlTableModel(self),
+            'Order_table': QSqlTableModel(self)
 
         }
         for name, model in self.models.items():
@@ -221,25 +222,111 @@ class MainWindow(QMainWindow):
         self.apply_filter_btn = self.findChild(QPushButton, 'apply_filter_btn')
         self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
         self.wid = self.findChild(QWidget, "widget")
-        self.refund_btn = self.findChild(QPushButton, 'refund_btn')
 
-#         # Выпуск распоряжений
-# #        self.current_order.triggered.connect(self.on_current_order_clicked)
-#
-#         self.calculate_btn.clicked.connect(self.on_calculate_btn_clicked)
-#         self.save_project_btn.clicked.connect(self.on_save_project_btn_clicked)
-#         self.accept_order_btn.clicked.connect(self.on_accept_order_btn_clicked)
-#         self.cancel_order_btn.clicked.connect(self.on_cancel_order_btn_clicked)
-#         self.clean_btn.clicked.connect(self.on_clean_btn_clicked)
-#
-#         self.sum_first_lineedit = self.findChild(QLineEdit, 'sum_first_lineedit')
-#         self.sum_second_lbl = self.findChild(QLabel, 'sum_second_lbl')
-#         self.ordered_percent_first_lbl = self.findChild(QLabel, 'ordered_percent_first_lbl')
-#         self.ordered_percent_second_lineedit = self.findChild(QLineEdit, 'ordered_percent_second_lineedit')
-#
-#         self.plan_fin_lbl = self.findChild(QLabel, 'plan_fin_lbl')
-#         self.fact_fin_lbl = self.findChild(QLabel, 'fact_fin_lbl')
-#         self.ordered_fin_percent_lbl = self.findChild(QLabel, 'ordered_fin_percent_lbl')
+        # Выпуск распоряжений
+        self.current_order.triggered.connect(self.on_current_order_clicked)
+
+        self.calculate_btn.clicked.connect(self.on_calculate_btn_clicked)
+        self.save_project_btn.clicked.connect(self.on_save_project_btn_clicked)
+        self.accept_order_btn.clicked.connect(self.on_accept_order_btn_clicked)
+        self.cancel_order_btn.clicked.connect(self.on_cancel_order_btn_clicked)
+        self.clean_btn.clicked.connect(self.on_clean_btn_clicked)
+
+        self.sum_first_lineedit = self.findChild(QLineEdit, 'sum_first_lineedit')
+        self.sum_second_lbl = self.findChild(QLabel, 'sum_second_lbl')
+        self.ordered_percent_first_lbl = self.findChild(QLabel, 'ordered_percent_first_lbl')
+        self.ordered_percent_second_lineedit = self.findChild(QLineEdit, 'ordered_percent_second_lineedit')
+
+        self.plan_fin_lbl = self.findChild(QLabel, 'plan_fin_lbl')
+        self.fact_fin_lbl = self.findChild(QLabel, 'fact_fin_lbl')
+        self.ordered_fin_percent_lbl = self.findChild(QLabel, 'ordered_fin_percent_lbl')
+
+    def on_current_order_clicked(self):
+        self.hide_buttons()
+        self.stackedWidget.setCurrentIndex(4)
+        value = self.get_sum_value_by_column("Плановое_финансирование")
+        self.table_show('Order_table')
+        self.plan_fin_lbl.setText(str(value))
+        self.fact_fin_lbl.setText('0')
+        self.ordered_fin_percent_lbl.setText('0')
+
+    def on_calculate_btn_clicked(self):
+        # Проверяем, что только одно из полей заполнено
+        if self.sum_first_lineedit.text() and self.ordered_percent_second_lineedit.text():
+            self.show_error_message("Заполните только одно из полей: 'Сумма' или 'Процент'.")
+            return
+
+        # Проверяем первое поле
+        if self.sum_first_lineedit.text():
+            if not self.validate_lineedit(self.sum_first_lineedit):
+                return
+
+            value = int(self.sum_first_lineedit.text())
+            sum_value = int(self.plan_fin_lbl.text())
+
+            if value > sum_value:
+                self.show_error_message("Введенное значение не может быть больше планового финансирования")
+                self.reset_first_lineedit()
+                return
+
+            res = round(value * 100 / sum_value, 1)
+            self.ordered_percent_first_lbl.setText(str(res))
+
+        # Проверяем второе поле
+        elif self.ordered_percent_second_lineedit.text():
+            if not self.validate_lineedit(self.ordered_percent_second_lineedit):
+                return  # Если валидация не прошла, выходим из метода
+
+            percent_val = int(self.ordered_percent_second_lineedit.text())
+            if percent_val > 100:
+                self.show_error_message("Нельзя вводить значение больше 100%")
+                self.reset_second_lineedit()
+                return
+
+            sum_value = int(self.plan_fin_lbl.text())
+            res = round(percent_val * sum_value / 100, 1)
+            self.sum_second_lbl.setText(str(res))
+
+    def validate_lineedit(self, lineedit):
+        """Проверяет, что значение в lineedit является числом и не пустое."""
+        text = lineedit.text()
+        if text == '' or not text.isdigit():
+            self.show_error_message("В ячейках должны быть только численные значения")
+            return False
+        return True
+
+    def reset_first_lineedit(self):
+        self.sum_first_lineedit.clear()
+        self.ordered_percent_first_lbl.clear()
+
+    def reset_second_lineedit(self):
+        self.ordered_percent_second_lineedit.clear()
+        self.sum_second_lbl.clear()
+
+    def on_save_project_btn_clicked(self):
+        pass
+
+    def on_accept_order_btn_clicked(self):
+        pass
+
+    def on_cancel_order_btn_clicked(self):
+        # self.show_buttons()
+        self.stackedWidget.setCurrentIndex(0)
+        # добавить отмену уже рассчитанных факт. фин.
+
+    def on_clean_btn_clicked(self):
+        self.reset_first_lineedit()
+        self.reset_second_lineedit()
+
+    def get_sum_value_by_column(self, column_name):
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+        c.execute(f'''SELECT SUM({column_name}) FROM Tp_fv''')
+        res = c.fetchone()
+        sum_value = res[0] if res[0] is not None else 0
+        conn.commit()
+        conn.close()
+        return sum_value
 
     def table_show(self, table_name):
         """Отображение таблицы."""
@@ -248,41 +335,58 @@ class MainWindow(QMainWindow):
     def open_VUZ(self):
         self.stackedWidget.setCurrentIndex(0)
         self.Tp_nir_redact.setVisible(False)
+        self.apply_filter_btn.setVisible(False)
+
         self.table_show('VUZ')
 
     def open_Tp_nir(self):
         self.stackedWidget.setCurrentIndex(0)
+        self.apply_filter_btn.setVisible(False)
         self.Tp_nir_redact.setVisible(True)
+        self.show_buttons()
         self.table_show('Tp_nir')
 
     def open_Tp_fv(self):
         self.stackedWidget.setCurrentIndex(0)
         self.Tp_nir_redact.setVisible(False)
+        self.apply_filter_btn.setVisible(False)
+
         self.table_show('Tp_fv')
 
     def open_grntirub(self):
         self.stackedWidget.setCurrentIndex(0)
         self.Tp_nir_redact.setVisible(False)
+        self.apply_filter_btn.setVisible(False)
         self.table_show('grntirub')
 
-    def table_show_3(self, table_name):
+    def table_show_4(self, table_name):
         """Отображение таблицы."""
-        self.tableView_3.setModel(self.models[table_name])
+        self.tableView_4.setModel(self.models[table_name])
+
+    def table_show_2(self, table_name):
+        """Отображение таблицы."""
+        self.tableView_2.setModel(self.models[table_name])
 
     def open_analysis_menu_po_VUZ(self):
-        self.stackedWidget.setCurrentIndex(4)
+        self.stackedWidget.setCurrentIndex(5)
         self.Tp_nir_redact.setVisible(False)
-        self.table_show_3('VUZ_Summary')
+        self.wid.setVisible(False)
+        self.apply_filter_btn.setVisible(True)
+        self.table_show_4('VUZ_Summary')
 
     def open_analysis_menu_po_rubrikam(self):
-        self.stackedWidget.setCurrentIndex(4)
+        self.stackedWidget.setCurrentIndex(5)
         self.Tp_nir_redact.setVisible(False)
-        self.table_show_3('GRNTI_Summary')
+        self.wid.setVisible(False)
+        self.apply_filter_btn.setVisible(False)
+        self.table_show_4('GRNTI_Summary')
 
     def open_analysis_menu_po_character(self):
-        self.stackedWidget.setCurrentIndex(4)
+        self.stackedWidget.setCurrentIndex(5)
         self.Tp_nir_redact.setVisible(False)
-        self.table_show_3('NIR_Character_Summary')
+        self.wid.setVisible(False)
+        self.apply_filter_btn.setVisible(False)
+        self.table_show_4('NIR_Character_Summary')
 
     def save_filter_conditions(self):
         """Сохранение условий фильтрации по коду ГРНТИ."""
@@ -676,16 +780,7 @@ class MainWindow(QMainWindow):
             elif isinstance(field, QComboBox):
                 field.setCurrentIndex(0)  # Сбрасываем QComboBox
 
-    def table_show(self, table_name):
-        """Отображение таблицы."""
-        self.tableView.setModel(self.models[table_name])
 
-        # Установка сортировки по имени вуза (например, по столбцу "Сокращенное_имя")
-        if table_name == 'Tp_nir':
-            self.models[table_name].setSort(self.models[table_name].fieldIndex("Сокращенное_имя"),
-                                            Qt.SortOrder.AscendingOrder)
-
-        self.models[table_name].select()  # Обновление модели для применения сортировки
 
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
@@ -774,57 +869,152 @@ class MainWindow(QMainWindow):
         for model in self.models.values():
             model.submitAll()
 
-
     def on_Tp_nir_redact_filters_close_btn_clicked(self):
         self.cancel(self.Tp_nir_add_row_menu)
         self.show_buttons()
+        self.models['Tp_nir'].setFilter("")  # Сброс фильтров
+        self.models['Tp_nir'].select()  # Обновление модели
+        self.tableView_2.setModel(self.models['Tp_nir'])  # Убедитесь, что модель установлена
+        self.tableView_2.reset()  # Сброс таблицы
+        self.tableView_2.show()  # Показать таблицу
+
+    def clear_and_fill_grnticmb(self):
+        self.grnticode_cmb.clear()
+        self.grnticode_cmb.addItem("Выберите...", None)
+        grnti_items = grnti_to_cmb()
+        # Заполняем комбобокс
+        for code, display_text in grnti_items:
+            self.grnticode_cmb.addItem(display_text, code)
+
+    def reset_filter_state(self):
+        """Сброс состояния фильтров."""
+        # Сбрасываем значения комбобоксов
+        self.clear_and_fill_grnticmb()
+        self.vuz_cmb.setCurrentIndex(0)
+        self.region_cmb.setCurrentIndex(0)
+        self.city_cmb.setCurrentIndex(0)
+        self.obl_cmb.setCurrentIndex(0)  # Отключаем кнопки фильтрации
+        self.filter_by_grnticode_btn.setEnabled(True)
+        self.save_filter_cod_btn.setEnabled(True)
+        self.cancel_filter_cod_btn.setEnabled(True)
+        self.cancel_filter_complex_btn.setEnabled(True)
+        self.save_filter_complex_btn.setEnabled(True)
+
+        # self.is_updating = False  # Флаг для отслеживания обновления
+
+        # Сбрасываем фильтры в модели
         self.models['Tp_nir'].setFilter("")
         self.models['Tp_nir'].select()
-        self.tableView.setModel(self.models['Tp_nir'])
-        self.tableView.reset()
-        self.tableView.show()
+        self.tableView_2.setModel(self.models['Tp_nir'])
 
+        # Разблокируем комбобокс по коду ГРНТИ и кнопки
+        self.unblock_grnti_filter()
 
     def filter(self):
+        """Открытие меню фильтров."""
+        self.reset_filter_state()  # Сброс состояния фильтров перед открытием меню
         self.show_menu(self.Tp_nir_add_row_menu, 3)
         self.hide_buttons()
-        self.grnticode_txt.addItems(grnti_to_cmb())
         self.populate_initial_comboboxes()
         self.setup_combobox_signals()
+        self.wid.setVisible(True)
+        self.grnticode_cmb.setEnabled(True)
+
         # Подключение сигналов для фильтрации
-        self.grnticode_txt = self.findChild(QComboBox, 'grnticode_txt')
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
-        self.cancel_filtration_btn.clicked.connect(self.on_reset_filter)
+        self.save_filter_cod_btn.clicked.connect(self.save_filter_grnti)
+        self.cancel_filter_cod_btn.clicked.connect(self.on_reset_filter_by_grnti_code)
+        #self.cancel_filter_complex_btn.clicked.connect(self.on_reset_filter)
+        self.save_filter_complex_btn.clicked.connect(self.save_filter_complex)
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
 
-    def on_reset_filter(self):
+        # Обновление модели таблицы для отображения всех записей
+        self.models['Tp_nir'].setFilter("")  # Убедитесь, что фильтры сброшены
+        self.models['Tp_nir'].select()  # Перезагрузите данные модели
+        self.tableView_2.setModel(self.models['Tp_nir'])  # Убедитесь, что модель установлена
+
+    def on_reset_filter_by_grnti_code(self):
+        self.clear_and_fill_grnticmb()
         self.models['Tp_nir'].setFilter("")
         self.models['Tp_nir'].select()
         self.tableView_2.setModel(self.models['Tp_nir'])
         self.tableView_2.reset()
         self.tableView_2.show()
 
-        # Очищаем комбобоксы
-        self.vuz_cmb.clear()
-        self.region_cmb.clear()
-        self.city_cmb.clear()
-        self.obl_cmb.clear()
+        # self.Tp_nir_redact.setVisible(True)
+        self.filter_by_grnticode_btn.setEnabled(True)
+        self.grnticode_cmb.setEnabled(True)
+        self.menu_1.setEnabled(True)
+        # self.Tp_nir_redact.raise_()
 
-        # Сброс значений в комбобоксах
-        self.populate_initial_comboboxes()
-        self.setup_combobox_signals()
+    def save_filter_grnti(self):
+        """Сохранение условий фильтрации по коду ГРНТИ."""
+        str_cod = self.grnticode_cmb.currentData()
+        if str_cod:
+            self.saved_filter_grnti_conditions.append(str_cod)
+            print(f"Сохранено условие фильтрации по ГРНТИ: {str_cod}")
+            # self.filter_by_grnticode_btn.setEnabled(False)
+            # self.action_show_Tp_nir.setVisible(False)
 
-        # Сброс флагов
-        self.vuz_selected = False
-        self.region_selected = False
-        self.city_selected = False
-        self.obl_selected = False
+        else:
+            self.show_error_message("Выберите код ГРНТИ для сохранения условия фильтрации.")
 
-        # Сброс флагов для отслеживания изменений
-        self.vuz_changed = False
-        self.region_changed = False
-        self.city_changed = False
-        self.obl_changed = False
+    def save_filter_complex(self):
+        """Сохранение комплексных условий фильтрации."""
+
+        complex_condition = self.collect_complex_filter_conditions()  # Метод для сбора условий
+        if complex_condition:
+            self.saved_filter_complex_conditions.append(complex_condition)
+            print(f"Сохранено комплексное условие фильтрации: {complex_condition}")
+            # Отключаем кнопку комплексной фильтрации
+            self.save_filter_complex_btn.setEnabled(False)
+            self.vuz_cmb.setEnabled(False)
+            self.region_cmb.setEnabled(False)
+            self.city_cmb.setEnabled(False)
+            self.obl_cmb.setEnabled(False)
+
+        else:
+            self.show_error_message("Заполните условия для сохранения комплексного фильтра.")
+
+    def apply_saved_filters(self):
+        """Применение сохраненных условий фильтрации."""
+        if not (self.saved_filter_grnti_conditions or self.saved_filter_complex_conditions):
+            self.show_error_message("Нет сохраненных условий фильтрации.")
+            return
+
+        if self.is_updating:
+            print("apply_saved_filters: уже выполняется другая операция.")
+            return
+
+        self.is_updating = True  # Устанавливаем флаг обновления
+        try:
+            # Применяем фильтр по коду ГРНТИ или комплексные фильтры
+            fill_vuz_summary_with_filters(self.saved_filter_grnti_conditions, self.saved_filter_complex_conditions)
+
+            # Обновляем модели для отображения изменений
+            self.models['VUZ_Summary'].select()  # Обновляем модель VUZ_Summary
+            self.tableView_3.setModel(self.models['VUZ_Summary'])  # Устанавливаем модель для отображения
+
+            print("Применены сохраненные условия фильтрации по ГРНТИ и комплексные условия.")
+        except Exception as e:
+            self.show_error_message(f"Ошибка при применении фильтров: {e}")
+        finally:
+            self.is_updating = False  # Сбрасываем флаг обновления
+
+    def collect_complex_filter_conditions(self):
+        """Сбор комплексных условий фильтрации из комбобоксов."""
+        conditions = []
+        # Пример сбора условий из комбобоксов
+        if self.vuz_cmb.currentIndex() != 0:
+            conditions.append(f'VUZ."Сокращенное_имя" = "{self.vuz_cmb.currentText()}"')
+        if self.region_cmb.currentIndex() != 0:
+            conditions.append(f'VUZ."Регион" = "{self.region_cmb.currentText()}"')
+        if self.city_cmb.currentIndex() != 0:
+            conditions.append(f'VUZ."Город" = "{self.city_cmb.currentText()}"')
+        if self.obl_cmb.currentIndex() != 0:
+            conditions.append(f'VUZ."Область" = "{self.obl_cmb.currentText()}"')
+
+        return ' AND '.join(conditions) if conditions else None
 
     def populate_combobox(self, column_name, combo_box, filters=None):
         """Заполнение конкретного комбобокса с учетом фильтра."""
@@ -958,6 +1148,19 @@ class MainWindow(QMainWindow):
         self.region_cmb.currentIndexChanged.connect(self.on_region_changed)
         self.city_cmb.currentIndexChanged.connect(self.on_city_changed)
         self.obl_cmb.currentIndexChanged.connect(self.on_obl_changed)
+        self.grnticode_cmb.currentIndexChanged.connect(
+            self.on_grnti_code_changed)  # Добавляем обработчик для кода ГРНТИ
+
+    def on_grnti_code_changed(self):
+        """Обработчик изменения кода ГРНТИ."""
+        if self.grnticode_cmb.currentIndex() != 0:  # Если выбрано значение, отличное от "Выберите..."
+            # Сбрасываем комплексные фильтры
+            self.region_cmb.setCurrentIndex(0)
+            self.city_cmb.setCurrentIndex(0)
+            self.obl_cmb.setCurrentIndex(0)
+            self.vuz_cmb.setCurrentIndex(0)
+
+            # Выводим сообщение о сбросе фильтров
 
     def on_vuz_changed(self):
         """Обработчик изменения VUZ."""
@@ -967,6 +1170,8 @@ class MainWindow(QMainWindow):
             self.vuz_selected = True
             self.update_comboboxes()
             self.update_table()
+            # Сбрасываем фильтр по коду ГРНТИ
+            self.grnticode_cmb.setCurrentIndex(0)
 
     def on_region_changed(self):
         """Обработчик изменения региона."""
@@ -976,6 +1181,8 @@ class MainWindow(QMainWindow):
             self.region_selected = True
             self.update_comboboxes()
             self.update_table()
+            # Сбрасываем фильтр по коду ГРНТИ
+            self.grnticode_cmb.setCurrentIndex(0)
 
     def on_city_changed(self):
         """Обработчик изменения города."""
@@ -985,6 +1192,8 @@ class MainWindow(QMainWindow):
             self.city_selected = True
             self.update_comboboxes()
             self.update_table()
+            # Сбрасываем фильтр по коду ГРНТИ
+            self.grnticode_cmb.setCurrentIndex(0)
 
     def on_obl_changed(self):
         """Обработчик изменения области."""
@@ -994,7 +1203,23 @@ class MainWindow(QMainWindow):
             self.obl_selected = True
             self.update_comboboxes()
             self.update_table()
+            # Сбрасываем фильтр по коду ГРНТИ
+            self.block_grnti_filter()
+            self.grnticode_cmb.setCurrentIndex(0)
 
+    def block_grnti_filter(self):
+        """Блокировка комбобокса по коду ГРНТИ и связанных кнопок."""
+        self.grnticode_cmb.setEnabled(False)
+        self.filter_by_grnticode_btn.setEnabled(False)
+        self.save_filter_cod_btn.setEnabled(False)
+        self.cancel_filter_cod_btn.setEnabled(False)
+
+    def unblock_grnti_filter(self):
+        """Разблокировка комбобокса по коду ГРНТИ и связанных кнопок."""
+        self.grnticode_cmb.setEnabled(True)
+        self.filter_by_grnticode_btn.setEnabled(True)
+        self.save_filter_cod_btn.setEnabled(True)
+        self.cancel_filter_cod_btn.setEnabled(True)
 
 
     def populate_initial_comboboxes(self):
