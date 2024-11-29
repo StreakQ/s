@@ -664,4 +664,4 @@ def prepare_tables():
     fill_nir_character_summary()
 
 
-prepare_tables()
+#prepare_tables()

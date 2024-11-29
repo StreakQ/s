@@ -119,16 +119,19 @@ class MainWindow(QMainWindow):
         """Обработчик изменения данных в Tp_nir."""
         if not self.is_updating:
             self.is_updating = True  # Устанавливаем флаг обновления
-            self.update_tp_fv()  # Обновляем первую модель
-            self.update_summary_tables()  # Обновляем вторую модель
-            self.is_updating = False  # Сбрасываем флаг обновления
-
-
+            try:
+                self.update_tp_fv()  # Обновляем первую модель
+                self.update_summary_tables()  # Обновляем вторую модель
+            except Exception as e:
+                self.show_error_message(f"Ошибка при обновлении: {e}")
+            finally:
+                self.is_updating = False  # Сбрасываем флаг обновления
 
     def connect_db(self):
         """Подключение к базе данных."""
         self.db = QSqlDatabase.addDatabase('QSQLITE')
         self.db.setDatabaseName(self.db_name)
+        self.db.setConnectOptions("PRAGMA busy_timeout = 3000")
         if not self.db.open():
             print('Не удалось подключиться к базе данных')
             sys.exit(-1)
@@ -403,7 +406,8 @@ class MainWindow(QMainWindow):
     def update_summary_tables(self):
         """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
         if self.is_updating:
-            return  # Если уже происходит обновление, выходим
+            print("уже происходит обновление")
+            return
 
         try:
             self.is_updating = True  # Устанавливаем флаг обновления
@@ -649,62 +653,59 @@ class MainWindow(QMainWindow):
             print("Ошибка: база данных не открыта.")
             return
 
-        query = '''
+        try:
+            # Начинаем транзакцию
+            if not conn.transaction():
+                print("Ошибка: не удалось начать транзакцию.")
+                return
+
+            # Обновление планового финансирования
+            query = '''
                 UPDATE Tp_fv
                 SET 
-                     "Плановое_финансирование" = (
-                     SELECT SUM(Tp_nir."Плановое_финансирование")
-                     FROM Tp_nir
-                     WHERE Tp_fv."Код" = Tp_nir."Код"
-                     GROUP BY Tp_nir."Код"
-    )
-        '''
+                    "Плановое_финансирование" = (
+                        SELECT SUM(Tp_nir."Плановое_финансирование")
+                        FROM Tp_nir
+                        WHERE Tp_fv."Код" = Tp_nir."Код"
+                        GROUP BY Tp_nir."Код"
+                    )
+            '''
 
-        ql_query = QSqlQuery(conn)
-        if not ql_query.exec(query):
-            print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
-            return
-        else:
+            ql_query = QSqlQuery(conn)
+            if not ql_query.exec(query):
+                print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
+                conn.rollback()  # Откат транзакции в случае ошибки
+                return
+
             print(f"Обновлено строк: {ql_query.numRowsAffected()}")
 
             # Обновление количества НИР
             query_count = '''
-                       UPDATE Tp_fv
-                       SET 
-                           "Количество_НИР" = (
-                               SELECT COUNT(Tp_nir."Номер")
-                               FROM Tp_nir
-                               WHERE Tp_fv."Код" = Tp_nir."Код"
-                               GROUP BY Tp_nir."Код"
-                           )
-                       
-                   '''
+                UPDATE Tp_fv
+                SET 
+                    "Количество_НИР" = (
+                        SELECT COUNT(Tp_nir."Номер")
+                        FROM Tp_nir
+                        WHERE Tp_fv."Код" = Tp_nir."Код"
+                        GROUP BY Tp_nir."Код"
+                    )
+            '''
             if not ql_query.exec(query_count):
                 print(f"Ошибка при выполнении запроса на обновление количества НИР: {ql_query.lastError().text()}")
                 conn.rollback()  # Откат транзакции в случае ошибки
                 return
 
-            query_fact = '''
-                               UPDATE Tp_fv
-                               SET 
-                                   "Фактическое_финансирование" = (
-                                       SELECT SUM(Tp_nir."Фактическое_финансирование")
-                                       FROM Tp_nir
-                                       WHERE Tp_fv."Код" = Tp_nir."Код"
-                                       GROUP BY Tp_nir."Код"
-                                   )
-
-                           '''
-            if not ql_query.exec(query_count):
-                print(f"Ошибка при выполнении запроса на обновление количества НИР: {ql_query.lastError().text()}")
-                conn.rollback()  # Откат транзакции в случае ошибки
-                return
-
-            conn.commit()  # Завершаем транзакцию
             print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
-        # Перезагрузка модели
-        self.models['Tp_fv'].select()
-        print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
+            # Перезагрузка модели
+            self.models['Tp_fv'].select()
+
+        except Exception as e:
+            print(f"Ошибка: {e}")
+            conn.rollback()  # Откат транзакции в случае ошибки
+        # finally:
+        #     self.is_updating = False  # Сбрасываем флаг обновления
+        #     conn.close()
+
 
 
 
