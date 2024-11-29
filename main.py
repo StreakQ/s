@@ -112,7 +112,8 @@ class MainWindow(QMainWindow):
 
         self.models['Tp_nir'].dataChanged.connect(self.on_tp_nir_data_changed)
 
-        self.saved_filter_conditions = []  # Список для хранения условий фильтрации
+        self.saved_filter_grnti_conditions = []  # Условия фильтрации по коду ГРНТИ
+        self.saved_filter_complex_conditions = []
 
     def on_tp_nir_data_changed(self):
         """Обработчик изменения данных в Tp_nir."""
@@ -780,55 +781,69 @@ class MainWindow(QMainWindow):
             elif isinstance(field, QComboBox):
                 field.setCurrentIndex(0)  # Сбрасываем QComboBox
 
-
-
     def filter_by_cod_grnti(self):
         """Фильтрация по коду ГРНТИ."""
-        str_cod = str(self.grnticode_txt.currentText()).split(' ', 1)
-      #  str_cod=str(str_cod).split(' ', 1)
-        str_cod = str_cod[0]
-        if int(str_cod) < 10:
-            str_cod = '0' + str_cod
-        print(str_cod)
+        str_cod = str(self.grnticode_cmb.currentData())
+        print("Выбранный код ГРНТИ:", str_cod)
 
-        # Регулярное выражение для проверки, что строка состоит из цифр и точек
-        if not str_cod or not re.match(r'^[\d.]+$', str_cod):
-            self.show_error_message(
-                "Неправильное значение. Пожалуйста, введите численные значения, разделенные точками.")
-            return
-
-        # Получаем количество строк в модели
-        row_count = self.models['Tp_nir'].rowCount()
+        initial_row_count = self.models['Tp_nir'].rowCount()
+        print("Количество строк до фильтрации:", initial_row_count)
         conditions = []
+        first_two_digits_set = set()  # Множество для хранения первых двух цифр кодов
 
-        for row in range(row_count):
-            # Получаем значение из столбца "Коды_ГРНТИ"
+        # Сначала собираем все первые две цифры кодов
+        for row in range(initial_row_count):
             cods = self.models['Tp_nir'].data(self.models['Tp_nir'].index(row, 5))
-
             if cods is not None:
-                cods = cods.split(';')  # Предполагаем, что коды разделены точкой с запятой
-                cods = [cod.strip() for cod in cods]  # Убираем пробелы
+                cods = cods.split(';')
+                cods = [cod.strip() for cod in cods if cod.strip()]
+                for cod in cods:
+                    if len(cod) >= 2:  # Проверяем, что код достаточно длинный
+                        first_two_digits_set.add(cod[:2])  # Добавляем первые две цифры в множество
+
+        # Проверяем, содержится ли str_cod в множестве первых двух цифр
+        if str_cod not in first_two_digits_set:
+            self.show_error_message("Код ГРНТИ не найден в таблице.")
+            return  # Выходим из функции, если код не найден
+
+        # Если код найден, продолжаем фильтрацию
+        for row in range(initial_row_count):
+            cods = self.models['Tp_nir'].data(self.models['Tp_nir'].index(row, 5))
+            if cods is not None:
+                cods = cods.split(';')
+                cods = [cod.strip() for cod in cods if cod.strip()]
 
                 if len(cods) == 1:
-                    # Если один код, применяем фильтр для одного кода
                     if cods[0].startswith(str_cod):
-                        conditions.append(f'"Коды_ГРНТИ" = "{cods[0]}%;"')
-                elif len(cods) == 2:
-                    # Если два кода, применяем фильтр для двух кодов
-                    if any(cod.startswith(str_cod) for cod in cods):
                         conditions.append(f'"Коды_ГРНТИ" LIKE "{str_cod}%"')
-
+                elif len(cods) == 2:
+                    if all(cod.startswith(str_cod) for cod in cods):
+                        conditions.append(f'"Коды_ГРНТИ" LIKE "{str_cod}%"')
 
         if conditions:
             query = ' AND '.join(conditions)
+            print("Формируемый запрос:", query)
             self.models['Tp_nir'].setFilter(query)
-        else:
-            self.models['Tp_nir'].setFilter("")  # Если нет условий, сбрасываем фильтр
+            self.models['Tp_nir'].select()
 
-        self.models['Tp_nir'].select()
+            filtered_row_count = self.models['Tp_nir'].rowCount()
+            print("Количество строк после фильтрации:", filtered_row_count)
+
+            if filtered_row_count == initial_row_count:
+                self.show_error_message("Нет записей с таким кодом ГРНТИ в таблице.")
+                self.models['Tp_nir'].setFilter("")
+                self.models['Tp_nir'].select()
+        else:
+            self.models['Tp_nir'].setFilter("")
+            self.models['Tp_nir'].select()
+
         self.tableView.setModel(self.models['Tp_nir'])
         self.tableView.reset()
         self.tableView.show()
+
+        self.filter_by_grnticode_btn.setEnabled(False)
+        self.grnticode_cmb.setEnabled(False)
+        self.menu_1.setEnabled(False)
 
     def show_error_message(self, message):
         """Отображение ошибочного сообщения."""
@@ -924,7 +939,7 @@ class MainWindow(QMainWindow):
         self.filter_by_grnticode_btn.clicked.connect(self.filter_by_cod_grnti)
         self.save_filter_cod_btn.clicked.connect(self.save_filter_grnti)
         self.cancel_filter_cod_btn.clicked.connect(self.on_reset_filter_by_grnti_code)
-        #self.cancel_filter_complex_btn.clicked.connect(self.on_reset_filter)
+        self.cancel_filter_complex_btn.clicked.connect(self.on_reset_filter)
         self.save_filter_complex_btn.clicked.connect(self.save_filter_complex)
         self.Tp_nir_redact_filters_close_btn.clicked.connect(self.on_Tp_nir_redact_filters_close_btn_clicked)
 
@@ -947,13 +962,48 @@ class MainWindow(QMainWindow):
         self.menu_1.setEnabled(True)
         # self.Tp_nir_redact.raise_()
 
+    def on_reset_filter(self):
+        """Сброс комплексного фильтра и возврат к начальному состоянию."""
+        # Сброс значений комбобоксов
+        self.reset_comboboxes()
+
+        # Сброс фильтров в модели
+        self.models['Tp_nir'].setFilter("")
+        self.models['Tp_nir'].select()
+        self.tableView_2.setModel(self.models['Tp_nir'])
+        self.table_show_2('Tp_nir')
+
+        # self.clear_and_fill_grnticmb()
+        self.save_filter_complex_btn.setEnabled(True)
+        self.vuz_cmb.setEnabled(True)
+        self.region_cmb.setEnabled(True)
+        self.city_cmb.setEnabled(True)
+        self.obl_cmb.setEnabled(True)
+        self.unblock_grnti_filter()
+
+    def reset_comboboxes(self):
+        """Сброс значений комбобоксов к начальному состоянию."""
+        self.vuz_cmb.clear()
+        self.region_cmb.clear()
+        self.city_cmb.clear()
+        self.obl_cmb.clear()
+
+        # Заполнение комбобоксов начальными значениями
+        self.populate_initial_comboboxes()
+
+        # Устанавливаем "Выберите..." как выбранное значение
+        self.vuz_cmb.setCurrentIndex(0)
+        self.region_cmb.setCurrentIndex(0)
+        self.city_cmb.setCurrentIndex(0)
+        self.obl_cmb.setCurrentIndex(0)
+
     def save_filter_grnti(self):
         """Сохранение условий фильтрации по коду ГРНТИ."""
         str_cod = self.grnticode_cmb.currentData()
         if str_cod:
             self.saved_filter_grnti_conditions.append(str_cod)
             print(f"Сохранено условие фильтрации по ГРНТИ: {str_cod}")
-            # self.filter_by_grnticode_btn.setEnabled(False)
+            #self.filter_by_grnticode_btn.setEnabled(False)
             # self.action_show_Tp_nir.setVisible(False)
 
         else:
