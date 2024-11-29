@@ -252,7 +252,6 @@ class MainWindow(QMainWindow):
         self.ordered_fin_percent_lbl.setText('0')
 
     def on_calculate_btn_clicked(self):
-        # Проверяем, что только одно из полей заполнено
         if self.sum_first_lineedit.text() and self.ordered_percent_second_lineedit.text():
             self.show_error_message("Заполните только одно из полей: 'Сумма' или 'Процент'.")
             return
@@ -398,28 +397,6 @@ class MainWindow(QMainWindow):
         else:
             self.show_error_message("Введите код ГРНТИ для сохранения условия фильтрации.")
 
-    def apply_saved_filters(self):
-        """Применение сохраненных условий фильтрации к таблице VUZ_Summary."""
-        if not self.saved_filter_conditions:
-            self.show_error_message("Нет сохраненных условий фильтрации.")
-            return
-
-        # Формируем фильтр на основе сохраненных условий
-        filter_conditions = [f'"Коды_ГРНТИ" LIKE "{cod}%"' for cod in self.saved_filter_conditions]
-        query = ' AND '.join(filter_conditions)
-        print(query)
-        query2 = '''
-                    SELECT Tp_nir.*
-                    FROM Tp_nir
-                    JOIN VUZ_Summary ON Tp_nir."Сокращенное_имя" = VUZ_Summary."Сокращенное_имя"
-                '''
-        print(query2)
-        # Применяем фильтр к модели VUZ_Summary
-        self.models['VUZ_Summary'].setFilter(query)
-        self.models['VUZ_Summary'].setFilter(query2)
-        self.models['VUZ_Summary'].select()  # Обновляем модель
-        self.tableView.setModel(self.models['VUZ_Summary'])  # Устанавливаем модель в таблицу
-        print("Применены сохраненные условия фильтрации к VUZ_Summary.")
 
     def update_summary_tables(self):
         """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
@@ -1043,7 +1020,7 @@ class MainWindow(QMainWindow):
 
             # Обновляем модели для отображения изменений
             self.models['VUZ_Summary'].select()  # Обновляем модель VUZ_Summary
-            self.tableView_3.setModel(self.models['VUZ_Summary'])  # Устанавливаем модель для отображения
+            self.table_show_4('VUZ_Summary')
 
             print("Применены сохраненные условия фильтрации по ГРНТИ и комплексные условия.")
         except Exception as e:
