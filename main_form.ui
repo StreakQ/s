@@ -1173,7 +1173,7 @@
      <widget class="QPushButton" name="calculate_btn">
       <property name="geometry">
        <rect>
-        <x>880</x>
+        <x>600</x>
         <y>220</y>
         <width>251</width>
         <height>28</height>
@@ -1339,7 +1339,7 @@
      <widget class="QPushButton" name="clean_btn">
       <property name="geometry">
        <rect>
-        <x>610</x>
+        <x>880</x>
         <y>220</y>
         <width>251</width>
         <height>28</height>
@@ -1351,7 +1351,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Рассчитать</string>
+       <string>Очистить</string>
       </property>
      </widget>
     </widget>

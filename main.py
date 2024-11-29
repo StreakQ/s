@@ -312,6 +312,8 @@ class MainWindow(QMainWindow):
     def on_cancel_order_btn_clicked(self):
         # self.show_buttons()
         self.stackedWidget.setCurrentIndex(0)
+        self.open_Tp_nir()
+        self.show_buttons()
         # добавить отмену уже рассчитанных факт. фин.
 
     def on_clean_btn_clicked(self):
