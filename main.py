@@ -583,9 +583,46 @@ class MainWindow(QMainWindow):
         else:
             print(f"Обновлено строк: {ql_query.numRowsAffected()}")
 
+            # Обновление количества НИР
+            query_count = '''
+                       UPDATE Tp_fv
+                       SET 
+                           "Количество_НИР" = (
+                               SELECT COUNT(Tp_nir."Номер")
+                               FROM Tp_nir
+                               WHERE Tp_fv."Код" = Tp_nir."Код"
+                               GROUP BY Tp_nir."Код"
+                           )
+                       
+                   '''
+            if not ql_query.exec(query_count):
+                print(f"Ошибка при выполнении запроса на обновление количества НИР: {ql_query.lastError().text()}")
+                conn.rollback()  # Откат транзакции в случае ошибки
+                return
+
+            query_fact = '''
+                               UPDATE Tp_fv
+                               SET 
+                                   "Фактическое_финансирование" = (
+                                       SELECT SUM(Tp_nir."Фактическое_финансирование")
+                                       FROM Tp_nir
+                                       WHERE Tp_fv."Код" = Tp_nir."Код"
+                                       GROUP BY Tp_nir."Код"
+                                   )
+
+                           '''
+            if not ql_query.exec(query_count):
+                print(f"Ошибка при выполнении запроса на обновление количества НИР: {ql_query.lastError().text()}")
+                conn.rollback()  # Откат транзакции в случае ошибки
+                return
+
+            conn.commit()  # Завершаем транзакцию
+            print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
         # Перезагрузка модели
         self.models['Tp_fv'].select()
         print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
+
+
 
     def fill_widgets_from_selected_row(self):
         """Заполнение виджетов данными из выбранной строки таблицы."""
