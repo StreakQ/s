@@ -31,16 +31,6 @@ def connect_db(db_name_name):
         return False
     return db
 
-def create_order_table():
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute('DROP TABLE IF EXISTS Order_table')
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS Order_table (
-    "Сокращенное_имя" TEXT DEFAULT NULL,
-    "Сумма_фактического_финансирования" INTEGER DEFAULT NULL
-    )
-    ''')
 
 def create_table_tp_nir():
     """Создание таблицы Tp_nir."""
@@ -186,11 +176,11 @@ def import_table_tp_nir_from_csv():
                                     ) 
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', row)
             except sqlite3.IntegrityError as e:
-                #print(f"Error on row {row_num}: {e}")
+                print(f"Error on row {row_num}: {e}")
                 count += 1
             row_num += 1
 
-    #print(f"Total errors: {count}")
+    print(f"Total errors: {count}")
     conn.commit()
     conn.close()
 
@@ -212,11 +202,11 @@ def import_table_vuz_from_csv():
                                                         "Тип_уч.заведения","Проф")
                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', row)
             except sqlite3.IntegrityError as e:
-                #print(f"Error on row {row_num}: {e}")
+                print(f"Error on row {row_num}: {e}")
                 count += 1
             row_num += 1
 
-    #print(f"Total errors: {count}")
+    print(f"Total errors: {count}")
     conn.commit()
     conn.close()
 
@@ -240,7 +230,7 @@ def import_table_grntirub_from_csv():
                 count += 1
             row_num += 1
 
-    #print(f"Total errors: {count}")
+    print(f"Total errors: {count}")
     conn.commit()
     conn.close()
 
@@ -260,13 +250,12 @@ def import_table_tp_fv_from_csv():
                 c.execute('''INSERT  INTO Tp_fv ("Код", "Сокращенное_имя", "Плановое_финансирование",
                                                         "Фактическое_финансирование", "Количество_НИР")
                                             VALUES (?, ?, ?, ?, ?)''', row)
-
             except sqlite3.IntegrityError as e:
-                #print(f"Error on row {row_num}: {e}")
+                print(f"Error on row {row_num}: {e}")
                 count += 1
             row_num += 1
 
-    #print(f"Total errors: {count}")
+    print(f"Total errors: {count}")
     conn.commit()
     conn.close()
 
@@ -314,12 +303,11 @@ def fill_tp_fv():
     """Заполнение таблицы Tp_fv."""
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
-    c.execute('''INSERT INTO Tp_fv ("Код", "Сокращенное_имя", "Плановое_финансирование", "Фактическое_финансирование", "Количество_НИР")
+    c.execute('''INSERT INTO Tp_fv ("Код", "Сокращенное_имя", "Плановое_финансирование", "Количество_НИР")
                 SELECT 
                     VUZ."Код",
                     VUZ."Сокращенное_имя",
                     SUM(Tp_nir."Плановое_финансирование"),
-                    0, 
                     COUNT(Tp_nir."Номер")
                 FROM VUZ
                 INNER JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
@@ -534,67 +522,30 @@ def grnti_to_cmb():
     # Создаем курсор
     cursor = connection.cursor()
 
-    # Извлекаем данные из столбцов 'Код_рубрики' и 'Рубрика' за один запрос
+    # Извлекаем данные из столбца 'name'
     cursor.execute("SELECT Код_рубрики, Рубрика FROM grntirub")
-    records = cursor.fetchall()  # Получаем все записи в виде списка кортежей
+    codes = cursor.fetchall()  # Получаем все записи в виде списка кортежей
 
-    # Формируем список строк в формате "код - название" и возвращаем кортежи
-    grnti_to_cmb = [(f'{code:02}', f'{code:02} - {name}') for code, name in records]
+    # Записываем имена в переменную
+    codes = [code[0] for code in codes]  # Извлекаем первый элемент каждого кортежа
+   # codes=list(grnti_cod_list)
 
+    # Извлекаем данные из столбца 'name'
+    cursor.execute("SELECT Рубрика FROM grntirub")
+    names = cursor.fetchall()  # Получаем все записи в виде списка кортежей
+
+    # Записываем имена в переменную
+    cod_names = [name[0] for name in names]  # Извлекаем первый элемент каждого кортежа
+   # cod_names=list(grnti_name_list)
     # Закрываем соединение
     connection.close()
 
-    print("grnti_to_cmb:", grnti_to_cmb)  # Отладочное сообщение
-    return grnti_to_cmb
+    grnti_to_cmb=[f'{cod} - {name}' for cod, name in zip(codes,cod_names)]
+  #  print(grnti_to_cmb)
+    return(grnti_to_cmb)
 
 
-def fill_vuz_summary_with_filters(grnti_conditions, complex_conditions):
-    """Заполнение таблицы VUZ_Summary с учетом условий фильтрации."""
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
 
-    c.execute('DELETE FROM VUZ_Summary')
-
-    # Формируем условия фильтрации
-    filter_conditions = []
-    if grnti_conditions:
-        filter_conditions.extend([f'Tp_nir."Коды_ГРНТИ" LIKE "{cod}%"' for cod in grnti_conditions])
-    if complex_conditions:
-        filter_conditions.extend(complex_conditions)
-
-    # Создаем строку условий для SQL-запроса
-    where_clause = ''
-    if filter_conditions:
-        where_clause = 'WHERE ' + ' AND '.join(filter_conditions)
-
-    query = f'''
-        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
-        SELECT 
-            VUZ."Сокращенное_имя",
-            SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования",
-            COUNT(Tp_nir."Номер") AS "Сумма_количества_НИР",
-            SUM(Tp_fv."Фактическое_финансирование") AS "Сумма_фактического_финансирования"
-        FROM VUZ
-        LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
-        LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
-        {where_clause}  -- Добавляем условия фильтрации
-        GROUP BY VUZ."Сокращенное_имя"
-    '''
-    c.execute(query)
-
-    # Добавляем итоговую строку
-    c.execute('''
-        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
-        SELECT 
-            'ИТОГО',
-            SUM("Сумма_планового_финансирования"),
-            SUM("Сумма_количества_НИР"),
-            SUM("Сумма_фактического_финансирования")
-        FROM VUZ_Summary
-    ''')
-
-    conn.commit()
-    conn.close()
 
 def prepare_tables():
     """Подготовка таблиц."""
@@ -607,7 +558,6 @@ def prepare_tables():
     create_table_vuz_summary()
     create_table_grnti_summary()
     create_table_nir_character_summary()
-    create_order_table()
 
     import_table_tp_nir_from_csv()
     import_table_vuz_from_csv()
