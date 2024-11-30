@@ -352,10 +352,9 @@ def fill_vuz_summary():
     '''
     c.execute(query)
 
-    # Добавляем итоговую строку
     c.execute('''
         INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
-        SELECT 
+        SELECT
             'ИТОГО',
             SUM("Сумма_планового_финансирования"),
             SUM("Сумма_количества_НИР"),
@@ -365,6 +364,39 @@ def fill_vuz_summary():
 
     conn.commit()
     conn.close()
+
+def fill_vuz_summary_db(db):
+    """Заполнение таблицы VUZ_Summary только для вузов, которые есть в Tp_nir."""
+    query = QSqlQuery(db)  # Используем переданное соединение
+    query.exec('DELETE FROM VUZ_Summary')
+
+    # Ваши операции с базой данных
+    insert_query = '''
+        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+        SELECT 
+            VUZ."Сокращенное_имя",
+            SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования",
+            COUNT(Tp_nir."Номер") AS "Сумма_количества_НИР",
+            SUM(Tp_fv."Фактическое_финансирование") AS "Сумма_фактического_финансирования"
+        FROM VUZ
+        LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+        LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
+        WHERE Tp_nir."Код" IS NOT NULL 
+        GROUP BY VUZ."Сокращенное_имя"
+    '''
+    query.exec(insert_query)
+
+    # Добавляем итоговую строку
+    query.exec('''
+        INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+        SELECT 
+            'ИТОГО',
+            SUM("Сумма_планового_финансирования"),
+            SUM("Сумма_количества_НИР"),
+            SUM("Сумма_фактического_финансирования")
+        FROM VUZ_Summary
+    ''')
+    return True  # Возвращаем True, если все прошло успешно
 
 def fill_grnti_summary():
     """Заполнение таблицы GRNTI_Summary."""
@@ -390,6 +422,28 @@ def fill_grnti_summary():
 
     conn.commit()
     conn.close()
+
+def fill_grnti_summary_db(db):
+    """Заполнение таблицы GRNTI_Summary."""
+    query = QSqlQuery(db)  # Используем переданное соединение
+    query.exec('DELETE FROM GRNTI_Summary')
+
+
+    insert_query = '''
+        INSERT INTO GRNTI_Summary ("Код_рубрики", "Название_рубрики", "Количество_НИР", "Сумма_планового_финансирования")
+        SELECT 
+            substr(Tp_nir."Коды_ГРНТИ", 1, 2) AS "Код_рубрики",  -- Первые две цифры из Коды_ГРНТИ
+            grntirub."Рубрика" AS "Название_рубрики",
+            COUNT(Tp_nir."Номер") AS "Количество_НИР",  -- Количество НИР по рубрике
+            SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования"  -- Сумма планового финансирования
+        FROM Tp_nir
+        INNER JOIN grntirub ON substr(Tp_nir."Коды_ГРНТИ", 1, 2) = grntirub."Код_рубрики"
+        GROUP BY 
+            substr(Tp_nir."Коды_ГРНТИ", 1, 2),
+            grntirub."Рубрика"
+    '''
+    query.exec(insert_query)
+    return True
 
 def fill_nir_character_summary():
     """Заполнение таблицы NIR_Character_Summary."""
@@ -422,14 +476,36 @@ def fill_nir_character_summary():
     conn.commit()
     conn.close()
 
-def connect_db(db_name):
-    """Подключение к базе данных."""
-    db = QSqlDatabase.addDatabase('QSQLITE')
-    db.setDatabaseName(db_name)
-    if not db.open():
-        print('Не удалось подключиться к базе')
-        return False
-    return db
+def fill_nir_character_summary_db(db):
+    """Заполнение таблицы NIR_Character_Summary."""
+    query = QSqlQuery(db)  # Используем переданное соединение
+    query.exec('DELETE FROM NIR_Character_Summary')
+
+
+    insert_query = '''
+        INSERT INTO NIR_Character_Summary ("Характер", "Количество_НИР", "Сумма_планового_финансирования")
+        SELECT 
+            "Характер",
+            COUNT("Номер") AS "Количество_НИР",
+            SUM("Плановое_финансирование") AS "Сумма_планового_финансирования"
+        FROM Tp_nir
+        GROUP BY "Характер"
+    '''
+    query.exec(insert_query)
+
+    # Добавляем итоговую строку
+    query.exec('''
+        INSERT INTO NIR_Character_Summary ("Характер", "Количество_НИР", "Сумма_планового_финансирования")
+        SELECT 
+            'ИТОГО',
+            SUM("Количество_НИР"),
+            SUM("Сумма_планового_финансирования")
+        FROM NIR_Character_Summary
+    ''')
+
+    return True
+
+
 
 
 def get_column_values_from_table(column_name):
@@ -631,7 +707,7 @@ def fill_vuz_summary_with_filters(grnti_conditions, complex_conditions):
             # Логируем состояние блокировок после завершения операций
             log_lock_status(c)
             log_database_list(c)
-
+            conn.close()
 
 
 
@@ -664,4 +740,4 @@ def prepare_tables():
     fill_nir_character_summary()
 
 
-#prepare_tables()
+prepare_tables()

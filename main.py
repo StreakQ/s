@@ -120,8 +120,8 @@ class MainWindow(QMainWindow):
         if not self.is_updating:
             self.is_updating = True  # Устанавливаем флаг обновления
             try:
-                self.update_tp_fv()  # Обновляем первую модель
-                self.update_summary_tables()  # Обновляем вторую модель
+                self.update_tp_fv()
+                self.update_summary_tables()
             except Exception as e:
                 self.show_error_message(f"Ошибка при обновлении: {e}")
             finally:
@@ -226,6 +226,8 @@ class MainWindow(QMainWindow):
         self.apply_filter_btn = self.findChild(QPushButton, 'apply_filter_btn')
         self.apply_filter_btn.clicked.connect(self.apply_saved_filters)
         self.wid = self.findChild(QWidget, "widget")
+        self.refund_to_filters_btn = self.findChild(QPushButton,'refund_to_filters_btn')
+        self.refund_to_filters_btn.clicked.connect(self.on_refund_to_filters_btn_clicked)
 
         # Выпуск распоряжений
         self.current_order.triggered.connect(self.on_current_order_clicked)
@@ -244,6 +246,17 @@ class MainWindow(QMainWindow):
         self.plan_fin_lbl = self.findChild(QLabel, 'plan_fin_lbl')
         self.fact_fin_lbl = self.findChild(QLabel, 'fact_fin_lbl')
         self.ordered_fin_percent_lbl = self.findChild(QLabel, 'ordered_fin_percent_lbl')
+
+    def on_refund_to_filters_btn_clicked(self):
+        self.show_buttons()
+        self.stackedWidget.setCurrentIndex(3)
+        self.Tp_nir_redact.setVisible(True)
+        self.wid.setVisible(True)
+
+        #self.show_menu(self.Tp_nir_add_row_menu, 3)
+
+
+
 
     def on_current_order_clicked(self):
         self.hide_buttons()
@@ -384,6 +397,7 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact.setVisible(False)
         self.wid.setVisible(False)
         self.apply_filter_btn.setVisible(False)
+        self.refund_to_filters_btn.setVisible(False)
         self.table_show_4('GRNTI_Summary')
 
     def open_analysis_menu_po_character(self):
@@ -391,6 +405,8 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact.setVisible(False)
         self.wid.setVisible(False)
         self.apply_filter_btn.setVisible(False)
+        self.refund_to_filters_btn.setVisible(False)
+
         self.table_show_4('NIR_Character_Summary')
 
     def save_filter_conditions(self):
@@ -402,23 +418,37 @@ class MainWindow(QMainWindow):
         else:
             self.show_error_message("Введите код ГРНТИ для сохранения условия фильтрации.")
 
-
     def update_summary_tables(self):
         """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
-        if self.is_updating:
-            print("уже происходит обновление")
+        db = connect_db('databases//database.db')  # Открываем соединение один раз
+        if db is None:
+            self.show_error_message("Ошибка: не удалось подключиться к базе данных.")
             return
 
         try:
             self.is_updating = True  # Устанавливаем флаг обновления
-            fill_vuz_summary()  # Обновление таблицы VUZ_Summary
-            fill_grnti_summary()  # Обновление таблицы GRNTI_Summary
-            fill_nir_character_summary()  # Обновление таблицы NIR_Character_Summary
+            db.transaction()  # Начинаем транзакцию
+
+            if not fill_vuz_summary_db(db):  # Передаем соединение
+                raise Exception("Ошибка при обновлении таблицы VUZ_Summary.")
+
+            if not fill_grnti_summary_db(db):  # Передаем соединение
+                raise Exception("Ошибка при обновлении таблицы GRNTI_Summary.")
+
+            if not fill_nir_character_summary_db(db):  # Передаем соединение
+                raise Exception("Ошибка при обновлении таблицы NIR_Character_Summary.")
+
+            db.commit()  # Подтверждаем изменения
             print("Все сводные таблицы успешно обновлены.")
+
         except Exception as e:
+            db.rollback()  # Откат транзакции в случае ошибки
             self.show_error_message(f"Ошибка при обновлении сводных таблиц: {e}")
+
         finally:
             self.is_updating = False  # Сбрасываем флаг обновления
+            db.close()  # Закрываем соединение
+
 
 
 
@@ -654,6 +684,21 @@ class MainWindow(QMainWindow):
             return
 
         try:
+            # Проверяем количество строк в Tp_nir
+            count_query = "SELECT COUNT(*) FROM Tp_nir"
+            count_result = QSqlQuery(conn)
+            if not count_result.exec(count_query):
+                print(f"Ошибка при выполнении запроса: {count_result.lastError().text()}")
+                return
+
+            if count_result.next():
+                count = count_result.value(0)
+                print(f"Количество строк в Tp_nir перед обновлением: {count}")
+
+            if count == 0:
+                print("Таблица Tp_nir пуста. Обновление Tp_fv не требуется.")
+                return  # Если таблица пуста, выходим из функции
+
             # Начинаем транзакцию
             if not conn.transaction():
                 print("Ошибка: не удалось начать транзакцию.")
@@ -685,27 +730,28 @@ class MainWindow(QMainWindow):
                 SET 
                     "Количество_НИР" = (
                         SELECT COUNT(Tp_nir."Номер")
-                        FROM Tp_nir
-                        WHERE Tp_fv."Код" = Tp_nir."Код"
+                        FROM Tp_nir WHERE Tp_fv."Код" = Tp_nir."Код"
                         GROUP BY Tp_nir."Код"
                     )
             '''
+            ql_query = QSqlQuery(conn)
             if not ql_query.exec(query_count):
                 print(f"Ошибка при выполнении запроса на обновление количества НИР: {ql_query.lastError().text()}")
                 conn.rollback()  # Откат транзакции в случае ошибки
                 return
+            print(f"Обновлено строк: {ql_query.numRowsAffected()}")
 
             print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
             # Перезагрузка модели
-            self.models['Tp_fv'].select()
+            self.setup_models()
+            conn.commit()
 
         except Exception as e:
             print(f"Ошибка: {e}")
             conn.rollback()  # Откат транзакции в случае ошибки
-        # finally:
-        #     self.is_updating = False  # Сбрасываем флаг обновления
-        #     conn.close()
-
+        finally:
+            self.is_updating = False  # Сбрасываем флаг обновления
+            conn.close()
 
 
 
@@ -1016,7 +1062,13 @@ class MainWindow(QMainWindow):
             print("apply_saved_filters: уже выполняется другая операция.")
             return
 
+        conn = QSqlDatabase.database()  # Используем подключение к базе данных
+        if not conn.isOpen() and not conn.open():
+            print("Ошибка: база данных не открыта.")
+            return
+
         self.is_updating = True  # Устанавливаем флаг обновления
+
         try:
             # Применяем фильтр по коду ГРНТИ или комплексные фильтры
             fill_vuz_summary_with_filters(self.saved_filter_grnti_conditions, self.saved_filter_complex_conditions)
@@ -1024,12 +1076,13 @@ class MainWindow(QMainWindow):
             # Обновляем модели для отображения изменений
             self.models['VUZ_Summary'].select()  # Обновляем модель VUZ_Summary
             self.table_show_4('VUZ_Summary')
-
+            conn.commit()
             print("Применены сохраненные условия фильтрации по ГРНТИ и комплексные условия.")
         except Exception as e:
             self.show_error_message(f"Ошибка при применении фильтров: {e}")
         finally:
             self.is_updating = False  # Сбрасываем флаг обновления
+            conn.close()
 
     def collect_complex_filter_conditions(self):
         """Сбор комплексных условий фильтрации из комбобоксов."""
