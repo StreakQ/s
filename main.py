@@ -117,15 +117,8 @@ class MainWindow(QMainWindow):
 
     def on_tp_nir_data_changed(self):
         """Обработчик изменения данных в Tp_nir."""
-        if not self.is_updating:
-            self.is_updating = True  # Устанавливаем флаг обновления
-            try:
-                self.update_tp_fv()
-                self.update_summary_tables()
-            except Exception as e:
-                self.show_error_message(f"Ошибка при обновлении: {e}")
-            finally:
-                self.is_updating = False  # Сбрасываем флаг обновления
+        self.update_tp_fv()  # Обновляем первую модель
+        self.update_summary_tables()  # Обновляем вторую модель
 
     def connect_db(self):
         """Подключение к базе данных."""
@@ -420,34 +413,21 @@ class MainWindow(QMainWindow):
 
     def update_summary_tables(self):
         """Обновление таблиц VUZ_Summary, GRNTI_Summary и NIR_Character_Summary."""
-        db = connect_db('databases//database.db')  # Открываем соединение один раз
-        if db is None:
-            self.show_error_message("Ошибка: не удалось подключиться к базе данных.")
+        conn = QSqlDatabase.database()  # Используем подключение к базе данных
+        if not conn.isOpen() and not conn.open():
+            print("Ошибка: база данных не открыта.")
             return
 
         try:
-            self.is_updating = True  # Устанавливаем флаг обновления
-            db.transaction()  # Начинаем транзакцию
-
-            if not fill_vuz_summary_db(db):  # Передаем соединение
-                raise Exception("Ошибка при обновлении таблицы VUZ_Summary.")
-
-            if not fill_grnti_summary_db(db):  # Передаем соединение
-                raise Exception("Ошибка при обновлении таблицы GRNTI_Summary.")
-
-            if not fill_nir_character_summary_db(db):  # Передаем соединение
-                raise Exception("Ошибка при обновлении таблицы NIR_Character_Summary.")
-
-            db.commit()  # Подтверждаем изменения
+            conn.transaction()  # Начинаем транзакцию
+            fill_vuz_summary()  # Обновление таблицы VUZ_Summary
+            fill_grnti_summary()  # Обновление таблицы GRNTI_Summary
+            fill_nir_character_summary()  # Обновление таблицы NIR_Character_Summary
+            conn.commit()  # Подтверждаем транзакцию
             print("Все сводные таблицы успешно обновлены.")
-
         except Exception as e:
-            db.rollback()  # Откат транзакции в случае ошибки
+            conn.rollback()  # Откат транзакции в случае ошибки
             self.show_error_message(f"Ошибка при обновлении сводных таблиц: {e}")
-
-        finally:
-            self.is_updating = False  # Сбрасываем флаг обновления
-            db.close()  # Закрываем соединение
 
 
 
