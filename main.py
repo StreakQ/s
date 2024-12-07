@@ -124,7 +124,7 @@ class MainWindow(QMainWindow):
         """Подключение к базе данных."""
         self.db = QSqlDatabase.addDatabase('QSQLITE')
         self.db.setDatabaseName(self.db_name)
-        self.db.setConnectOptions("PRAGMA busy_timeout = 3000")
+        #self.db.setConnectOptions("PRAGMA busy_timeout = 3000")
         if not self.db.open():
             print('Не удалось подключиться к базе данных')
             sys.exit(-1)
@@ -674,10 +674,6 @@ class MainWindow(QMainWindow):
             if count_result.next():
                 count = count_result.value(0)
                 print(f"Количество строк в Tp_nir перед обновлением: {count}")
-
-            if count == 0:
-                print("Таблица Tp_nir пуста. Обновление Tp_fv не требуется.")
-                return  # Если таблица пуста, выходим из функции
 
             # Начинаем транзакцию
             if not conn.transaction():

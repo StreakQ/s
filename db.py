@@ -24,7 +24,7 @@ def connect_db(db_name_name):
     """Подключение к базе данных."""
     db = QSqlDatabase.addDatabase('QSQLITE')
     db.setDatabaseName(db_name_name)
-    db.setConnectOptions("PRAGMA busy_timeout=3000")  # Установите тайм-аут в 3000 мс
+    #db.setConnectOptions("PRAGMA busy_timeout=3000")  # Установите тайм-аут в 3000 мс
     if not db.open():
         print('Не удалось подключиться к базе')
         return False
