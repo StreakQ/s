@@ -1047,19 +1047,123 @@ class MainWindow(QMainWindow):
         self.is_updating = True  # Устанавливаем флаг обновления
 
         try:
-            # Применяем фильтр по коду ГРНТИ или комплексные фильтры
-            fill_vuz_summary_with_filters(self.saved_filter_grnti_conditions, self.saved_filter_complex_conditions)
+            # Вызываем функцию из текущего класса
+            # Обновление модели таблицы для отображения всех записей
+            #self.reset_filter_state()
+            self.models['VUZ_Summary'].setFilter("")  # Убедитесь, что фильтры сброшены
 
-            # Обновляем модели для отображения изменений
-            self.models['VUZ_Summary'].select()  # Обновляем модель VUZ_Summary
-            self.table_show_4('VUZ_Summary')
+            self.fill_vuz_summary_with_filters(self.saved_filter_grnti_conditions, self.saved_filter_complex_conditions)
+
+
             conn.commit()
             print("Применены сохраненные условия фильтрации по ГРНТИ и комплексные условия.")
         except Exception as e:
             self.show_error_message(f"Ошибка при применении фильтров: {e}")
         finally:
             self.is_updating = False  # Сбрасываем флаг обновления
-            conn.close()
+            conn.close()  # Закрываем соединение с базой данны
+
+    def fill_vuz_summary_with_filters(self, grnti_conditions, complex_conditions):
+        """Заполнение таблицы VUZ_Summary с учетом сохраненных условий фильтрации."""
+        conn = QSqlDatabase.database()  # Используем подключение к базе данных
+        if not conn.isOpen() and not conn.open():
+            print("Ошибка: база данных не открыта.")
+            return
+
+        try:
+            # Начинаем транзакцию
+            if not conn.transaction():
+                print("Ошибка: не удалось начать транзакцию.")
+                return
+
+            # Очистка таблицы перед заполнением
+            clear_query = QSqlQuery(conn)
+            clear_query.exec('DELETE FROM VUZ_Summary')
+
+            query = '''
+                      INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+                      SELECT 
+                          VUZ."Сокращенное_имя",
+                          SUM(Tp_nir."Плановое_финансирование") AS "Сумма_планового_финансирования",
+                          COUNT(Tp_nir."Номер") AS "Сумма_количества_НИР",
+                          SUM(Tp_fv."Фактическое_финансирование") AS "Сумма_фактического_финансирования"
+                      FROM VUZ
+                      LEFT JOIN Tp_nir ON VUZ."Код" = Tp_nir."Код"
+                      LEFT JOIN Tp_fv ON VUZ."Код" = Tp_fv."Код"
+                      {conditions}
+                      GROUP BY VUZ."Сокращенное_имя"
+                      HAVING 
+                          SUM(Tp_nir."Плановое_финансирование") IS NOT NULL 
+                          AND SUM(Tp_fv."Фактическое_финансирование") IS NOT NULL 
+                          AND COUNT(Tp_nir."Номер") > 0;
+                  '''
+
+            # Формируем строку условий фильтрации
+            conditions = ''
+            if grnti_conditions:
+                # Формируем условия для ГРНТИ
+                grnti_conditions_str = ' OR '.join(
+                    [f'substr(Tp_nir."Коды_ГРНТИ", 1, 2) = "{cod}"' for cod in grnti_conditions])
+                conditions += f' WHERE ({grnti_conditions_str})'
+
+            if complex_conditions:
+                # Убедитесь, что complex_conditions является строкой
+                if isinstance(complex_conditions, list):
+                    complex_conditions_str = ' AND '.join(complex_conditions)  # Объединяем список в строку
+                else:
+                    complex_conditions_str = complex_conditions  # Если это уже строка
+
+                # Заменяем одинарные кавычки на двойные
+                complex_conditions_str = complex_conditions_str.replace("'", '"')
+
+                if conditions:
+                    conditions += f' AND {complex_conditions_str}'
+                else:
+                    conditions += f' WHERE {complex_conditions_str}'
+
+            # Удаляем лишний WHERE, если он не нужен
+            if conditions.startswith(' WHERE') and ' AND ' in conditions:
+                conditions = conditions.replace(' WHERE', '', 1)
+
+            if conditions:
+                query = query.format(conditions=conditions)
+            else:
+                query = query.format(conditions='')
+
+            print("Сформированный SQL-запрос:", query)  # Отладка: выводим сформированный запрос
+
+            # Выполнение запроса
+            insert_query = QSqlQuery(conn)
+            if not insert_query.exec(query):
+                print(f"Ошибка при выполнении запроса: {insert_query.lastError().text()}")
+                conn.rollback()  # Откат транзакции в случае ошибки
+                return
+
+            # Добавляем итоговую строку
+            total_query = '''
+                INSERT INTO VUZ_Summary ("Сокращенное_имя", "Сумма_планового_финансирования", "Сумма_количества_НИР", "Сумма_фактического_финансирования")
+                SELECT 
+                    'ИТОГО',
+                    SUM("Сумма_планового_финансирования"),
+                    SUM("Сумма_количества_НИР"),
+                    SUM("Сумма_фактического_финансирования")
+                FROM VUZ_Summary
+            '''
+            total_insert_query = QSqlQuery(conn)
+            if not total_insert_query.exec(total_query):
+                print(f"Ошибка при добавлении итоговой строки: {total_insert_query.lastError().text()}")
+                conn.rollback()  # Откат транзакции в случае ошибки
+                return
+
+            conn.commit()  # Подтверждаем транзакцию
+            print("Таблица VUZ_Summary успешно обновлена.")
+            self.models['VUZ_Summary'].select()  # Перезагрузите данные модели
+            self.table_show_4('VUZ_Summary')  # Убедитесь, что модель установлена
+        except Exception as e:
+            print(f"Ошибка при заполнении таблицы VUZ_Summary с фильтрами: {e}")
+            conn.rollback()  # Откат транзакции в случае ошибки
+        finally:
+            conn.close()  # Закрываем соединение с базой данных
 
     def collect_complex_filter_conditions(self):
         """Сбор комплексных условий фильтрации из комбобоксов."""

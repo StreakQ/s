@@ -503,6 +503,8 @@ def grnti_to_cmb():
     grnti_to = [f'{str(cod).zfill(2)} - {name}' for cod, name in codes_and_names]
     return grnti_to
 
+
+
 def prepare_tables():
     """Подготовка таблиц."""
     create_database()
