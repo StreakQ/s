@@ -899,8 +899,9 @@ class MainWindow(QMainWindow):
         self.grnticode_cmb.clear()
         self.grnticode_cmb.addItem("Выберите...", None)
         grnti_items = grnti_to_cmb()
-        # Заполняем комбобокс
-        for code, display_text in grnti_items:
+
+        for display_text in grnti_items:
+            code, text = display_text.split(" - ")
             self.grnticode_cmb.addItem(display_text, code)
 
     def reset_filter_state(self):

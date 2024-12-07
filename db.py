@@ -491,6 +491,18 @@ def fill_nir_character_summary():
         conn.close()  # Закрываем соединение
 
 
+def grnti_to_cmb():
+    connection = sqlite3.connect('databases//database.db')
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT Код_рубрики, Рубрика FROM grntirub")
+    codes_and_names = cursor.fetchall()  # Получаем все записи в виде списка кортежей
+
+    connection.close()
+
+    grnti_to = [f'{str(cod).zfill(2)} - {name}' for cod, name in codes_and_names]
+    return grnti_to
+
 def prepare_tables():
     """Подготовка таблиц."""
     create_database()
