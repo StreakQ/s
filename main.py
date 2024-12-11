@@ -328,9 +328,9 @@ class MainWindow(QMainWindow):
 
     def on_distribute_to_vuz_clicked(self):
         if self.ordered_percent_first_lbl is not None and self.ordered_percent_first_lbl.text() != '':
-            val = int(self.ordered_percent_first_lbl.text())
+            val = float(self.ordered_percent_first_lbl.text())
         elif self.ordered_percent_second_lineedit is not None and self.ordered_percent_second_lineedit.text() != '':
-            val = int(self.ordered_percent_second_lineedit.text())
+            val = float(self.ordered_percent_second_lineedit.text())
         else:
             self.show_error_message("Нет рассчитанных сумм")
             return
