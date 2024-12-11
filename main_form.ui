@@ -30,7 +30,7 @@
      <string notr="true">background-color: rgb(240, 240, 240);</string>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView">
@@ -1132,7 +1132,7 @@
       <property name="geometry">
        <rect>
         <x>290</x>
-        <y>120</y>
+        <y>110</y>
         <width>291</width>
         <height>31</height>
        </rect>
@@ -1153,7 +1153,7 @@
       <property name="geometry">
        <rect>
         <x>290</x>
-        <y>160</y>
+        <y>140</y>
         <width>291</width>
         <height>51</height>
        </rect>
@@ -1173,8 +1173,8 @@
      <widget class="QPushButton" name="calculate_btn">
       <property name="geometry">
        <rect>
-        <x>600</x>
-        <y>220</y>
+        <x>610</x>
+        <y>180</y>
         <width>251</width>
         <height>28</height>
        </rect>
@@ -1192,7 +1192,7 @@
       <property name="geometry">
        <rect>
         <x>610</x>
-        <y>125</y>
+        <y>115</y>
         <width>250</width>
         <height>22</height>
        </rect>
@@ -1210,7 +1210,7 @@
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>175</y>
+        <y>155</y>
         <width>250</width>
         <height>22</height>
        </rect>
@@ -1275,7 +1275,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Отмена</string>
+       <string>Отмена </string>
       </property>
      </widget>
      <widget class="QTableView" name="tableView_3">
@@ -1292,7 +1292,7 @@
       <property name="geometry">
        <rect>
         <x>610</x>
-        <y>175</y>
+        <y>155</y>
         <width>250</width>
         <height>22</height>
        </rect>
@@ -1316,7 +1316,7 @@
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>125</y>
+        <y>115</y>
         <width>250</width>
         <height>22</height>
        </rect>
@@ -1340,7 +1340,7 @@
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>220</y>
+        <y>180</y>
         <width>251</width>
         <height>28</height>
        </rect>
@@ -1352,6 +1352,24 @@
       </property>
       <property name="text">
        <string>Очистить</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="distribute_to_vuz_btn">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>230</y>
+        <width>311</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Распределить по ВУЗам</string>
       </property>
      </widget>
     </widget>

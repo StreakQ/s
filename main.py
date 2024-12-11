@@ -230,6 +230,8 @@ class MainWindow(QMainWindow):
         self.accept_order_btn.clicked.connect(self.on_accept_order_btn_clicked)
         self.cancel_order_btn.clicked.connect(self.on_cancel_order_btn_clicked)
         self.clean_btn.clicked.connect(self.on_clean_btn_clicked)
+        self.distribute_to_vuz_btn.clicked.connect(self.on_distribute_to_vuz_clicked)
+
 
         self.sum_first_lineedit = self.findChild(QLineEdit, 'sum_first_lineedit')
         self.sum_second_lbl = self.findChild(QLabel, 'sum_second_lbl')
@@ -246,15 +248,10 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact.setVisible(True)
         self.wid.setVisible(True)
 
-        #self.show_menu(self.Tp_nir_add_row_menu, 3)
-
-
-
-
     def on_current_order_clicked(self):
         self.hide_buttons()
         self.stackedWidget.setCurrentIndex(4)
-        value = self.get_sum_value_by_column("Плановое_финансирование")
+        value = self.get_sum_value_by_column("Плановое_финансирование","Tp_fv")
         self.table_show('Order_table')
         self.plan_fin_lbl.setText(str(value))
         self.fact_fin_lbl.setText('0')
@@ -329,10 +326,59 @@ class MainWindow(QMainWindow):
         self.reset_first_lineedit()
         self.reset_second_lineedit()
 
-    def get_sum_value_by_column(self, column_name):
+    def on_distribute_to_vuz_clicked(self):
+        if self.ordered_percent_first_lbl is not None and self.ordered_percent_first_lbl.text() != '':
+            val = int(self.ordered_percent_first_lbl.text())
+        elif self.ordered_percent_second_lineedit is not None and self.ordered_percent_second_lineedit.text() != '':
+            val = int(self.ordered_percent_second_lineedit.text())
+        else:
+            self.show_error_message("Нет рассчитанных сумм")
+            return
+
+        conn = QSqlDatabase.database()
+        if not conn.isOpen() and not conn.open():
+            print("Ошибка: база данных не открыта.")
+            return
+
+        try:
+            conn.transaction()
+            fill_order_table(val,conn)
+            self.update_labels()
+            self.update_tp_fv()
+            self.update_summary_tables()
+            conn.commit()
+            self.models['Order_table'].setFilter("")
+            self.models['Order_table'].select()
+        except Exception as e:
+            print(f"Ошибка при распределении финансирования: {e}")
+            conn.rollback()
+        finally:
+            conn.close()
+
+
+
+        #TODO:также отображаем Order_table в tableView_3
+
+    def update_labels(self):
+        self.fact_sum = 0
+        self.start_plan_sum = int(self.plan_fin_lbl.text())
+
+        self.fact_sum += self.get_sum_value_by_column("Сумма_фактического_финансирования","Order_table")
+
+        self.plan_sum = int(self.plan_fin_lbl.text()) - self.fact_sum
+
+        self.percent_distrib_fact_sum = 0
+        self.percent_distrib_fact_sum = self.plan_sum * 100 /self.start_plan_sum
+
+        self.plan_fin_lbl.setText(str(self.plan_sum))
+        self.fact_fin_lbl.setText(str(self.fact_sum))
+        self.ordered_fin_percent_lbl.setText(str(self.percent_distrib_fact_sum))
+
+
+    def get_sum_value_by_column(self, column_name,table_name):
         conn = sqlite3.connect(db_name)
         c = conn.cursor()
-        c.execute(f'''SELECT SUM({column_name}) FROM Tp_fv''')
+        c.execute(f'''SELECT SUM({column_name}) FROM {table_name}''')
         res = c.fetchone()
         sum_value = res[0] if res[0] is not None else 0
         conn.commit()
@@ -429,9 +475,6 @@ class MainWindow(QMainWindow):
             conn.rollback()  # Откат транзакции в случае ошибки
             self.show_error_message(f"Ошибка при обновлении сводных таблиц: {e}")
 
-
-
-
     def hide_buttons(self):
         self.Tp_nir_redact_add_row_btn.hide()
         self.Tp_nir_redact_del_row_btn.hide()
@@ -443,8 +486,6 @@ class MainWindow(QMainWindow):
         self.Tp_nir_redact_del_row_btn.show()
         self.Tp_nir_redact_edit_row_btn.show()
         self.Tp_nir_redact_filters_btn.show()
-
-
 
     def open_add_row_menu(self):
         """Сброс состояния и открытие меню добавления строки."""
@@ -729,8 +770,6 @@ class MainWindow(QMainWindow):
             self.is_updating = False  # Сбрасываем флаг обновления
             conn.close()
 
-
-
     def fill_widgets_from_selected_row(self):
         """Заполнение виджетов данными из выбранной строки таблицы."""
         selection_model = self.tableView.selectionModel()
@@ -953,17 +992,17 @@ class MainWindow(QMainWindow):
 
     def on_reset_filter_by_grnti_code(self):
         self.clear_and_fill_grnticmb()
+        # self.models['VUZ_Summary'].setFilter("")
+        # self.models['VUZ_Summary'].select()
         self.models['Tp_nir'].setFilter("")
         self.models['Tp_nir'].select()
         self.tableView_2.setModel(self.models['Tp_nir'])
-        self.tableView_2.reset()
-        self.tableView_2.show()
+        # self.tableView_2.reset()
+        # self.tableView_2.show()
 
-        # self.Tp_nir_redact.setVisible(True)
         self.filter_by_grnticode_btn.setEnabled(True)
         self.grnticode_cmb.setEnabled(True)
         self.menu_1.setEnabled(True)
-        # self.Tp_nir_redact.raise_()
 
     def on_reset_filter(self):
         """Сброс комплексного фильтра и возврат к начальному состоянию."""
@@ -971,9 +1010,11 @@ class MainWindow(QMainWindow):
         self.reset_comboboxes()
 
         # Сброс фильтров в модели
+        self.models['VUZ_Summary'].setFilter("")
+
         self.models['Tp_nir'].setFilter("")
         self.models['Tp_nir'].select()
-        self.tableView_2.setModel(self.models['Tp_nir'])
+        #self.tableView_2.setModel(self.models['Tp_nir'])
         self.table_show_2('Tp_nir')
 
         # self.clear_and_fill_grnticmb()
@@ -1047,10 +1088,7 @@ class MainWindow(QMainWindow):
         self.is_updating = True  # Устанавливаем флаг обновления
 
         try:
-            # Вызываем функцию из текущего класса
-            # Обновление модели таблицы для отображения всех записей
-            #self.reset_filter_state()
-            self.models['VUZ_Summary'].setFilter("")  # Убедитесь, что фильтры сброшены
+
 
             self.fill_vuz_summary_with_filters(self.saved_filter_grnti_conditions, self.saved_filter_complex_conditions)
 

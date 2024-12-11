@@ -50,6 +50,7 @@ def create_order_table():
         conn.close()
 
 
+
 def create_table_tp_nir():
     """Создание таблицы Tp_nir."""
     conn = sqlite3.connect(db_name)
@@ -490,6 +491,28 @@ def fill_nir_character_summary():
     finally:
         conn.close()  # Закрываем соединение
 
+
+def fill_order_table(value, db):
+    value /= 100
+    query = QSqlQuery(db)
+    try:
+        query.prepare('''INSERT INTO Order_table("Сокращенное_имя", "Сумма_фактического_финансирования")
+                         SELECT
+                         "Сокращенное_имя",
+                         "Плановое_финансирование" * ?
+                         FROM
+                         Tp_fv
+                         WHERE
+                         "Сокращенное_имя" IS NOT NULL AND
+                         "Плановое_финансирование" IS NOT NULL
+        ''')
+        query.addBindValue(value)
+        if not query.exec():
+            print(f"Ошибка при выполнении запроса: {query.lastError().text()}")
+        db.commit()
+    except Exception as e:
+        print(f"Ошибка при заполнении Order_table: {e}")
+        db.rollback()
 
 def grnti_to_cmb():
     connection = sqlite3.connect('databases//database.db')
