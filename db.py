@@ -494,7 +494,21 @@ def fill_nir_character_summary():
 
 def fill_order_table(value, db):
     value /= 100
+
+    # Проверка на отрицательное значение после деления
+    if value < 0:
+        print("Ошибка: значение не может быть отрицательным.")
+        return
+
     query = QSqlQuery(db)
+
+    # Удаляем все записи из Order_table
+    delete_query = QSqlQuery(db)
+    delete_query.prepare('DELETE FROM Order_table')
+    if not delete_query.exec():
+        print(f"Ошибка при удалении записей из Order_table: {delete_query.lastError().text()}")
+        return  # Выход из функции, если удаление не удалось
+
     try:
         query.prepare('''INSERT INTO Order_table("Сокращенное_имя", "Сумма_фактического_финансирования")
                          SELECT

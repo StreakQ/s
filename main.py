@@ -335,6 +335,11 @@ class MainWindow(QMainWindow):
             self.show_error_message("Нет рассчитанных сумм")
             return
 
+        # Проверка на отрицательное значение
+        if val < 0:
+            self.show_error_message("Значение не может быть отрицательным.")
+            return
+
         conn = QSqlDatabase.database()
         if not conn.isOpen() and not conn.open():
             print("Ошибка: база данных не открыта.")
@@ -342,40 +347,52 @@ class MainWindow(QMainWindow):
 
         try:
             conn.transaction()
-            fill_order_table(val,conn)
+            fill_order_table(val, conn)
             self.update_labels()
             self.update_tp_fv()
             self.update_summary_tables()
             conn.commit()
             self.models['Order_table'].setFilter("")
             self.models['Order_table'].select()
+            self.tableView_3.setModel(self.models["Order_table"])
+
         except Exception as e:
             print(f"Ошибка при распределении финансирования: {e}")
             conn.rollback()
         finally:
             conn.close()
 
-
-
-        #TODO:также отображаем Order_table в tableView_3
+        #TODO:не отображается Order_table в tableView_3
 
     def update_labels(self):
         self.fact_sum = 0
         self.start_plan_sum = int(self.plan_fin_lbl.text())
+        print(f"Start Plan Sum: {self.start_plan_sum}")
 
-        self.fact_sum += self.get_sum_value_by_column("Сумма_фактического_финансирования","Order_table")
+        self.fact_sum += self.get_sum_value_by_column("Сумма_фактического_финансирования", "Order_table")
+        print(f"Fact Sum: {self.fact_sum}")
 
-        self.plan_sum = int(self.plan_fin_lbl.text()) - self.fact_sum
+        self.plan_sum = self.start_plan_sum - self.fact_sum
+        print(f"Plan Sum: {self.plan_sum}")
 
-        self.percent_distrib_fact_sum = 0
-        self.percent_distrib_fact_sum = self.plan_sum * 100 /self.start_plan_sum
+        # Проверка на отрицательные значения
+        # if self.plan_sum < 0:
+        #     self.show_error_message("Ошибка: плановая сумма не может быть отрицательной.")
+        #     return
 
-        self.plan_fin_lbl.setText(str(self.plan_sum))
-        self.fact_fin_lbl.setText(str(self.fact_sum))
-        self.ordered_fin_percent_lbl.setText(str(self.percent_distrib_fact_sum))
+        if self.start_plan_sum != 0:
+            self.percent_distrib_fact_sum = self.fact_sum * 100 / self.start_plan_sum
+        else:
+            self.percent_distrib_fact_sum = 0
+            print("Warning: Start Plan Sum is zero, cannot calculate percentage.")
 
+        print(f"Percent Distribution of Fact Sum: {self.percent_distrib_fact_sum}")
 
-    def get_sum_value_by_column(self, column_name,table_name):
+        self.plan_fin_lbl.setText(str(round(self.plan_sum)))
+        self.fact_fin_lbl.setText(str(round(self.fact_sum)))
+        self.ordered_fin_percent_lbl.setText(str(round(self.percent_distrib_fact_sum)))
+
+    def get_sum_value_by_column(self, column_name, table_name):
         conn = sqlite3.connect(db_name)
         c = conn.cursor()
         c.execute(f'''SELECT SUM({column_name}) FROM {table_name}''')
@@ -383,6 +400,12 @@ class MainWindow(QMainWindow):
         sum_value = res[0] if res[0] is not None else 0
         conn.commit()
         conn.close()
+
+        # Проверка на отрицательное значение
+        if sum_value < 0:
+            print("Ошибка: сумма не может быть отрицательной.")
+            return 0  # Возвращаем 0, если сумма отрицательная
+
         return sum_value
 
     def table_show(self, table_name):
