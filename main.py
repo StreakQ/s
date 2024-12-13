@@ -1,17 +1,13 @@
-import os
 import sys
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QInputDialog,
-                             QAbstractItemView, QComboBox, QTextEdit, QHeaderView, QPushButton, QVBoxLayout,
-                             QHBoxLayout, QWidget, QLabel, QLineEdit)
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QAbstractItemView, QComboBox, QTextEdit, QHeaderView, QPushButton,
+                             QWidget, QLabel, QLineEdit)
 from PyQt6 import uic
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery,QSqlQueryModel
 from PyQt6.QtGui import QKeyEvent, QTextCursor
-import sqlite3
-import re
 from db import *
-
+from to_pdf import generate_financing_report
 
 class CustomTextEdit(QTextEdit):
     def keyPressEvent(self, event: QKeyEvent):
@@ -227,7 +223,7 @@ class MainWindow(QMainWindow):
 
         self.calculate_btn.clicked.connect(self.on_calculate_btn_clicked)
         self.save_project_btn.clicked.connect(self.on_save_project_btn_clicked)
-        self.accept_order_btn.clicked.connect(self.on_accept_order_btn_clicked)
+        self.accept_order_btn.clicked.connect(self.issue_financing_order)
         self.cancel_order_btn.clicked.connect(self.on_cancel_order_btn_clicked)
         self.clean_btn.clicked.connect(self.on_clean_btn_clicked)
         self.distribute_to_vuz_btn.clicked.connect(self.on_distribute_to_vuz_clicked)
@@ -407,6 +403,43 @@ class MainWindow(QMainWindow):
             return 0  # Возвращаем 0, если сумма отрицательная
 
         return sum_value
+
+    def issue_financing_order(self):
+        """Выпуск распоряжения по поквартальному финансированию вузов."""
+        financing_data = self.collect_financing_data()
+        if not financing_data:
+            self.show_error_message("Нет данных для формирования отчета.")
+            return
+
+        generate_financing_report(financing_data)  # Генерация отчета
+        self.show_error_message("Отчет успешно сгенерирован.")
+
+    def collect_financing_data(self):
+        """Сбор данных о финансировании вузов из Order_table."""
+        conn = QSqlDatabase.database()
+        if not conn.isOpen() and not conn.open():
+            print("Ошибка: база данных не открыта.")
+            return []
+
+        query = '''
+            SELECT 
+                "Сокращенное_имя", 
+                SUM("Сумма_фактического_финансирования") AS "Фактическое_финансирование"
+            FROM Order_table
+            GROUP BY "Сокращенное_имя"
+        '''
+
+        model = QSqlQueryModel()
+        model.setQuery(query)
+
+        financing_data = []
+        for row in range(model.rowCount()):
+            financing_data.append({
+                "Сокращенное_имя": model.data(model.index(row, 0)),
+                "Фактическое_финансирование": model.data(model.index(row, 1)),
+            })
+
+        return financing_data
 
     def table_show(self, table_name):
         """Отображение таблицы."""
