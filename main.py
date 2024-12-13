@@ -346,6 +346,7 @@ class MainWindow(QMainWindow):
             fill_order_table(val, conn)
             self.update_labels()
             self.update_tp_fv()
+            self.update_tp_fv_from_distrib()
             self.update_summary_tables()
             conn.commit()
             self.models['Order_table'].setFilter("")
@@ -358,7 +359,7 @@ class MainWindow(QMainWindow):
         finally:
             conn.close()
 
-        #TODO:не отображается Order_table в tableView_3
+#TODO: не работает финансирование повторное 
 
     def update_labels(self):
         self.fact_sum = 0
@@ -372,9 +373,9 @@ class MainWindow(QMainWindow):
         print(f"Plan Sum: {self.plan_sum}")
 
         # Проверка на отрицательные значения
-        # if self.plan_sum < 0:
-        #     self.show_error_message("Ошибка: плановая сумма не может быть отрицательной.")
-        #     return
+        if self.plan_sum < 0:
+             self.show_error_message("Ошибка: плановая сумма не может быть отрицательной.")
+             return
 
         if self.start_plan_sum != 0:
             self.percent_distrib_fact_sum = self.fact_sum * 100 / self.start_plan_sum
@@ -815,6 +816,50 @@ class MainWindow(QMainWindow):
             print(f"Обновлено строк: {ql_query.numRowsAffected()}")
 
             print("Таблица Tp_fv обновлена на основе изменений в Tp_nir.")
+            # Перезагрузка модели
+            self.setup_models()
+            conn.commit()
+
+        except Exception as e:
+            print(f"Ошибка: {e}")
+            conn.rollback()  # Откат транзакции в случае ошибки
+        finally:
+            self.is_updating = False  # Сбрасываем флаг обновления
+            conn.close()
+
+    def update_tp_fv_from_distrib(self):
+        """Обновление фактического финансирования в таблице Tp_fv на основе распределения."""
+        conn = QSqlDatabase.database()  # Используем подключение к базе данных
+        if not conn.isOpen() and not conn.open():
+            print("Ошибка: база данных не открыта.")
+            return
+
+        try:
+            # Начинаем транзакцию
+            if not conn.transaction():
+                print("Ошибка: не удалось начать транзакцию.")
+                return
+
+            # Обновление фактического финансирования
+            query = '''
+                UPDATE Tp_fv
+                SET 
+                    "Фактическое_финансирование" = (
+                        SELECT SUM("Сумма_фактического_финансирования")
+                        FROM Order_table
+                        WHERE Tp_fv."Сокращенное_имя" = Order_table."Сокращенное_имя"
+                        GROUP BY Order_table."Сокращенное_имя"
+                    )
+            '''
+
+            ql_query = QSqlQuery(conn)
+            if not ql_query.exec(query):
+                print(f"Ошибка при выполнении запроса: {ql_query.lastError().text()}")
+                conn.rollback()  # Откат транзакции в случае ошибки
+                return
+
+            print(f"Обновлено строк: {ql_query.numRowsAffected()}")
+
             # Перезагрузка модели
             self.setup_models()
             conn.commit()

@@ -39,9 +39,11 @@ def create_order_table():
         c.execute('''
         CREATE TABLE IF NOT EXISTS Order_table (
         "Сокращенное_имя" TEXT DEFAULT NULL,
-        "Сумма_фактического_финансирования" INTEGER DEFAULT NULL
+        "Сумма_фактического_финансирования" INTEGER DEFAULT NULL,
+        PRIMARY KEY ("Сокращенное_имя")
         )
         ''')
+
         conn.commit()
     except Exception as e:
         print(f"Ошибка при создании таблицы Order_table: {e}")
@@ -500,16 +502,11 @@ def fill_order_table(value, db):
         print("Ошибка: значение не может быть отрицательным.")
         return
 
+    # Основной запрос для вставки или обновления данных
     query = QSqlQuery(db)
 
-    # Удаляем все записи из Order_table
-    delete_query = QSqlQuery(db)
-    delete_query.prepare('DELETE FROM Order_table')
-    if not delete_query.exec():
-        print(f"Ошибка при удалении записей из Order_table: {delete_query.lastError().text()}")
-        return  # Выход из функции, если удаление не удалось
-
     try:
+        # Prepare the main INSERT query
         query.prepare('''INSERT INTO Order_table("Сокращенное_имя", "Сумма_фактического_финансирования")
                          SELECT
                          "Сокращенное_имя",
@@ -519,11 +516,22 @@ def fill_order_table(value, db):
                          WHERE
                          "Сокращенное_имя" IS NOT NULL AND
                          "Плановое_финансирование" IS NOT NULL
+                         ON CONFLICT("Сокращенное_имя") DO UPDATE SET
+                         "Сумма_фактического_финансирования" = "Сумма_фактического_финансирования" + excluded."Сумма_фактического_финансирования"
         ''')
+
+        # Add the value for the multiplication
+        print(f"Value being bound: {value}")  # Debug statement
         query.addBindValue(value)
+
+        # Print the query for debugging
+        print("Executing query:", query.lastQuery())  # This will show the last prepared query
+
+        # Выполнение запроса
         if not query.exec():
             print(f"Ошибка при выполнении запроса: {query.lastError().text()}")
-        db.commit()
+        else:
+            db.commit()  # Commit only if the query was successful
     except Exception as e:
         print(f"Ошибка при заполнении Order_table: {e}")
         db.rollback()
